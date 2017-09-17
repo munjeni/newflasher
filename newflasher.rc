@@ -1,0 +1,26 @@
+id ICON "newflasher.ico"
+
+1 VERSIONINFO
+FILEVERSION     2,0,0,0
+PRODUCTVERSION  2,0,0,0
+BEGIN
+  BLOCK "StringFileInfo"
+  BEGIN
+    BLOCK "080904E4"
+    BEGIN
+      VALUE "CompanyName", "By munjeni @ 2017"
+      VALUE "FileDescription", "2017 Xperia Command Line Flasher"
+      VALUE "FileVersion", "2"
+      VALUE "InternalName", "newflasher"
+      VALUE "LegalCopyright", "munjeni @ 2017"
+      VALUE "OriginalFilename", "newflasher.exe"
+      VALUE "ProductName", "newflasher"
+      VALUE "ProductVersion", "2"
+    END
+  END
+
+  BLOCK "VarFileInfo"
+  BEGIN
+    VALUE "Translation", 0x809, 1252
+  END
+END
