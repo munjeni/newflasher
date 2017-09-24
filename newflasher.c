@@ -1360,7 +1360,7 @@ static int verify_checksum(const char *p)
 	return (u == parseoct(p + 148, 8));
 }
 
-static int process_sins(HANDLE dev, FILE *a, char *path, char *outfolder, char *endcommand)
+static int process_sins(HANDLE dev, FILE *a, char *filename, char *outfolder, char *endcommand)
 {
 	char buff[512];
 	FILE *f = NULL;
@@ -1373,7 +1373,7 @@ static int process_sins(HANDLE dev, FILE *a, char *path, char *outfolder, char *
 	char flashfile[256];
 	char *tmp_reply = NULL;
 
-	printf(" - Extracting from %s\n", basenamee(path));
+	printf(" - Extracting from %s\n", basenamee(filename));
 
 	for (;;)
 	{
@@ -1381,13 +1381,13 @@ static int process_sins(HANDLE dev, FILE *a, char *path, char *outfolder, char *
 		bytes_read = fread(buff, 1, 512, a);
 
 		if (bytes_read < 512) {
-			printf(" - Short read on %s: expected 512, got %d\n", path, (int)bytes_read);
+			printf(" - Short read on %s: expected 512, got %d\n", filename, (int)bytes_read);
 			return 0;
 		}
 
 		if (is_end_of_archive(buff))
 		{
-			printf(" - End of %s\n", basenamee(path));
+			printf(" - End of %s\n", basenamee(filename));
 			return 1;
 		}
 
@@ -1421,7 +1421,7 @@ static int process_sins(HANDLE dev, FILE *a, char *path, char *outfolder, char *
 				break;
 			default:
 				memset(tmpg, 0, sizeof(tmpg));
-				memcpy(tmpg, path, strlen(path)-4);
+				memcpy(tmpg, filename, strlen(filename)-4);
 				snprintf(tmpp, sizeof(tmpp), "%s/%s", outfolder, buff);
 				printf(" - %s %s\n", (i == 0) ? "Extracting signature" : "Extracting sparse chunk", tmpp);
 				i += 1;
@@ -1434,7 +1434,7 @@ static int process_sins(HANDLE dev, FILE *a, char *path, char *outfolder, char *
 		{
 			bytes_read = fread(buff, 1, 512, a);
 			if (bytes_read < 512) {
-				printf(" - Short read on %s: Expected 512, got %d\n", path, (int)bytes_read);
+				printf(" - Short read on %s: Expected 512, got %d\n", filename, (int)bytes_read);
 				return 0;
 			}
 
@@ -3121,54 +3121,69 @@ int main(int argc, char *argv[])
 #else
 							snprintf(sinfil, sizeof(sinfil), "./partition/%s", ep->d_name);
 #endif
-							fi = fopen64(sinfil, "rb");
-							if (fi == NULL) {
-								printf(" - unable to open %s!\n", sinfil);
+							if (!strlen(sinfil)) {
+								printf("Oops!!! Sinfile name empty!\n");
 								ret = 1;
 								goto getoutofflashing;
 							}
-							fseeko64(fi, 0, SEEK_SET);
-							fread_unus_res(file_format, 1, 2, fi);
-							if(fi) fclose(fi);
 
-							if (memcmp(file_format, "\x1F\x8B", 2) == 0)
-							{
-							   	FILE *a = NULL;
-#ifdef _WIN32
-								snprintf(fld, sizeof(fld), "%s\\partition\\converted.file", working_path);
-#else
-								snprintf(fld, sizeof(fld), "./partition/converted.file");
-#endif
-								if (gunziper(sinfil, fld))
-								{
-									ret = 1;
-									goto getoutofflashing;
-								}
-
-								a = fopen64(fld, "rb");
-								if (a == NULL)
-								{
-									printf(" - Unable to open %s\n", fld);
-								}
-								else
-								{
-									if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
-									{
-										fclose(a);
-										remove(fld);
-										closedir(dir);
-										goto getoutofflashing;
-									}
-									fclose(a);
-								}
-
-								remove(fld);
+							if (strstr(sinfil, "partition") == NULL) {
+								printf("Oops!! Found non partition sin file!\n");
+								printf("Please read instructions carefully if you no want brick!\n");
+								printf("Skipping non partition %s file.\n", sinfil);
+								sin_found = 0;
 							}
 							else
 							{
-								printf(" - %s is usuported format!\n", fld);
-								ret = 1;
-								goto getoutofflashing;
+								fi = fopen64(sinfil, "rb");
+								if (fi == NULL) {
+									printf(" - unable to open %s!\n", sinfil);
+									ret = 1;
+									goto getoutofflashing;
+								}
+								fseeko64(fi, 0, SEEK_SET);
+								fread_unus_res(file_format, 1, 2, fi);
+								if (fi) fclose(fi);
+
+								if (memcmp(file_format, "\x1F\x8B", 2) == 0)
+								{
+									FILE *a = NULL;
+#ifdef _WIN32
+									snprintf(fld, sizeof(fld), "%s\\partition\\converted.file", working_path);
+#else
+									snprintf(fld, sizeof(fld), "./partition/converted.file");
+#endif
+									if (gunziper(sinfil, fld))
+									{
+										ret = 1;
+										goto getoutofflashing;
+									}
+
+									a = fopen64(fld, "rb");
+									if (a == NULL)
+									{
+										printf(" - Unable to open %s\n", fld);
+									}
+									else
+									{
+										if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+										{
+											fclose(a);
+											remove(fld);
+											closedir(dir);
+											goto getoutofflashing;
+										}
+										fclose(a);
+									}
+
+									remove(fld);
+								}
+								else
+								{
+									printf(" - %s is usuported format!\n", fld);
+									ret = 1;
+									goto getoutofflashing;
+								}
 							}
 						}
 					}
@@ -3183,9 +3198,7 @@ int main(int argc, char *argv[])
 		printf("You must extract partition.zip into 'partition' folder if you want flash partition image!\n");
 	}
 	else
-	{
 		something_flashed = 1;
-	}
 
 /*=======================================  process .sin files  =======================================*/
 
@@ -3240,6 +3253,12 @@ int main(int argc, char *argv[])
 #else
 							snprintf(sinfil, sizeof(sinfil), "./%s", ep->d_name);
 #endif
+							if (!strlen(sinfil)) {
+								printf("Oops!!! Sinfile name empty!\n");
+								ret = 1;
+								goto getoutofflashing;
+							}
+
 							fi = fopen64(sinfil, "rb");
 							if (fi == NULL) {
 								printf(" - unable to open %s!\n", sinfil);
@@ -3248,7 +3267,7 @@ int main(int argc, char *argv[])
 							}
 							fseeko64(fi, 0, SEEK_SET);
 							fread_unus_res(file_format, 1, 2, fi);
-							if(fi) fclose(fi);
+							if (fi) fclose(fi);
 
 							if (memcmp(file_format, "\x1F\x8B", 2) == 0)
 							{
@@ -3322,7 +3341,7 @@ int main(int argc, char *argv[])
 							sin_found = 1;
 							printf("\n");
 
-                                   if (!proced_ta_file(ep->d_name, dev))
+							if (!proced_ta_file(ep->d_name, dev))
 							{
 								closedir(dir);
 								ret = 1;
@@ -3356,9 +3375,8 @@ int main(int argc, char *argv[])
 	} else
 		printf("Found boot_delivery.xml in boot folder.\n");
 
-	if (!parse_xml(sinfil)) {
- 			goto getoutofflashing;
-	}
+	if (!parse_xml(sinfil))
+		goto getoutofflashing;
 
 	if (!strlen(bootdelivery_version)) {
 		printf(" - Unable to determine boot delivery version, skipping bootdelivery.\n");
@@ -3369,13 +3387,11 @@ int main(int argc, char *argv[])
 	printf(" - Verifying if boot delivery match with device...\n");
 
 	if (strstr(default_security, "OFF") != NULL)
-	{
 		snprintf(searchfor, sizeof(searchfor), "DEFAULT_SECURITY=\"OFF\"");
-	}
 	else
 	{
 		memcpy(platform_id, "00", 2);
-             snprintf(searchfor, sizeof(searchfor), "PLATFORM_ID=\"%s\";PLF_ROOT_HASH=\"%s\"", platform_id, get_root_key_hash);
+		snprintf(searchfor, sizeof(searchfor), "PLATFORM_ID=\"%s\";PLF_ROOT_HASH=\"%s\"", platform_id, get_root_key_hash);
 	}
 
 	printf("      searching for: %s\n", searchfor);
@@ -3386,7 +3402,7 @@ int main(int argc, char *argv[])
 		{
 			if (strlen(bootdelivery_xml[i][j]) != 0)
 			{
-                       if (j == 2)
+				if (j == 2)
 				{
 					/*printf("%d: %s\n", j, bootdelivery_xml[i][1]);*/
 					if (strstr(bootdelivery_xml[i][1], searchfor) != NULL)
@@ -3417,53 +3433,68 @@ int main(int argc, char *argv[])
 #else
 						snprintf(sinfil, sizeof(sinfil), "./boot/%s", bootdelivery_xml[i][j]);
 #endif
-						fi = fopen64(sinfil, "rb");
-						if (fi == NULL) {
-							printf(" - unable to open %s!\n", sinfil);
+
+						if (!strlen(sinfil)) {
+							printf("Oops!!! Sinfile name empty!\n");
 							ret = 1;
 							goto getoutofflashing;
 						}
-						fseeko64(fi, 0, SEEK_SET);
-						fread_unus_res(file_format, 1, 2, fi);
-						if(fi) fclose(fi);
 
-						if (memcmp(file_format, "\x1F\x8B", 2) == 0)
-						{
-						   	FILE *a = NULL;
-#ifdef _WIN32
-							snprintf(fld, sizeof(fld), "%s\\boot\\converted.file", working_path);
-#else
-							snprintf(fld, sizeof(fld), "./boot/converted.file");
-#endif
-							if (gunziper(sinfil, fld))
-							{
-								ret = 1;
-								goto getoutofflashing;
-							}
-
-							a = fopen64(fld, "rb");
-							if (a == NULL)
-							{
-								printf(" - Unable to open %s\n", fld);
-							}
-							else
-							{
-								if (!process_sins(dev, a, sinfil, "boot", "flash"))
-								{
-									fclose(a);
-									remove(fld);
-									goto getoutofflashing;
-								}
-								fclose(a);
-							}
-
-							remove(fld);
+						if (strstr(sinfil, "bootloader") == NULL) {
+							printf("Oops!! Found non bootloader sin file!\n");
+							printf("Please read instructions carefully if you no want brick!\n");
+							printf("Skipping non bootloader %s file.\n", sinfil);
 						}
 						else
 						{
-							printf(" - %s is unsupported format!\n", fld);
-							ret = 1;
-							goto getoutofflashing;
+							fi = fopen64(sinfil, "rb");
+							if (fi == NULL) {
+								printf(" - unable to open %s!\n", sinfil);
+								ret = 1;
+								goto getoutofflashing;
+							}
+							fseeko64(fi, 0, SEEK_SET);
+							fread_unus_res(file_format, 1, 2, fi);
+							if (fi) fclose(fi);
+
+							if (memcmp(file_format, "\x1F\x8B", 2) == 0)
+							{
+								FILE *a = NULL;
+#ifdef _WIN32
+								snprintf(fld, sizeof(fld), "%s\\boot\\converted.file", working_path);
+#else
+								snprintf(fld, sizeof(fld), "./boot/converted.file");
+#endif
+								if (gunziper(sinfil, fld))
+								{
+									ret = 1;
+									goto getoutofflashing;
+								}
+
+								a = fopen64(fld, "rb");
+								if (a == NULL)
+								{
+									printf(" - Unable to open %s\n", fld);
+								}
+								else
+								{
+									if (!process_sins(dev, a, sinfil, "boot", "flash"))
+									{
+										fclose(a);
+										remove(fld);
+										goto getoutofflashing;
+									}
+									fclose(a);
+								}
+
+								remove(fld);
+							}
+							else
+							{
+								printf(" - %s is unsupported format!\n", fld);
+								ret = 1;
+								goto getoutofflashing;
+							}
 						}
 					}
 				}
@@ -3471,7 +3502,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-     if (!bootdelivery_found)
+	if (!bootdelivery_found)
 		printf("Didn't found bootdelivery that match your device!\n");
 	else
 		something_flashed = 1;
