@@ -1420,15 +1420,9 @@ static int process_sins(HANDLE dev, FILE *a, char *path, char *outfolder, char *
 				printf(" - Ignoring FIFO %s\n", buff);
 				break;
 			default:
-				if (i == 0) {
-					memset(tmpg, 0, sizeof(tmpg));
-					memcpy(tmpg, path, strlen(path)-4);
-					snprintf(tmpp, sizeof(tmpp), "%s/%s", outfolder, buff);
-				} else {
-					memset(tmpg, 0, sizeof(tmpg));
-					memcpy(tmpg, path, strlen(path)-4);
-					snprintf(tmpp, sizeof(tmpp), "%s/%s", outfolder, buff);
-				}
+				memset(tmpg, 0, sizeof(tmpg));
+				memcpy(tmpg, path, strlen(path)-4);
+				snprintf(tmpp, sizeof(tmpp), "%s/%s", outfolder, buff);
 				printf(" - %s %s\n", (i == 0) ? "Extracting signature" : "Extracting sparse chunk", tmpp);
 				i += 1;
 				f = create_file(tmpp, parseoct(buff + 100, 8));
