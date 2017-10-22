@@ -2601,9 +2601,8 @@ int main(int argc, char *argv[])
 #endif
 /*==========================================  dump trim area  ========================================*/
 #if 1
-	printf("\nOptional and experimental step! Type 'y' and press enter if you want to try dump trim area, or type 'n' to skip.\n");
-	printf("Do in mind this might not work at all!\n");
-	printf("Also this is not a full trim area dump! Notify @munjeni on xda if you have any question about this!\n");
+	printf("\nOptional step! Type 'y' and press ENTER if you want dump trim area, or type 'n' and press ENTER to skip.\n");
+	printf("Do in mind this doesn dump drm key since sake authentifiction is need for that!\n");
 	scanf("%c", &ch);
 	if (ch == 'y' || ch == 'Y')
 	{
@@ -2682,7 +2681,7 @@ int main(int argc, char *argv[])
 							fprintf(dump, "%08X %04lX", j, get_reply_len);
 							for (k=0; k < get_reply_len; ++k)
 								fprintf(dump, " %02X", tmp_reply[k] & 0xff);
-							fprintf(dump, "\n");
+							fprintf(dump, "\n\n");
 						}
 
 						free(tmp_reply);
