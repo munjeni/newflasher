@@ -2524,7 +2524,7 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("--------------------------------------------------------\n");
-	printf("              %s v5 by Munjeni @ 2017              \n", progname);
+	printf("              %s v6 by Munjeni @ 2017              \n", progname);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
@@ -2666,7 +2666,7 @@ int main(int argc, char *argv[])
 						break;
 					}
 
-					if ((tmp_reply = get_reply(dev, EP_IN, unit_store, 0x20000, USB_TIMEOUT, 0, 0)) == NULL) {
+					if ((tmp_reply = get_reply(dev, EP_IN, unit_store, 0x20000, USB_TIMEOUT, 0, 1)) == NULL) {
 						fprintf(dump_log, "Error, no DATA reply on partition: %d, unit: 0x%X !\n", i, j);
 					}
 					else
