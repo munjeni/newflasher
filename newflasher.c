@@ -2524,7 +2524,7 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("--------------------------------------------------------\n");
-	printf("              %s v4 by Munjeni @ 2017              \n", progname);
+	printf("              %s v5 by Munjeni @ 2017              \n", progname);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
@@ -2635,18 +2635,38 @@ int main(int argc, char *argv[])
 
 			for (j=0; j<70000; ++j)
 			{
-				char gt[16];
-				snprintf(gt, sizeof(gt), "Read-TA:%d:%d", i, j);
+				char *gt = NULL;
+				char *unit_store = NULL;
+
+				if ((gt = (char *)malloc(16)) == NULL) {
+					fprintf(dump_log, "Error malloc gt!\n");
+					break;
+				}
+
+				snprintf(gt, 16, "Read-TA:%d:%d", i, j);
+
+				if (j % 500)
+					printf(".");
+
+				if (j % 30000)
+					printf("\n");
 
 				if (transfer_bulk_async(dev, EP_OUT, gt, strlen(gt), USB_TIMEOUT, 1) < 1) {
 					fwrite(gt, 1, strlen(gt), dump_log);
-					fprintf(dump_log, "Error RT!\n");
+					fprintf(dump_log, "Error %s !\n", gt);
 					i=3;
+					free(gt);
 					break;
 				}
 				else
 				{
-					if ((tmp_reply = get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0, 1)) == NULL) {
+					if ((unit_store = (char *)malloc(0x20000)) == NULL) {
+						fprintf(dump_log, "Error malloc unit store!\n");
+						free(gt);
+						break;
+					}
+
+					if ((tmp_reply = get_reply(dev, EP_IN, unit_store, 0x20000, USB_TIMEOUT, 0, 0)) == NULL) {
 						fprintf(dump_log, "Error, no DATA reply on partition: %d, unit: 0x%X !\n", i, j);
 					}
 					else
@@ -2664,8 +2684,12 @@ int main(int argc, char *argv[])
 								fprintf(dump, " %02X", tmp_reply[k] & 0xff);
 							fprintf(dump, "\n");
 						}
+
+						free(tmp_reply);
 					}
-					free(tmp_reply);
+
+					free(gt);
+					free(unit_store);
 				}
 			}
 
@@ -3696,3 +3720,4 @@ pauza:
 #endif
 	return ret;
 }
+
