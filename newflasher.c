@@ -1553,7 +1553,7 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *outfolder, ch
 				printf("      WARNING WARNING WARNING!!! IGNORE OUR WARNING ONLY IN CASE YOUR BOOTLOADER IS UNLOCKED!\n");
 				printf("      IN CASE YOUR BOOTLOADER IS NOT UNLOCKED YOU MUST EXIT RIGHT NOW TO STOP FURTHER DAMAGE!!!\n");
 				printf("      Type enything and press enter for continue or type e and press enter for exit!\n");
-				scanf("%c", &ch);
+				scanf(" %c", &ch);
 				if (ch == 'e' || ch == 'E') {
 					free(tmp_reply);
 					printf("      You typed:%c, stopping right now...\n", ch);
@@ -2540,7 +2540,7 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
 	printf("\nOptional step! Type 'y' and press enter if you need GordonGate flash driver, or type 'n' to skip.\n");
 	printf("This creates GordonGate.7z archive in the same dir with %s!\n", progname);
-	scanf("%c", &ch);
+	scanf(" %c", &ch);
 	if (ch == 'y' || ch == 'Y')
 	{
 		FILE *gg = fopen("GordonGate.7z", "wb");
@@ -2604,7 +2604,7 @@ int main(int argc, char *argv[])
 	printf("\nOptional and experimental step! Type 'y' and press enter if you want to try dump trim area, or type 'n' to skip.\n");
 	printf("Do in mind this might not work at all!\n");
 	printf("Also this is not a full trim area dump! Notify @munjeni on xda if you have any question about this!\n");
-	scanf("%c", &ch);
+	scanf(" %c", &ch);
 	if (ch == 'y' || ch == 'Y')
 	{
 		FILE *dump = NULL;
