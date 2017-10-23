@@ -119,7 +119,6 @@
 #include <ctype.h>
 #endif
 
-#include "sha256.h"
 #include "expat.h"
 #include "zlib.h"
 
@@ -920,7 +919,6 @@ static char *get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int 
 {
 	static char *ret = NULL;
 	unsigned long ret_len = 0;
-	unsigned long data_ret_len = 0;
 	get_reply_len = 0;
 
 	ret_len = transfer_bulk_async(dev, ep, bytes, size, timeout, exact);
@@ -949,7 +947,7 @@ static char *get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int 
 		return ret;
 	}
 
-	if (memcmp(bytes, "OKAY", 4) == 0 ret_len > 4)
+	if (memcmp(bytes, "OKAY", 4) == 0 && ret_len > 4)
 	{
 		memcpy(ret, bytes+4, ret_len-4);
 		ret[ret_len-4] = '\0';
@@ -2435,7 +2433,7 @@ int main(int argc, char *argv[])
 							{
 								free(tmp_reply);
 								long k=0;
-								fprintf(dump, "%08X %04lX", j, unit_sz);
+								fprintf(dump, "%08X %04X", j, unit_sz);
 								for (k=0; k < unit_sz; ++k)
 									fprintf(dump, " %02X", unit_store[k] & 0xff);
 								fprintf(dump, "\n\n");
