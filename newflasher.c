@@ -2417,14 +2417,14 @@ int main(int argc, char *argv[])
 							free(tmp_reply);
 
 							if ((tmp_reply = get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0)) == NULL) {
-								fprintf(dump_log, "Error retrieving OKEY reply on partition: %d, unit: 0x%X !\n", i, j);
+								fprintf(dump_log, "Error retrieving OKAY reply on partition: %d, unit: 0x%X !\n", i, j);
 								free(unit_store);
 								break;
 							}
 
-							if (strstr(tmp_reply, "OKEY") == NULL)
+							if (strstr(tmp_reply, "OKAY") == NULL)
 							{
-								fprintf(dump_log, "Error, no OKEY reply on partition: %d, unit: 0x%X !\n", i, j);
+								fprintf(dump_log, "Error, no OKAY reply on partition: %d, unit: 0x%X !\n", i, j);
 								free(tmp_reply);
 								free(unit_store);
 								break;
@@ -2817,8 +2817,8 @@ int main(int argc, char *argv[])
 		goto endflashing;
 	}
 
-	if (memcmp(tmp_reply, "OKEY", 4) != 0) {
-		printf(" - Error, no OKEY reply!\n");
+	if (memcmp(tmp_reply, "OKAY", 4) != 0) {
+		printf(" - Error, no OKAY reply!\n");
 		free(tmp_reply);
 		ret = 1;
 		goto endflashing;
