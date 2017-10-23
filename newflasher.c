@@ -922,16 +922,10 @@ static char *get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int 
 	get_reply_len = 0;
 
 	ret_len = transfer_bulk_async(dev, ep, bytes, size, timeout, exact);
+	/*display_buffer_hex_ascii("Replied with ", bytes, ret_len);*/
 
-	if (ret_len < 4) {
-		printf(" - Error reply: less than 4!\n");
-		display_buffer_hex_ascii("Raw input", bytes, ret_len);
-		return NULL;
-	}
-
-	if (memcmp(bytes, "OKAY", 4) != 0 && memcmp(bytes, "DATA", 4) != 0 && memcmp(bytes, "FAIL", 4) != 0) {
-		printf(" - Error reply! Device didn't replied with OKAY or DATA or FAIL\n");
-		display_buffer_hex_ascii("Replied with ", bytes, ret_len);
+	if (!ret_len) {
+		printf(" - Error reply: null!\n");
 		return NULL;
 	}
 
@@ -940,42 +934,50 @@ static char *get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int 
 		return NULL;
 	}
 
-	if ((memcmp(bytes, "OKAY", 4) == 0 || memcmp(bytes, "FAIL", 4) == 0) && ret_len == 4) {
-		memcpy(ret, bytes, ret_len);
-		ret[ret_len] = '\0';
-		get_reply_len = ret_len;
-		return ret;
-	}
-
-	if (memcmp(bytes, "OKAY", 4) == 0 && ret_len > 4)
+	if (ret_len >= 4)
 	{
-		memcpy(ret, bytes+4, ret_len-4);
-		ret[ret_len-4] = '\0';
-		get_reply_len = ret_len-4;
-		return ret;
+
+		if ((memcmp(bytes, "OKAY", 4) == 0 || memcmp(bytes, "FAIL", 4) == 0) && ret_len == 4) {
+			memcpy(ret, bytes, ret_len);
+			ret[ret_len] = '\0';
+			get_reply_len = ret_len;
+			return ret;
+		}
+
+		if (memcmp(bytes, "OKAY", 4) == 0 && ret_len > 4)
+		{
+			memcpy(ret, bytes+4, ret_len-4);
+			ret[ret_len-4] = '\0';
+			get_reply_len = ret_len-4;
+			return ret;
+		}
+
+		if (memcmp(bytes, "FAIL", 4) == 0 && ret_len > 4) {
+			memcpy(ret, bytes, ret_len);
+			ret[ret_len] = '\0';
+			get_reply_len = ret_len;
+			return ret;
+		}
+
+		if (memcmp(bytes, "DATA", 4) == 0 && ret_len != 12)
+		{
+			printf(" - Errornous DATA reply!\n");
+			display_buffer_hex_ascii("Replied with ", bytes, ret_len);
+			return NULL;
+		}
+
+		if (memcmp(bytes, "DATA", 4) == 0 && ret_len == 12)
+		{
+			memcpy(ret, bytes, ret_len);
+			ret[ret_len] = '\0';
+			get_reply_len = ret_len;
+			return ret;
+		}
 	}
 
-	if (memcmp(bytes, "FAIL", 4) == 0 && ret_len > 4) {
-		memcpy(ret, bytes, ret_len);
-		ret[ret_len] = '\0';
-		get_reply_len = ret_len;
-		return ret;
-	}
-
-	if (memcmp(bytes, "DATA", 4) == 0 && (ret_len == 4 || ret_len != 12))
-	{
-		printf(" - Errornous DATA reply!\n");
-		display_buffer_hex_ascii("Replied with ", bytes, ret_len);
-		return NULL;
-	}
-
-	if (memcmp(bytes, "DATA", 4) == 0 && ret_len == 12)
-	{
-		memcpy(ret, bytes, ret_len);
-		ret[ret_len] = '\0';
-		get_reply_len = ret_len;
-		return ret;
-	}
+	memcpy(ret, bytes, ret_len);
+	ret[ret_len] = '\0';
+	get_reply_len = ret_len;
 
 	return ret;
 }
@@ -2807,6 +2809,7 @@ int main(int argc, char *argv[])
 	}
 
 	memset(get_root_key_hash, 0, sizeof(get_root_key_hash));
+
 	if (get_reply_len != 0x20) {
 		printf("Error receiving root key hash!\n");
 		free(tmp_reply);
