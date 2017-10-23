@@ -17,23 +17,23 @@ default:newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflashe
 
 newflasher.exe:
 	${WINDRES} newflasher.rc -O coff -o newflasher.res
-	${CCWIN} ${CFLAGS} sha256.c newflasher.c newflasher.res -o newflasher.exe -lsetupapi -lzwin -lexpat.win
+	${CCWIN} ${CFLAGS} newflasher.c newflasher.res -o newflasher.exe -lsetupapi -lzwin -lexpat.win
 	${CCWINSTRIP} newflasher.exe
 
 newflasher.x64:
-	${CC} ${CFLAGS} sha256.c newflasher.c -o newflasher.x64 -lz64 -lexpat.x64
+	${CC} ${CFLAGS} newflasher.c -o newflasher.x64 -lz64 -lexpat.x64
 	${STRIP} newflasher.x64
 
 newflasher.i386:
-	${CC} ${CFLAGS} -m32 sha256.c newflasher.c -o newflasher.i386 -lz32 -lexpat.i386
+	${CC} ${CFLAGS} -m32 newflasher.c -o newflasher.i386 -lz32 -lexpat.i386
 	${STRIP} newflasher.i386
 
 newflasher.arm32:
-	${ARMCC} ${CFLAGS} sha256.c newflasher.c -o newflasher.arm32 -lzarm32 -lexpat.arm32
+	${ARMCC} ${CFLAGS} newflasher.c -o newflasher.arm32 -lzarm32 -lexpat.arm32
 	${ARMSTRIP} newflasher.arm32
 
 newflasher.arm64:
-	${ARMCC64} ${CFLAGS} sha256.c newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
+	${ARMCC64} ${CFLAGS} newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
 	${ARMSTRIP64} newflasher.arm64
 
 clean:
