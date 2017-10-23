@@ -1665,8 +1665,19 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *outfolder, ch
 			}
 
 			/* flash: */
-			snprintf(command, sizeof(command), "%s:%s", endcommand, flashfile);
-			printf("      %s\n", command);
+
+			/* Oreo changed partition image name, so this is a quick fix */
+			if (memcmp(encommand, "Repartition", 11) == 0 && strstr(flashfile, "partitionimage_") != NULL) {
+				char renamed[64];
+				sscanf(flashfile, "partitionimage_%s", renamed);
+				snprintf(command, sizeof(command), "%s:%s", endcommand, renamed);
+				printf("      %s\n", command);
+			}
+			else
+			{
+				snprintf(command, sizeof(command), "%s:%s", endcommand, flashfile);
+				printf("      %s\n", command);
+			}
 
 			if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
 				printf("      Error writing %s!\n", command);
