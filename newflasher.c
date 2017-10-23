@@ -1667,7 +1667,7 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *outfolder, ch
 			/* flash: */
 
 			/* Oreo changed partition image name, so this is a quick fix */
-			if (memcmp(encommand, "Repartition", 11) == 0 && strstr(flashfile, "partitionimage_") != NULL) {
+			if (memcmp(endcommand, "Repartition", 11) == 0 && strstr(flashfile, "partitionimage_") != NULL) {
 				char renamed[64];
 				sscanf(flashfile, "partitionimage_%s", renamed);
 				snprintf(command, sizeof(command), "%s:%s", endcommand, renamed);
