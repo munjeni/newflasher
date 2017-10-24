@@ -2267,7 +2267,7 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("--------------------------------------------------------\n");
-	printf("              %s v7 by Munjeni @ 2017              \n", progname);
+	printf("              %s v8 by Munjeni @ 2017              \n", progname);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
@@ -2374,30 +2374,36 @@ int main(int argc, char *argv[])
 
 				if ((gt = (char *)malloc(16)) == NULL) {
 					fprintf(dump_log, "Error malloc gt!\n");
-					break;
+					fclose(dump_log);
+					fclose(dump);
+					goto endflashing;
 				}
 
 				snprintf(gt, 16, "Read-TA:%d:%d", i, j);
 
-				if (j % 500)
+				if ((j % 500) == 0)
 					printf(".");
 
-				if (j % 30000)
+				if ((j % 30000) == 0)
 					printf("\n");
 
 				if (transfer_bulk_async(dev, EP_OUT, gt, strlen(gt), USB_TIMEOUT, 1) < 1) {
 					fwrite(gt, 1, strlen(gt), dump_log);
 					fprintf(dump_log, "Error %s !\n", gt);
-					i=3;
 					free(gt);
-					break;
+					fclose(dump_log);
+					fclose(dump);
+					goto endflashing;
 				}
 				else
 				{
 					free(gt);
+					/* if any reply */
 					if ((tmp_reply = get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) == NULL) {
 						fprintf(dump_log, "Error, no reply on partition: %d, unit: 0x%X !\n", i, j);
-						break;
+						fclose(dump_log);
+						fclose(dump);
+						goto endflashing;
 					}
 
 					if (memcmp(tmp_reply, "FAIL", 4) == 0) {
@@ -2407,23 +2413,39 @@ int main(int argc, char *argv[])
 					}
 					else
 					{
-						sscanf(tmp_reply+4, "%u", &unit_sz);
+						/* DATA reply */
+						if (get_reply_len != 12) {
+							fprintf(dump_log, "Errornous DATA reply!\n");
+							display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+							free(tmp_reply);
+							fclose(dump_log);
+							fclose(dump);
+							goto endflashing;
+						}
+
+						sscanf(tmp_reply+4, "%08x", &unit_sz);
 						free(tmp_reply);
 
 						if (!unit_sz) {
 							fprintf(dump_log, "Error, read unit_sz on partition: %d, unit: 0x%X!\n", i, j);
-							break;
+							fclose(dump_log);
+							fclose(dump);
+							goto endflashing;
 						}
 
 						if ((unit_store = (char *)malloc(unit_sz+1)) == NULL) {
 							fprintf(dump_log, "Error malloc unit store!\n");
-							break;
+							fclose(dump_log);
+							fclose(dump);
+							goto endflashing;
 						}
 
 						if ((tmp_reply = get_reply(dev, EP_IN, unit_store, unit_sz, USB_TIMEOUT, 1)) == NULL) {
 							fprintf(dump_log, "Error retrieving unit data on partition: %d, unit: 0x%X !\n", i, j);
 							free(unit_store);
-							break;
+							fclose(dump_log);
+							fclose(dump);
+							goto endflashing;
 						}
 						else
 						{
@@ -2432,7 +2454,9 @@ int main(int argc, char *argv[])
 							if ((tmp_reply = get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0)) == NULL) {
 								fprintf(dump_log, "Error retrieving OKAY reply on partition: %d, unit: 0x%X !\n", i, j);
 								free(unit_store);
-								break;
+								fclose(dump_log);
+								fclose(dump);
+								goto endflashing;
 							}
 
 							if (strstr(tmp_reply, "OKAY") == NULL)
@@ -2440,7 +2464,9 @@ int main(int argc, char *argv[])
 								fprintf(dump_log, "Error, no OKAY reply on partition: %d, unit: 0x%X !\n", i, j);
 								free(tmp_reply);
 								free(unit_store);
-								break;
+								fclose(dump_log);
+								fclose(dump);
+								goto endflashing;
 							}
 							else
 							{
