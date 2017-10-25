@@ -2267,7 +2267,7 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("--------------------------------------------------------\n");
-	printf("              %s v9 by Munjeni @ 2017              \n", progname);
+	printf("              %s v10 by Munjeni @ 2017              \n", progname);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
@@ -2424,8 +2424,30 @@ int main(int argc, char *argv[])
 						sscanf(tmp_reply+4, "%08x", &unit_sz);
 						free(tmp_reply);
 
-						if (!unit_sz) {
+						/* some units is with null size, so we catch it too! */
+						if (!unit_sz)
+						{
+							if ((tmp_reply = get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) == NULL) {
+								fprintf(dump_log, "Error retrieving OKAY reply on partition: %d, unit: 0x%X !\n", i, j);
+								free(unit_store);
+								fclose(dump_log);
+								fclose(dump);
+								goto endflashing;
+							}
+
+							if (strstr(tmp_reply, "OKAY") == NULL)
+							{
+								fprintf(dump_log, "Error, no OKAY reply on partition: %d, unit: 0x%X !\n", i, j);
+								display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
+								free(tmp_reply);
+								free(unit_store);
+								fclose(dump_log);
+								fclose(dump);
+								goto endflashing;
+							}
+
 							fprintf(dump, "%08X 0000\n\n", j);
+							free(tmp_reply);
 							continue;
 						}
 
