@@ -6,7 +6,7 @@ This *experimental* software allows you to flash firmwares acquired through [Xpe
 - Run Newflasher. Everything inside the folder will be flashed, so remember to remove files you don't want on your device beforehand. 
 
 ### Build
-`make newflasher.[exe/x64/i386/arm32/arm64]`, exe referring to a Windows build, the rest being for Linux. 
+`make newflasher.[exe/x64/i386/arm32/arm64]`, exe referring to a Windows build, the rest being for Linux and Android. 
 
 ### Discussion
 [XDA Thread](https://forum.xda-developers.com/crossdevice-dev/sony/progress-newflasher-xperia-command-line-t3619426). 
