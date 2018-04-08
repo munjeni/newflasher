@@ -170,6 +170,9 @@ static char s1_root[64];
 static char sake_root[16];
 static char get_root_key_hash[0x41];
 
+static char slot_count[2];
+static char current_slot[2];
+
 static unsigned int something_flashed = 0;
 
 unsigned int swap_uint32(unsigned int val) {
@@ -1331,6 +1334,7 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *outfolder, ch
 	char command[64];
 	char flashfile[256];
 	char *tmp_reply = NULL;
+	int have_slot=0;
 
 	printf(" - Extracting from %s\n", basenamee(filename));
 
@@ -1635,7 +1639,55 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *outfolder, ch
 			{
 				if (memcmp(endcommand, "flash", 5) == 0)
 				{
-					snprintf(command, sizeof(command), "erase:%s", flashfile);
+					if (memcmp(current_slot, "a", 1) == 0 || memcmp(current_slot, "b", 1) == 0)
+					{
+						snprintf(command, sizeof(command), "getvar:has-slot:%s", flashfile);
+						if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
+							printf(" - Error writing command %s!\n", command);
+							return 0;
+						}
+
+						if ((tmp_reply = get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) == NULL) {
+							printf("      Error, no %s reply!\n", command);
+							return 0;
+						}
+
+						if (memcmp(tmp_reply, "yes", 3) == 0)
+						{
+							printf("      Partition: %s have slot: %s\n", flashfile, tmp_reply);
+
+							if (strstr(basenamee(filename), "_other_") != NULL)
+							{
+								if (memcmp(current_slot, "a", 1) == 0)
+									snprintf(command, sizeof(command), "erase:%s_b", flashfile);
+
+								if (memcmp(current_slot, "b", 1) == 0)
+									snprintf(command, sizeof(command), "erase:%s_a", flashfile);
+							}
+							else
+							{
+								if (memcmp(current_slot, "a", 1) == 0)
+									snprintf(command, sizeof(command), "erase:%s_a", flashfile);
+
+								if (memcmp(current_slot, "b", 1) == 0)
+									snprintf(command, sizeof(command), "erase:%s_b", flashfile);
+
+							}
+
+							have_slot = 1;
+						}
+						else
+						{
+							snprintf(command, sizeof(command), "erase:%s", flashfile);
+						}
+
+						free(tmp_reply);
+					}
+					else
+					{
+						snprintf(command, sizeof(command), "erase:%s", flashfile);
+					}
+
 					printf("      %s\n", command);
 
 					if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
@@ -1677,7 +1729,40 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *outfolder, ch
 			}
 			else
 			{
-				snprintf(command, sizeof(command), "%s:%s", endcommand, flashfile);
+
+				if (memcmp(current_slot, "a", 1) == 0 || memcmp(current_slot, "b", 1) == 0)
+				{
+
+					if (have_slot)
+					{
+						if (strstr(basenamee(filename), "_other_") != NULL)
+						{
+							if (memcmp(current_slot, "a", 1) == 0)
+								snprintf(command, sizeof(command), "%s:%s_b", endcommand, flashfile);
+
+							if (memcmp(current_slot, "b", 1) == 0)
+								snprintf(command, sizeof(command), "%s:%s_a", endcommand, flashfile);
+						}
+						else
+						{
+							if (memcmp(current_slot, "a", 1) == 0)
+								snprintf(command, sizeof(command), "%s:%s_a", endcommand, flashfile);
+
+							if (memcmp(current_slot, "b", 1) == 0)
+								snprintf(command, sizeof(command), "%s:%s_b", endcommand, flashfile);
+						}
+					}
+					else
+					{
+						snprintf(command, sizeof(command), "%s:%s", endcommand, flashfile);
+					}
+
+					free(tmp_reply);
+				}
+				else
+				{
+					snprintf(command, sizeof(command), "%s:%s", endcommand, flashfile);
+				}
 				printf("      %s\n", command);
 			}
 
@@ -2267,7 +2352,7 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("--------------------------------------------------------\n");
-	printf("              %s v10 by Munjeni @ 2017              \n", progname);
+	printf("            %s v11 by Munjeni @ 2017/2018           \n", progname);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
@@ -2279,9 +2364,12 @@ int main(int argc, char *argv[])
 		goto pauza;
 	}
 
+	memset(slot_count, 0x30, sizeof(slot_count));
+	memset(current_slot, 0x30, sizeof(current_slot));
+
 /*========================================  extract GordonGate  ======================================*/
 #ifdef _WIN32
-	printf("\nOptional step! Type 'y' and press enter if you need GordonGate flash driver, or type 'n' to skip.\n");
+	printf("\nOptional step! Type 'y' and press ENTER if you need GordonGate flash driver, or type 'n' to skip.\n");
 	printf("This creates GordonGate.7z archive in the same dir with %s!\n", progname);
 	scanf(" %c", &ch);
 	if (ch == 'y' || ch == 'Y')
@@ -2335,7 +2423,7 @@ int main(int argc, char *argv[])
 /*==========================================  dump trim area  ========================================*/
 #if 1
 	printf("\nOptional step! Type 'y' and press ENTER if you want dump trim area, or type 'n' and press ENTER to skip.\n");
-	printf("Do in mind this doesn dump drm key since sake authentifiction is need for that!\n");
+	printf("Do in mind this doesn't dump drm key since sake authentifiction is need for that!\n");
 	scanf(" %c", &ch);
 
 	if (ch == 'y' || ch == 'Y')
@@ -2877,6 +2965,31 @@ int main(int argc, char *argv[])
 
 	free(tmp_reply);
 
+	snprintf(tmp, sizeof(tmp), "getvar:slot-count");
+	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1) {
+		printf(" - Error writing command %s, ignore this error!\n", tmp);
+	}
+	else
+	{
+		if ((tmp_reply = get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) != NULL)
+		{
+			snprintf(slot_count, sizeof(slot_count), "%s", tmp_reply);
+			free(tmp_reply);
+
+			snprintf(tmp, sizeof(tmp), "getvar:current-slot");
+			if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1) {
+				printf(" - Error writing command %s, ignore this error!\n", tmp);
+			}
+			else
+			{
+				if ((tmp_reply = get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) != NULL) {
+					snprintf(current_slot, sizeof(current_slot), "%s", tmp_reply);
+					free(tmp_reply);
+				}
+			}
+		}
+	}
+
 	printf("Product: %s\n", product);
 	printf("Version: %s\n", version);
 	printf("Bootloader version: %s\n", version_bootloader);
@@ -2898,6 +3011,9 @@ int main(int argc, char *argv[])
 	printf("Sake root: %s\n", sake_root);
 	printf("S1 root: %s\n", s1_root);
 	printf("Root key hash: %s\n", get_root_key_hash);
+
+	printf("Slot count: %s\n", slot_count);
+	printf("Current slot: %s\n", current_slot);
 
 /*======================================  put into flash mode  =======================================*/
 
@@ -3025,7 +3141,7 @@ int main(int argc, char *argv[])
 								goto getoutofflashing;
 							}
 
-							if (strstr(sinfil, "partition") == NULL) {
+							if (strstr(sinfil, "artition") == NULL) {
 								printf("Oops!! Found non partition sin file!\n");
 								printf("Please read instructions carefully if you no want brick!\n");
 								printf("Skipping non partition %s file.\n", sinfil);
@@ -3078,9 +3194,24 @@ int main(int argc, char *argv[])
 								}
 								else
 								{
-									printf(" - %s is usuported format!\n", fld);
-									ret = 1;
-									goto getoutofflashing;
+									FILE *a = NULL;
+
+									a = fopen64(sinfil, "rb");
+									if (a == NULL)
+									{
+										printf(" - Unable to open %s\n", sinfil);
+									}
+									else
+									{
+										if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+										{
+											fclose(a);
+											remove(fld);
+											closedir(dir);
+											goto getoutofflashing;
+										}
+										fclose(a);
+									}
 								}
 							}
 						}
@@ -3094,6 +3225,7 @@ int main(int argc, char *argv[])
 	if (!sin_found) {
 		printf("No .sin files in partition dir...\n");
 		printf("You must extract partition.zip into 'partition' folder if you want flash partition image!\n");
+		printf("On 2018 models you must move partition sin file to 'partition' folder if you want flash partition image!\n");
 	}
 	else
 		something_flashed = 1;
@@ -3141,7 +3273,7 @@ int main(int argc, char *argv[])
 				{
 					if ((extension = strrchr(ep->d_name, '.')) != NULL)
 					{
-						if (strcmp(extension, ".sin") == 0)
+						if (strcmp(extension, ".sin") == 0 && strstr(ep->d_name, "artition") == NULL)   /* look for .sin & skip Partition or partition sin */
 						{
 							sin_found = 1;
 							printf("\n");
@@ -3202,9 +3334,24 @@ int main(int argc, char *argv[])
 							}
 							else
 							{
-								printf(" - %s is usuported format!\n", fld);
-								ret = 1;
-								goto getoutofflashing;
+								FILE *a = NULL;
+
+								a = fopen64(sinfil, "rb");
+								if (a == NULL)
+								{
+									printf(" - Unable to open %s\n", sinfil);
+								}
+								else
+								{
+									if (!process_sins(dev, a, sinfil, "flash_session", "flash"))
+									{
+										fclose(a);
+										remove(fld);
+										closedir(dir);
+										goto getoutofflashing;
+									}
+									fclose(a);
+								}
 							}
 						}
 					}
@@ -3389,9 +3536,24 @@ int main(int argc, char *argv[])
 							}
 							else
 							{
-								printf(" - %s is unsupported format!\n", fld);
-								ret = 1;
-								goto getoutofflashing;
+								FILE *a = NULL;
+
+								a = fopen64(sinfil, "rb");
+								if (a == NULL)
+								{
+									printf(" - Unable to open %s\n", sinfil);
+								}
+								else
+								{
+									if (!process_sins(dev, a, sinfil, "boot", "flash"))
+									{
+										fclose(a);
+										remove(fld);
+										closedir(dir);
+										goto getoutofflashing;
+									}
+									fclose(a);
+								}
 							}
 						}
 					}
@@ -3405,9 +3567,49 @@ int main(int argc, char *argv[])
 	else
 		something_flashed = 1;
 
-/*=====================================  get out of flash mode  ======================================*/
 
 getoutofflashing:
+
+/*=========================================  set slot active  ========================================*/
+
+	printf("\n");
+
+	if (memcmp(current_slot, "a", 1) == 0 || memcmp(current_slot, "b", 1) == 0)
+	{
+		snprintf(tmp, sizeof(tmp), "set_active:%s", current_slot);
+
+		if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1) {
+				printf("Error writing command '%s'!\n", tmp);
+				ret = 1;
+				goto endflashing;
+		}
+
+		if ((tmp_reply = get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) == NULL) {
+			printf(" - Error, no set_active:%s OKEY reply!\n", current_slot);
+			ret = 1;
+			goto endflashing;
+		}
+
+		if (strlen(tmp_reply) < 4) {
+			printf("      Error, 'set_active:%s' reply less than 4, got: %zu bytes!\n", current_slot, strlen(tmp_reply));
+			free(tmp_reply);
+			ret = 1;
+			goto endflashing;
+		}
+
+		if (memcmp(tmp_reply, "OKAY", 4) != 0) {
+			printf("      Error, didn't got 'set_active:%s' OKAY reply! Got reply: %s\n", current_slot, tmp_reply);
+			free(tmp_reply);
+			ret = 1;
+			goto endflashing;
+		}
+
+		free(tmp_reply);
+
+		printf("Set slot '%s' active.\n", current_slot);
+	}
+
+/*=====================================  get out of flash mode  ======================================*/
 
 	printf("\n");
 
