@@ -11,7 +11,7 @@ WINDRES=i586-mingw32msvc-windres
 CC=gcc
 STRIP=strip
 
-CFLAGS=-Wall -O3 -static -I include -I expat/include -L lib -L expat/lib
+CFLAGS=-Wall -O3 -Wextra -g -static -I include -I expat/include -L lib -L expat/lib
 
 default:newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64
 
