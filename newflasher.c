@@ -2064,12 +2064,21 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 					{
 						char *unit_total_temp = NULL;
 
+						/*
+							unit 0x7d3 (2003) hardware config
+							unit 0x7da (2010) simlock
+							unit 0x851 (2129) simlock signature
+							unit 0x1324 (4900) device id
+							unit 0x1046F (66671) WHat is this? embedded roots? Unlock data?
+							unit 0x10471 (66673) protocol switch? Or keystore? What is this?
+						*/
+
 						if (memcmp(unit, "000008B2", 8) == 0 || /* unlock key */
-						    memcmp(unit, "000007D3", 8) == 0 || /* dangerous */
-						    memcmp(unit, "000007DA", 8) == 0 || /* sim lock */
-						    memcmp(unit, "00000851", 8) == 0 || /* dangerous */
+						    memcmp(unit, "000007D3", 8) == 0 || /* hardware config */
+						    memcmp(unit, "000007DA", 8) == 0 || /* simlock */
+						    memcmp(unit, "00000851", 8) == 0 || /* simlock signature */
 						    memcmp(unit, "000008A2", 8) == 0 || /* device name */
-						    memcmp(unit, "00001324", 8) == 0 || /* device sn */
+						    memcmp(unit, "00001324", 8) == 0 || /* device id */
 						    memcmp(unit, "0001046B", 8) == 0) { /* drm key */
 							printf(" - Skipping unit %X\n", unit_dec);
 							continue;
