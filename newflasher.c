@@ -1781,6 +1781,7 @@ static char bootdelivery_version[100];
 static int td1 = 0;
 static int td2 = 0;
 static int td3 = 0;
+static char partitiondelivery_xml[10][200];
 
 /* {"CONFIGURATION", "ATTRIBUTES", "BOOT_CONFIG", "BOOT_IMAGES", "emmc", "s1", "sbl1", "tz", "..."}; */
 
@@ -1788,6 +1789,7 @@ static int td3 = 0;
 static void XMLCALL start_element(void *data, const char *element, const char **attribute)
 {
 	int i;
+	int pd = 0;
 
 	/* for (i=0; i<depth; i++)
 		printf("    ");
@@ -1837,6 +1839,17 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 				if (memcmp(attribute[i], "REVISION", strlen(attribute[i])) == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
 					snprintf(bootdelivery_xml[td1][2], sizeof(bootdelivery_xml[td1][2]), "%s", attribute[i+1]);
+				}
+			}
+		}
+
+		/* partition_delivery FILE is inside depth=2 so lets read FILE directly */
+		if (memcmp(element, "FILE", strlen(element)) == 0) {
+			for (i=0; attribute[i]; i+=2) {
+				if (memcmp(attribute[i], "PATH", strlen(attribute[i])) == 0) {
+					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
+					snprintf(partitiondelivery_xml[pd], sizeof(partitiondelivery_xml[pd]), "%s", attribute[i+1]);
+					pd += 1;
 				}
 			}
 		}
@@ -3034,6 +3047,122 @@ int main(int argc, char *argv[])
 	if ((dir = opendir(tmp)) != NULL)
 	{
 		printf("Repartitioning...\n");
+
+		/* search for partition_delivery.xml */
+#ifdef _WIN32
+		snprintf(sinfil, sizeof(sinfil), "\"%s\\partition\\partition_delivery.xml\"", working_path);
+#else
+		snprintf(sinfil, sizeof(sinfil), "./partition/partition_delivery.xml");
+#endif
+
+		if (stat(sinfil, &filestat) < 0)
+		{
+			printf("partition_delivery.xml not exist in partition folder or no partition folder.\n");
+		}
+		else
+		{
+			printf("Found partition_delivery.xml in partition folder.\n");
+
+			if (!parse_xml(sinfil))
+				goto getoutofflashing;
+
+			for(i=0; i<pd; ++i)
+			{
+				printf("\n");
+				printf("Processing %s\n", partitiondelivery_xml[i]);
+#ifdef _WIN32
+				snprintf(sinfil, sizeof(sinfil), "\"%s\\partition\\%s\"", working_path, partitiondelivery_xml[i]);
+#else
+				snprintf(sinfil, sizeof(sinfil), "./partition/%s", partitiondelivery_xml[i]);
+#endif
+
+				/*
+
+
+
+
+
+				HERE I NEED TO IMPLEMENT DETECTION FOR DIFERENT LUN0 SIZE, HAVE NO FREE TIME RIGHT NOW WILL DO IT SOON
+				RIGHT NOW I HAVE ADDED partition_delivery.xml PARSER ROUTINE BUT DISABLED ITS FLASHING UNTIL RIGHT
+				IMPLEMENTATION IS DONE.
+
+
+
+
+
+				*/
+
+				fi = fopen64(sinfil, "rb");
+				if (fi == NULL) {
+					printf(" - unable to open %s!\n", sinfil);
+					sin_found = 0;
+				}
+				else
+				{
+					fseeko64(fi, 0, SEEK_SET);
+					fread_unus_res(file_format, 1, 2, fi);
+					if (fi) fclose(fi);
+					sin_found = 1;
+
+					if (memcmp(file_format, "\x1F\x8B", 2) == 0)
+					{
+						FILE *a = NULL;
+#ifdef _WIN32
+						snprintf(fld, sizeof(fld), "\"%s\\partition\\converted.file\"", working_path);
+#else
+						snprintf(fld, sizeof(fld), "./partition/converted.file");
+#endif
+						if (gunziper(sinfil, fld))
+						{
+							ret = 1;
+							goto getoutofflashing;
+						}
+
+						a = fopen64(fld, "rb");
+						if (a == NULL)
+						{
+							printf(" - Unable to open %s\n", fld);
+						}
+						else
+						{
+							//if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+							//{
+							//	fclose(a);
+							//	remove(fld);
+							//	closedir(dir);
+							//	goto getoutofflashing;
+							//}
+							fclose(a);
+						}
+
+						remove(fld);
+					}
+					else
+					{
+						FILE *a = NULL;
+
+						a = fopen64(sinfil, "rb");
+						if (a == NULL)
+						{
+							printf(" - Unable to open %s\n", sinfil);
+						}
+						else
+						{
+							//if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+							//{
+							//	fclose(a);
+							//	remove(fld);
+							//	closedir(dir);
+							//	goto getoutofflashing;
+							//}
+							fclose(a);
+						}
+					}
+				}
+			}
+		}
+
+		if (pd == 0)
 		while ((ep = readdir(dir)) != NULL)
 		{
 			/*if (ep->d_type == DT_REG)*/
@@ -3142,7 +3271,7 @@ int main(int argc, char *argv[])
 	if (!sin_found) {
 		printf("No .sin files in partition dir...\n");
 		printf("You must extract partition.zip into 'partition' folder if you want flash partition image!\n");
-		printf("On 2018 models you must move partition sin file to 'partition' folder if you want flash partition image!\n");
+		printf("On 2018 and UP models you must move partition sin files to 'partition' folder if you need flash partition images!\n");
 	}
 	else
 		something_flashed = 1;
