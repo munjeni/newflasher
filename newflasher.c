@@ -3061,13 +3061,45 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
+			uint8_t ufs_desc_sz = 0;
+			unsigned long lun0_sz = 0;
+
 			printf("Found partition_delivery.xml in partition folder.\n");
 
 			if (!parse_xml(sinfil))
 				goto getoutofflashing;
 
+			printf("Determining LUN0 size...\n");
+
+			snprintf(tmp, sizeof(tmp), "Get-ufs-info");
+			if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1) {
+				printf(" - Error writing command %s, ignore this error!\n", tmp);
+			}
+			else
+			{
+				if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) != NULL)
+				{
+					display_buffer_hex_ascii("UFS raw data", tmp_reply, get_reply_len);
+
+					memcpy(&ufs_desc_sz, tmp_reply, 1);
+					memcpy(&lun0_sz, tmp_reply + ufs_desc_sz + 0x1c, 4);
+
+					lun0_sz = swap_uint32(lun0_sz);
+					lun0_sz *= 4096;
+					lun0_sz /= 1024;
+
+					printf("LUN0 size = %lu\n", lun0_sz);
+				}
+				else
+					printf("Error determining LUN0 size!\n");
+			}
+
+			if (lun0_sz)
 			for(i=0; i<pd; ++i)
 			{
+				char lun0[10];
+				snprintf(lun0, sizeof(lun0), "%lu", lun0_sz);
+
 				printf("\n");
 				printf("Processing %s\n", partitiondelivery_xml[i]);
 #ifdef _WIN32
@@ -3075,87 +3107,73 @@ int main(int argc, char *argv[])
 #else
 				snprintf(sinfil, sizeof(sinfil), "./partition/%s", partitiondelivery_xml[i]);
 #endif
-
-				/*
-
-
-
-
-
-				HERE I NEED TO IMPLEMENT DETECTION FOR DIFERENT LUN0 SIZE, HAVE NO FREE TIME RIGHT NOW WILL DO IT SOON
-				RIGHT NOW I HAVE ADDED partition_delivery.xml PARSER ROUTINE BUT DISABLED ITS FLASHING UNTIL RIGHT
-				IMPLEMENTATION IS DONE.
-
-
-
-
-
-				*/
-
-				fi = fopen64(sinfil, "rb");
-				if (fi == NULL) {
-					printf(" - unable to open %s!\n", sinfil);
-					sin_found = 0;
-				}
-				else
+				if ((strstr(sinfil, "LUN0") != NULL && strstr(sinfil, lun0) != NULL) || strstr(sinfil, "LUN1") != NULL || strstr(sinfil, "LUN2") != NULL || strstr(sinfil, "LUN3") != NULL)
 				{
-					fseeko64(fi, 0, SEEK_SET);
-					fread_unus_res(file_format, 1, 2, fi);
-					if (fi) fclose(fi);
-					sin_found = 1;
-
-					if (memcmp(file_format, "\x1F\x8B", 2) == 0)
-					{
-						FILE *a = NULL;
-#ifdef _WIN32
-						snprintf(fld, sizeof(fld), "\"%s\\partition\\converted.file\"", working_path);
-#else
-						snprintf(fld, sizeof(fld), "./partition/converted.file");
-#endif
-						if (gunziper(sinfil, fld))
-						{
-							ret = 1;
-							goto getoutofflashing;
-						}
-
-						a = fopen64(fld, "rb");
-						if (a == NULL)
-						{
-							printf(" - Unable to open %s\n", fld);
-						}
-						else
-						{
-							//if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
-							//{
-							//	fclose(a);
-							//	remove(fld);
-							//	closedir(dir);
-							//	goto getoutofflashing;
-							//}
-							fclose(a);
-						}
-
-						remove(fld);
+					fi = fopen64(sinfil, "rb");
+					if (fi == NULL) {
+						printf(" - unable to open %s.\n", sinfil);
+						sin_found = 0;
 					}
 					else
 					{
-						FILE *a = NULL;
+						fseeko64(fi, 0, SEEK_SET);
+						fread_unus_res(file_format, 1, 2, fi);
+						if (fi) fclose(fi);
+						sin_found = 1;
 
-						a = fopen64(sinfil, "rb");
-						if (a == NULL)
+						if (memcmp(file_format, "\x1F\x8B", 2) == 0)
 						{
-							printf(" - Unable to open %s\n", sinfil);
+							FILE *a = NULL;
+#ifdef _WIN32
+							snprintf(fld, sizeof(fld), "\"%s\\partition\\converted.file\"", working_path);
+#else
+							snprintf(fld, sizeof(fld), "./partition/converted.file");
+#endif
+							if (gunziper(sinfil, fld))
+							{
+								ret = 1;
+								goto getoutofflashing;
+							}
+
+							a = fopen64(fld, "rb");
+							if (a == NULL)
+							{
+								printf(" - Unable to open %s\n", fld);
+							}
+							else
+							{
+								if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+								{
+									fclose(a);
+									remove(fld);
+									closedir(dir);
+									goto getoutofflashing;
+								}
+								fclose(a);
+							}
+
+							remove(fld);
 						}
 						else
 						{
-							//if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
-							//{
-							//	fclose(a);
-							//	remove(fld);
-							//	closedir(dir);
-							//	goto getoutofflashing;
-							//}
-							fclose(a);
+							FILE *a = NULL;
+
+							a = fopen64(sinfil, "rb");
+							if (a == NULL)
+							{
+								printf(" - Unable to open %s\n", sinfil);
+							}
+							else
+							{
+								if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+								{
+									fclose(a);
+									remove(fld);
+									closedir(dir);
+									goto getoutofflashing;
+								}
+								fclose(a);
+							}
 						}
 					}
 				}
