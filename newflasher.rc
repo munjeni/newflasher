@@ -1,21 +1,21 @@
 id ICON "newflasher.ico"
 
 1 VERSIONINFO
-FILEVERSION     13,0,0,0
-PRODUCTVERSION  13,0,0,0
+FILEVERSION     14,0,0,0
+PRODUCTVERSION  14,0,0,0
 BEGIN
   BLOCK "StringFileInfo"
   BEGIN
     BLOCK "080904E4"
     BEGIN
-      VALUE "CompanyName", "By munjeni @ 2017/2018"
+      VALUE "CompanyName", "By munjeni @ 2017/2019"
       VALUE "FileDescription", "Xperia Command Line Flasher"
-      VALUE "FileVersion", "13"
+      VALUE "FileVersion", "14"
       VALUE "InternalName", "newflasher"
       VALUE "LegalCopyright", "munjeni @ 2017"
       VALUE "OriginalFilename", "newflasher.exe"
       VALUE "ProductName", "newflasher"
-      VALUE "ProductVersion", "13"
+      VALUE "ProductVersion", "14"
     END
   END
 
