@@ -3177,6 +3177,10 @@ int main(int argc, char *argv[])
 						}
 					}
 				}
+				else
+				{
+					printf("Skipping %s\n", partitiondelivery_xml[i]);
+				}
 			}
 		}
 
