@@ -1781,6 +1781,7 @@ static char bootdelivery_version[100];
 static int td1 = 0;
 static int td2 = 0;
 static int td3 = 0;
+static int pd = 0;
 static char partitiondelivery_xml[10][200];
 
 /* {"CONFIGURATION", "ATTRIBUTES", "BOOT_CONFIG", "BOOT_IMAGES", "emmc", "s1", "sbl1", "tz", "..."}; */
@@ -1789,7 +1790,6 @@ static char partitiondelivery_xml[10][200];
 static void XMLCALL start_element(void *data, const char *element, const char **attribute)
 {
 	int i;
-	int pd = 0;
 
 	/* for (i=0; i<depth; i++)
 		printf("    ");
@@ -3061,7 +3061,7 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			uint8_t ufs_desc_sz = 0;
+			unsigned short ufs_desc_sz = 0;
 			unsigned long lun0_sz = 0;
 
 			printf("Found partition_delivery.xml in partition folder.\n");
