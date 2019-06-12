@@ -2885,14 +2885,14 @@ int main(int argc, char *argv[])
 
 	memset(get_root_key_hash, 0, sizeof(get_root_key_hash));
 
-	if (get_reply_len != 0x20) {
+	if (get_reply_len <= 0) {
 		printf("Error receiving root key hash!\n");
 		ret = 1;
 		goto endflashing;
 	}
 	else
 	{
-		for (i=0, j=0; i<0x20; ++i, j+=2) {
+		for (i=0, j=0; i<get_reply_len; ++i, j+=2) {
 			sprintf(get_root_key_hash+j, "%02X", tmp_reply[i] & 0xff);
 		}
 		get_root_key_hash[j] = '\0';
