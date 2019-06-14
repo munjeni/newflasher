@@ -528,7 +528,7 @@ struct usb_handle *get_flashmode(unsigned short VID, unsigned short PID)
 		/*printf("dirent: %p\n", de);*/
 		if (badname(de->d_name))
 			continue;
-		sprintf(busname, "%s/%s", "/dev/bus/usb", de->d_name);
+		snprintf(busname, sizeof(busname), "%s/%s", "/dev/bus/usb", de->d_name);
 		/*printf("busname: %s\n", busname);*/
 
 		devdir = opendir(busname);
@@ -536,7 +536,7 @@ struct usb_handle *get_flashmode(unsigned short VID, unsigned short PID)
 		while ((de = readdir(devdir)) && (found_usb == 0)) {
 			if (badname(de->d_name))
 				continue;
-			sprintf(devname, "%s/%s", busname, de->d_name);
+			snprintf(devname, sizeof(devname), "%s/%s", busname, de->d_name);
 			/*printf("devname: %s\n", devname);*/
 
 			if ((fd = open(devname, O_RDWR)) < 1) {
@@ -1107,12 +1107,15 @@ int inf(FILE *source, FILE *dest)
 			assert(ret != Z_STREAM_ERROR);  /* state not clobbered */
 			switch (ret) {
 				case Z_NEED_DICT:
-				ret = Z_DATA_ERROR;     /* and fall through */
+					ret = Z_DATA_ERROR;     /* and fall through */
+					break;
 				case Z_DATA_ERROR:
 				case Z_MEM_ERROR:
-				(void)inflateEnd(&strm);
-                    DisplayError(TEXT("assert(ret != Z_STREAM_ERROR)"));
-				return ret;
+					(void)inflateEnd(&strm);
+					DisplayError(TEXT("assert(ret != Z_STREAM_ERROR)"));
+					return ret;
+				default:
+					break;
 			}
 			have = CHUNK - strm.avail_out;
 			if ((have % 4294967296ULL) == 0)
@@ -2340,6 +2343,8 @@ int main(int argc, char *argv[])
 	}
 #endif
 
+	if (argc) { }
+
 	printf("--------------------------------------------------------\n");
 	printf("            %s v15 by Munjeni @ 2017/2019           \n", progname);
 	printf("--------------------------------------------------------\n");
@@ -2896,7 +2901,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		for (i=0, j=0; i<get_reply_len; ++i, j+=2) {
+		for (i=0, j=0; i < (int)get_reply_len; ++i, j+=2) {
 			sprintf(get_root_key_hash+j, "%02X", tmp_reply[i] & 0xff);
 		}
 		get_root_key_hash[j] = '\0';
