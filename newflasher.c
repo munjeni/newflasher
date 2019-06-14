@@ -1877,6 +1877,8 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 	}
 
 	depth++;
+
+	if (data) { }
 }
 
 /* decrement the current level of the tree */
@@ -1892,6 +1894,8 @@ static void XMLCALL end_element(void *data, const char *element)
 		td3 = 0;
 
 	depth--;
+
+	if (data) { }
 }
 
 static void handle_data(void *data, const char *content, int length) {
