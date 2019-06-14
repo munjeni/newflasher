@@ -3039,7 +3039,7 @@ int main(int argc, char *argv[])
 	printf("\n");
 	sin_found = 0;
 #ifdef _WIN32
-	snprintf(tmp, sizeof(tmp), "\"%s\\partition\"", working_path);
+	snprintf(tmp, sizeof(tmp), "%s\\partition", working_path);
 #else
 	snprintf(tmp, sizeof(tmp), "./partition");
 #endif
@@ -3050,7 +3050,7 @@ int main(int argc, char *argv[])
 
 		/* search for partition_delivery.xml */
 #ifdef _WIN32
-		snprintf(sinfil, sizeof(sinfil), "\"%s\\partition\\partition_delivery.xml\"", working_path);
+		snprintf(sinfil, sizeof(sinfil), "%s\\partition\\partition_delivery.xml", working_path);
 #else
 		snprintf(sinfil, sizeof(sinfil), "./partition/partition_delivery.xml");
 #endif
@@ -3103,7 +3103,7 @@ int main(int argc, char *argv[])
 				printf("\n");
 				printf("Processing %s\n", partitiondelivery_xml[i]);
 #ifdef _WIN32
-				snprintf(sinfil, sizeof(sinfil), "\"%s\\partition\\%s\"", working_path, partitiondelivery_xml[i]);
+				snprintf(sinfil, sizeof(sinfil), "%s\\partition\\%s", working_path, partitiondelivery_xml[i]);
 #else
 				snprintf(sinfil, sizeof(sinfil), "./partition/%s", partitiondelivery_xml[i]);
 #endif
@@ -3125,7 +3125,7 @@ int main(int argc, char *argv[])
 						{
 							FILE *a = NULL;
 #ifdef _WIN32
-							snprintf(fld, sizeof(fld), "\"%s\\partition\\converted.file\"", working_path);
+							snprintf(fld, sizeof(fld), "%s\\partition\\converted.file", working_path);
 #else
 							snprintf(fld, sizeof(fld), "./partition/converted.file");
 #endif
@@ -3199,7 +3199,7 @@ int main(int argc, char *argv[])
 							printf("\n");
 							printf("Processing %s\n", ep->d_name);
 #ifdef _WIN32
-							snprintf(sinfil, sizeof(sinfil), "\"%s\\partition\\%s\"", working_path, ep->d_name);
+							snprintf(sinfil, sizeof(sinfil), "%s\\partition\\%s", working_path, ep->d_name);
 #else
 							snprintf(sinfil, sizeof(sinfil), "./partition/%s", ep->d_name);
 #endif
@@ -3231,7 +3231,7 @@ int main(int argc, char *argv[])
 								{
 									FILE *a = NULL;
 #ifdef _WIN32
-									snprintf(fld, sizeof(fld), "\"%s\\partition\\converted.file\"", working_path);
+									snprintf(fld, sizeof(fld), "%s\\partition\\converted.file", working_path);
 #else
 									snprintf(fld, sizeof(fld), "./partition/converted.file");
 #endif
@@ -3347,7 +3347,7 @@ int main(int argc, char *argv[])
 							printf("\n");
 							printf("Processing %s\n", ep->d_name);
 #ifdef _WIN32
-							snprintf(sinfil, sizeof(sinfil), "\"%s\\%s\"", working_path, ep->d_name);
+							snprintf(sinfil, sizeof(sinfil), "%s\\%s", working_path, ep->d_name);
 #else
 							snprintf(sinfil, sizeof(sinfil), "./%s", ep->d_name);
 #endif
@@ -3371,7 +3371,7 @@ int main(int argc, char *argv[])
 							{
 							   	FILE *a = NULL;
 #ifdef _WIN32
-								snprintf(fld, sizeof(fld), "\"%s\\flash_session\\converted.file\"", working_path);
+								snprintf(fld, sizeof(fld), "%s\\flash_session\\converted.file", working_path);
 #else
 								snprintf(fld, sizeof(fld), "./flash_session/converted.file");
 #endif
@@ -3478,7 +3478,7 @@ int main(int argc, char *argv[])
 	printf("\n");
 	printf("Processing boot delivery...\n\n");
 #ifdef _WIN32
-	snprintf(sinfil, sizeof(sinfil), "\"%s\\boot\\boot_delivery.xml\"", working_path);
+	snprintf(sinfil, sizeof(sinfil), "%s\\boot\\boot_delivery.xml", working_path);
 #else
 	snprintf(sinfil, sizeof(sinfil), "./boot/boot_delivery.xml");
 #endif
@@ -3542,7 +3542,7 @@ int main(int argc, char *argv[])
 						printf("\n");
 						printf("Processing %s\n", bootdelivery_xml[i][j]);
 #ifdef _WIN32
-						snprintf(sinfil, sizeof(sinfil), "\"%s\\boot\\%s\"", working_path, bootdelivery_xml[i][j]);
+						snprintf(sinfil, sizeof(sinfil), "%s\\boot\\%s", working_path, bootdelivery_xml[i][j]);
 #else
 						snprintf(sinfil, sizeof(sinfil), "./boot/%s", bootdelivery_xml[i][j]);
 #endif
@@ -3574,7 +3574,7 @@ int main(int argc, char *argv[])
 							{
 								FILE *a = NULL;
 #ifdef _WIN32
-								snprintf(fld, sizeof(fld), "\"%s\\boot\\converted.file\"", working_path);
+								snprintf(fld, sizeof(fld), "%s\\boot\\converted.file", working_path);
 #else
 								snprintf(fld, sizeof(fld), "./boot/converted.file");
 #endif

@@ -4,9 +4,9 @@ ARMSTRIP=/home/savan/Desktop/gcc-linaro-5.3.1-2016.05-x86_64_arm-linux-gnueabi/b
 ARMCC64=/home/savan/Desktop/qemu/busybox-1.23.2/busybox-1.23.2/busybox-w32/buildroot-2017.02.2/output/host/usr/bin/aarch64-buildroot-linux-uclibc-gcc
 ARMSTRIP64=/home/savan/Desktop/qemu/busybox-1.23.2/busybox-1.23.2/busybox-w32/buildroot-2017.02.2/output/host/usr/bin/aarch64-buildroot-linux-uclibc-strip
 
-CCWIN=i586-mingw32msvc-gcc
-CCWINSTRIP=i586-mingw32msvc-strip
-WINDRES=i586-mingw32msvc-windres
+CCWIN=i686-w64-mingw32-gcc
+CCWINSTRIP=i686-w64-mingw32-strip
+WINDRES=i686-w64-mingw32-windres
 
 CC=gcc
 STRIP=strip
