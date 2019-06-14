@@ -3082,11 +3082,34 @@ int main(int argc, char *argv[])
 
 			snprintf(tmp, sizeof(tmp), "Get-ufs-info");
 			if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1) {
-				printf(" - Error writing command %s, ignore this error!\n", tmp);
+				printf(" - Error writing command %s!\n", tmp);
+				ret = 1;
+				goto getoutofflashing;
 			}
 			else
 			{
-				if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) != NULL)
+				if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
+					ret = 1;
+					goto getoutofflashing;
+				}
+
+				if (memcmp(tmp_reply, "DATA", 4) != 0) {
+					printf(" - Error, no DATA reply!\n");
+					ret = 1;
+					goto getoutofflashing;
+				}
+
+				if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
+					ret = 1;
+					goto getoutofflashing;
+				}
+
+				if (get_reply_len <= 0) {
+					printf("Error receiving UFS header!\n");
+					ret = 1;
+					goto getoutofflashing;
+				}
+				else
 				{
 					display_buffer_hex_ascii("UFS raw data", tmp_reply, get_reply_len);
 
@@ -3099,8 +3122,17 @@ int main(int argc, char *argv[])
 
 					printf("LUN0 size = %lu\n", lun0_sz);
 				}
-				else
-					printf("Error determining LUN0 size!\n");
+
+				if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
+					ret = 1;
+					goto getoutofflashing;
+				}
+
+				if (memcmp(tmp_reply, "OKAY", 4) != 0) {
+					printf(" - Error, no OKAY reply!\n");
+					ret = 1;
+					goto getoutofflashing;
+				}
 			}
 
 			if (lun0_sz)
