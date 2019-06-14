@@ -2237,9 +2237,9 @@ static unsigned long get_free_space(char *pszDrive)
 		if (fResult)
 		{
 			printf ("\nDetermining available free space by GetDiskFreeSpaceEx:\n\n");
-			printf ("  Available space to caller    = %I64u MB\n", i64FreeBytesToCaller / (1024 * 1024));
-			printf ("  Total space on current drive = %I64u MB\n", i64TotalBytes / (1024 * 1024));
-			printf ("  Free space on drive          = %I64u MB\n", i64FreeBytes / (1024 * 1024));
+			printf ("  Available space to caller    = %llu MB\n", i64FreeBytesToCaller / (1024 * 1024));
+			printf ("  Total space on current drive = %llu MB\n", i64TotalBytes / (1024 * 1024));
+			printf ("  Free space on drive          = %llu MB\n", i64FreeBytes / (1024 * 1024));
 		}
 	}
 	else
@@ -2257,8 +2257,8 @@ static unsigned long get_free_space(char *pszDrive)
 			i64FreeBytes = (unsigned long long)(dwFreeClusters * dwSectPerClust * dwBytesPerSect);
 
 			printf ("\nDetermining available free space by GetDiskFreeSpace:\n\n");
-			printf ("  Free space                   = %I64u MB\n", i64FreeBytes / (1024 * 1024));
-			printf ("  Total space on current drive = %I64u MB\n", i64TotalBytes / (1024 * 1024));
+			printf ("  Free space                   = %llu MB\n", i64FreeBytes / (1024 * 1024));
+			printf ("  Total space on current drive = %llu MB\n", i64TotalBytes / (1024 * 1024));
 		}
 	}
 
