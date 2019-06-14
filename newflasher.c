@@ -2337,7 +2337,7 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("--------------------------------------------------------\n");
-	printf("            %s v14 by Munjeni @ 2017/2019           \n", progname);
+	printf("            %s v15 by Munjeni @ 2017/2019           \n", progname);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
