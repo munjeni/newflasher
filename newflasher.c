@@ -3148,7 +3148,11 @@ int main(int argc, char *argv[])
 #else
 				snprintf(sinfil, sizeof(sinfil), "./partition/%s", partitiondelivery_xml[i]);
 #endif
-				if ((strstr(sinfil, "LUN0") != NULL && strstr(sinfil, lun0) != NULL) || strstr(sinfil, "LUN1") != NULL || strstr(sinfil, "LUN2") != NULL || strstr(sinfil, "LUN3") != NULL)
+				if ((strstr(sinfil, "LUN0") != NULL && strstr(sinfil, lun0) != NULL) ||
+					 strstr(sinfil, "LUN0_X-FLASH-ALL") != NULL ||
+					 strstr(sinfil, "LUN1") != NULL ||
+					 strstr(sinfil, "LUN2") != NULL ||
+					 strstr(sinfil, "LUN3") != NULL)
 				{
 					fi = fopen64(sinfil, "rb");
 					if (fi == NULL) {
