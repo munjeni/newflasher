@@ -3117,7 +3117,7 @@ int main(int argc, char *argv[])
 					memcpy(&lun0_sz, tmp_reply + ufs_desc_sz + 0x1c, 4);
 
 					lun0_sz = swap_uint32(lun0_sz);
-					lun0_sz *= 4096;
+					lun0_sz *= sector_size;
 					lun0_sz /= 1024;
 
 					printf("LUN0 size = %lu\n", lun0_sz);
