@@ -2365,7 +2365,7 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
 	printf("\nOptional step! Type 'y' and press ENTER if you need GordonGate flash driver, or type 'n' to skip.\n");
 	printf("This creates GordonGate.7z archive in the same dir with %s!\n", progname);
-	scanf(" %c", &ch);
+	if (scanf(" %c", &ch)) { }
 	if (ch == 'y' || ch == 'Y')
 	{
 		FILE *gg = fopen("GordonGate.7z", "wb");
@@ -2418,7 +2418,7 @@ int main(int argc, char *argv[])
 #if 1
 	printf("\nOptional step! Type 'y' and press ENTER if you want dump trim area, or type 'n' and press ENTER to skip.\n");
 	printf("Do in mind this doesn't dump drm key since sake authentifiction is need for that!\n");
-	scanf(" %c", &ch);
+	if (scanf(" %c", &ch)) { }
 
 	if (ch == 'y' || ch == 'Y')
 	{
