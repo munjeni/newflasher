@@ -2346,7 +2346,7 @@ int main(int argc, char *argv[])
 	if (argc) { }
 
 	printf("--------------------------------------------------------\n");
-	printf("            %s v16 by Munjeni @ 2017/2019           \n", progname);
+	printf("            %s v17 by Munjeni @ 2017/2019           \n", progname);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
