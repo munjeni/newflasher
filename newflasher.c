@@ -3070,8 +3070,8 @@ int main(int argc, char *argv[])
 		}
 		else
 		{
-			unsigned short ufs_desc_sz = 0;
-			unsigned long lun0_sz = 0;
+			unsigned char ufs_desc_sz = 0;
+			unsigned long long lun0_sz = 0;
 
 			printf("Found partition_delivery.xml in partition folder.\n");
 
@@ -3120,7 +3120,7 @@ int main(int argc, char *argv[])
 					lun0_sz *= sector_size;
 					lun0_sz /= 1024;
 
-					printf("LUN0 size = %lu\n", lun0_sz);
+					printf("LUN0 size = %llu\n", lun0_sz);
 				}
 
 				if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
@@ -3139,7 +3139,7 @@ int main(int argc, char *argv[])
 			for(i=0; i<pd; ++i)
 			{
 				char lun0[10];
-				snprintf(lun0, sizeof(lun0), "%lu", lun0_sz);
+				snprintf(lun0, sizeof(lun0), "%llu", lun0_sz);
 
 				printf("\n");
 				printf("Processing %s\n", partitiondelivery_xml[i]);
