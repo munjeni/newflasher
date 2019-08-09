@@ -252,18 +252,6 @@ static char *basenamee(char *in) {
 	return in;
 }
 
-static int command(char *what) {
-	int ret;
-	static char buffer[300];
-	snprintf(buffer, sizeof(buffer), "%s", what);
-	ret = system(buffer);
-#if 0
-	printf("%s\n", buffer);
-	printf("returned=%d OK.\n", ret);
-#endif
-	return ret;
-}
-
 #define MAX_UNIT_LINE_LEN 0x20000
 
 static ssize_t g_getline(char **lineptr, size_t *n, FILE *stream) {
@@ -3352,8 +3340,7 @@ int main(int argc, char *argv[])
 	if (0 != access(fld, F_OK))
 	{
 		if (ENOENT == errno) {
-			snprintf(fld, sizeof(fld), "mkdir flash_session");
-			fld_cbck = command(fld);
+			fld_cbck = mkdir("flash_session", 0755);
 			if (fld_cbck == 0) {
 				printf("Created ouput folder flash_session\n");
 			} else {
