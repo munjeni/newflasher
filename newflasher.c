@@ -3344,7 +3344,11 @@ int main(int argc, char *argv[])
 	if (0 != access(fld, F_OK))
 	{
 		if (ENOENT == errno) {
+#ifdef _WIN32
+			fld_cbck = mkdir("flash_session");
+#else
 			fld_cbck = mkdir("flash_session", 0755);
+#endif
 			if (fld_cbck == 0) {
 				printf("Created ouput folder flash_session\n");
 			} else {
