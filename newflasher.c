@@ -1324,7 +1324,7 @@ static int verify_checksum(const char *p)
 	return (u == parseoct(p + 148, 8));
 }
 
-static int process_sins(HANDLE dev, FILE *a, char *filename, char *outfolder, char *endcommand)
+static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, char *outfolder, char *endcommand)
 {
 	char buff[512];
 	FILE *f = NULL;
@@ -1386,8 +1386,12 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *outfolder, ch
 			default:
 				memset(tmpg, 0, sizeof(tmpg));
 				memcpy(tmpg, filename, strlen(filename)-4);
-				snprintf(tmpp, sizeof(tmpp), "%s/%s", outfolder, buff);
-				printf(" - %s %s\n", (i == 0) ? "Extracting signature" : "Extracting sparse chunk", tmpp);
+#ifdef _WIN32
+				snprintf(tmpp, sizeof(tmpp), "%s\\%s\\%s", full_path, outfolder, buff);
+#else
+				snprintf(tmpp, sizeof(tmpp), "./%s/%s", outfolder, buff);
+#endif
+				printf(" - %s %s\n", (i == 0) ? "Extracting signature" : "Extracting sparse chunk", buff);
 				i += 1;
 				f = create_file(tmpp);	//, parseoct(buff + 100, 8));
 				if (f == NULL) {
@@ -3187,7 +3191,7 @@ int main(int argc, char *argv[])
 							}
 							else
 							{
-								if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+								if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
 								{
 									fclose(a);
 									remove(fld);
@@ -3210,7 +3214,7 @@ int main(int argc, char *argv[])
 							}
 							else
 							{
-								if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+								if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
 								{
 									fclose(a);
 									remove(fld);
@@ -3293,7 +3297,7 @@ int main(int argc, char *argv[])
 									}
 									else
 									{
-										if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+										if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
 										{
 											fclose(a);
 											remove(fld);
@@ -3316,7 +3320,7 @@ int main(int argc, char *argv[])
 									}
 									else
 									{
-										if (!process_sins(dev, a, sinfil, "partition", "Repartition"))
+										if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
 										{
 											fclose(a);
 											remove(fld);
@@ -3433,7 +3437,7 @@ int main(int argc, char *argv[])
 								}
 								else
 								{
-									if (!process_sins(dev, a, sinfil, "flash_session", "flash"))
+									if (!process_sins(dev, a, sinfil, working_path, "flash_session", "flash"))
 									{
 										fclose(a);
 										remove(fld);
@@ -3456,7 +3460,7 @@ int main(int argc, char *argv[])
 								}
 								else
 								{
-									if (!process_sins(dev, a, sinfil, "flash_session", "flash"))
+									if (!process_sins(dev, a, sinfil, working_path, "flash_session", "flash"))
 									{
 										fclose(a);
 										remove(fld);
@@ -3636,7 +3640,7 @@ int main(int argc, char *argv[])
 								}
 								else
 								{
-									if (!process_sins(dev, a, sinfil, "boot", "flash"))
+									if (!process_sins(dev, a, sinfil, working_path, "boot", "flash"))
 									{
 										fclose(a);
 										remove(fld);
@@ -3658,7 +3662,7 @@ int main(int argc, char *argv[])
 								}
 								else
 								{
-									if (!process_sins(dev, a, sinfil, "boot", "flash"))
+									if (!process_sins(dev, a, sinfil, working_path, "boot", "flash"))
 									{
 										fclose(a);
 										remove(fld);
