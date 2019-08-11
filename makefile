@@ -16,6 +16,9 @@ CROSS_CFLAGS=${CFLAGS} -static -I include -I expat/include -L /usr/local/lib -L 
 
 default:newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64
 
+newflasher: newflasher.c GordonGate.h
+	${CC} ${CFLAGS} $< -o $@ -lz -lexpat
+
 newflasher.exe:
 	${WINDRES} newflasher.rc -O coff -o newflasher.res
 	${CCWIN} ${CROSS_CFLAGS} newflasher.c newflasher.res -o newflasher.exe -lsetupapi -lzwin -lexpat.win
