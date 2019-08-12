@@ -14,8 +14,10 @@ STRIP=strip
 CFLAGS=-Wall -O2
 CROSS_CFLAGS=${CFLAGS} -static -I include -I expat/include -L /usr/local/lib -L /usr/lib -L lib -L expat/lib
 
+.PHONY: default
 default: newflasher
 
+.PHONY: cross
 cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64
 
 newflasher: newflasher.c GordonGate.h
@@ -42,8 +44,10 @@ newflasher.arm64: newflasher.c GordonGate.h
 	${ARMCC64} ${CROSS_CFLAGS} newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
 	${ARMSTRIP64} newflasher.arm64
 
+.PHONY: clean
 clean:
 	rm -rf *.o *.res
 
+.PHONY: distclean
 distclean:
 	rm -rf *.o *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64
