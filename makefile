@@ -19,24 +19,24 @@ default:newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflashe
 newflasher: newflasher.c GordonGate.h
 	${CC} ${CFLAGS} $< -o $@ -lz -lexpat
 
-newflasher.exe:
+newflasher.exe: newflasher.c GordonGate.h newflasher.rc
 	${WINDRES} newflasher.rc -O coff -o newflasher.res
 	${CCWIN} ${CROSS_CFLAGS} newflasher.c newflasher.res -o newflasher.exe -lsetupapi -lzwin -lexpat.win
 	${CCWINSTRIP} newflasher.exe
 
-newflasher.x64:
+newflasher.x64: newflasher.c GordonGate.h
 	${CC} ${CROSS_CFLAGS} newflasher.c -o newflasher.x64 -lz64 -lexpat.x64
 	${STRIP} newflasher.x64
 
-newflasher.i386:
+newflasher.i386: newflasher.c GordonGate.h
 	${CC} ${CROSS_CFLAGS} -m32 newflasher.c -o newflasher.i386 -lz32 -lexpat.i386
 	${STRIP} newflasher.i386
 
-newflasher.arm32:
+newflasher.arm32: newflasher.c GordonGate.h
 	${ARMCC} ${CROSS_CFLAGS} newflasher.c -o newflasher.arm32 -lzarm32 -lexpat.arm32
 	${ARMSTRIP} newflasher.arm32
 
-newflasher.arm64:
+newflasher.arm64: newflasher.c GordonGate.h
 	${ARMCC64} ${CROSS_CFLAGS} newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
 	${ARMSTRIP64} newflasher.arm64
 
