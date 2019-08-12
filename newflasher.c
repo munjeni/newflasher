@@ -3693,7 +3693,7 @@ getoutofflashing:
 		}
 
 		if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
-			printf(" - Error, no set_active:%s OKEY reply!\n", current_slot);
+			printf(" - Error, no set_active:%s OKAY reply!\n", current_slot);
 			ret = 1;
 			goto endflashing;
 		}
