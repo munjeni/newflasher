@@ -3,5 +3,6 @@
 /newflasher.arm64
 /newflasher.exe
 /newflasher.i386
+/newflasher.rc
 /newflasher.res
 /newflasher.x64
