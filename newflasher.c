@@ -22,6 +22,8 @@
  *
  */
 
+#include "version.h"
+
 #if (!defined(_WIN32)) && (!defined(WIN32)) && (!defined(__APPLE__))
 	#ifndef __USE_FILE_OFFSET64
 		#define __USE_FILE_OFFSET64 1
@@ -2338,7 +2340,7 @@ int main(int argc, char *argv[])
 	if (argc) { }
 
 	printf("--------------------------------------------------------\n");
-	printf("            %s v18 by Munjeni @ 2017/2019           \n", progname);
+	printf("            %s v%d by Munjeni @ 2017/2019           \n", progname, VERSION);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
