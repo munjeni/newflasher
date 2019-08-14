@@ -7,9 +7,9 @@ This *experimental* software allows you to flash firmwares acquired through [Xpe
 
 ### Build (native)
 
-Install development versions of `zlib` and `expat`. On Debian-based systems such as Mint and Ubuntu, this means:
+Install `gcc`, `make` and development versions of `zlib` and `expat`. On Debian-based systems such as Mint and Ubuntu, this means:
 
-    sudo apt-get install libexpat-dev libz-dev
+    sudo apt-get install gcc libexpat-dev libz-dev make
 
 On Darwin you need to install libusb-1.0, this means:
 
