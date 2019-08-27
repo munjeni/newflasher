@@ -2083,7 +2083,7 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 							unit 0x7da (2010) simlock
 							unit 0x851 (2129) simlock signature
 							unit 0x1324 (4900) device id
-							unit 0x1046F (66671) WHat is this? embedded roots? Unlock data?
+							unit 0x1046F (66671) google lock state ( allow bootloader unlock in dev settings )
 							unit 0x10471 (66673) protocol switch? Or keystore? What is this?
 						*/
 
