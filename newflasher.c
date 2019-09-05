@@ -334,7 +334,7 @@ static void trim(char *ptr) {
 	ptr[i] = '\0';
 }
 
-#define USB_TIMEOUT 500
+#define USB_TIMEOUT 60000
 
 #ifndef _WIN32
 static char *TEXT(char *what) {
