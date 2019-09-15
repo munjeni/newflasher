@@ -2084,7 +2084,8 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 							unit 0x851 (2129) simlock signature
 							unit 0x1324 (4900) device id
 							unit 0x1046F (66671) google lock state ( allow bootloader unlock in dev settings )
-							unit 0x10471 (66673) protocol switch? Or keystore? What is this?
+							unit 0x9A9 (2473) value 1 for enable serial console or value 0 (default) to disable (https://forum.xda-developers.com/showpost.php?p=80212371&postcount=1125)
+							unit 0x10471 (66673) protocol switch? Or keystore? What is this? Depend on existance of unit 0x36A (https://forum.xda-developers.com/showpost.php?p=80176195&postcount=1093)
 						*/
 
 						if (memcmp(unit, "000008B2", 8) == 0 || /* unlock key */
