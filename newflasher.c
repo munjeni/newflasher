@@ -3384,8 +3384,32 @@ int main(int argc, char *argv[])
 				{
 					if ((extension = strrchr(ep->d_name, '.')) != NULL)
 					{
-						if (strcmp(extension, ".sin") == 0 && strstr(ep->d_name, "artition") == NULL)   /* look for .sin & skip Partition or partition sin */
+						/* search for .sin files */
+						if (strcmp(extension, ".sin") == 0)
 						{
+							int file_is_skip = 0;
+
+							/* skip Partition or partition sin */
+							if (strstr(ep->d_name, "artition") != NULL)
+							{
+								file_is_skip = 1;
+								goto skip_this;
+							}
+
+							/* prompt for Persist or persist partition flash */
+							if (strstr(ep->d_name, "ersist") != NULL)
+							{
+								printf("\nRecommended step to skip this! Type 'y' and press ENTER if you want flash persist partition, or type 'n' and press ENTER to skip.\n");
+								printf("More info https://forum.xda-developers.com/xperia-xz1-compact/help/android-attest-key-lost-bootloader-t3829945\n");
+								if (scanf(" %c", &ch)) { }
+
+								if (ch == 'n' && ch == 'N')
+								{
+									file_is_skip = 1;
+									goto skip_this;
+								}
+							}
+
 							sin_found = 1;
 							printf("\n");
 							printf("Processing %s\n", ep->d_name);
@@ -3464,6 +3488,9 @@ int main(int argc, char *argv[])
 									fclose(a);
 								}
 							}
+skip_this:
+							if (file_is_skip)
+								printf("Skipping %s\n", ep->d_name);
 						}
 					}
 				}
