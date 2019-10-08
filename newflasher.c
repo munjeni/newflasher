@@ -3403,7 +3403,7 @@ int main(int argc, char *argv[])
 								printf("More info https://forum.xda-developers.com/xperia-xz1-compact/help/android-attest-key-lost-bootloader-t3829945\n");
 								if (scanf(" %c", &ch)) { }
 
-								if (ch == 'n' && ch == 'N')
+								if (ch == 'n' || ch == 'N')
 								{
 									file_is_skip = 1;
 									goto skip_this;
