@@ -12,7 +12,7 @@ CC=gcc
 STRIP=strip
 
 CFLAGS=-Wall -O2
-CROSS_CFLAGS=${CFLAGS} -static -I include -I expat/include -L /usr/local/lib -L /usr/lib -L lib -L expat/lib
+CROSS_CFLAGS=${CFLAGS} -static -I include -I expat/include -L lib -L expat/lib
 
 .PHONY: default
 default: newflasher
