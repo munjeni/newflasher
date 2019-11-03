@@ -1298,7 +1298,7 @@ static int gziper(char *in, char *out)
 
 		if (ret == 0)
 		{
-			printf (" - setting up infflate...\n");
+			printf (" - setting up inflate...\n");
 
 			if ((zipped = fopen64(out, "rb")) == NULL) {
 				printf(" - Could not open %s for verification!\n", out);
@@ -1313,7 +1313,7 @@ static int gziper(char *in, char *out)
 
 			printf (" - infflating, please wait...\n");
 			ret = inf(zipped, back);
-			printf(" - infflate returned: %i\n", ret);
+			printf(" - inflate returned: %i\n", ret);
 			zerr(ret);
 		}
 
@@ -1337,7 +1337,7 @@ static int gunziper(char *in, char *out)
 		FILE *zipped = NULL;
 		FILE *back = NULL;
 
-		printf (" - setting up infflate...\n");
+		printf (" - setting up inflate...\n");
 		if ((zipped = fopen64(in, "rb")) == NULL) {
 			printf(" - Could not open %s for infflating!\n", in);
 			return 1;
@@ -1349,7 +1349,7 @@ static int gunziper(char *in, char *out)
 		}
 		printf (" - infflating, please wait...\n");
 		ret = inf(zipped, back);
-		printf(" - infflate returned: %i\n", ret);
+		printf(" - inflate returned: %i\n", ret);
 		zerr(ret);
 
 		if (zipped) fclose(zipped);
