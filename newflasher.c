@@ -24,7 +24,7 @@
 
 #include "version.h"
 
-#if (!defined(_WIN32)) && (!defined(WIN32)) && (!defined(__APPLE__))
+#if (!defined(_WIN32)) && (!defined(WIN32))
 	#ifndef __USE_FILE_OFFSET64
 		#define __USE_FILE_OFFSET64 1
 	#endif
@@ -63,7 +63,9 @@
 #ifdef unix
 	#include <unistd.h>
 	#include <sys/types.h>
-#else
+#endif
+
+#ifdef _WIN32
 	#include <direct.h>
 	#include <io.h>
 #endif
@@ -102,7 +104,7 @@
 #include <dirent.h>
 #include <assert.h>
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 #include <linux/usbdevice_fs.h>
 #include <linux/usb/ch9.h>
 #include <asm/byteorder.h>
@@ -119,6 +121,18 @@
 #include <sys/ioctl.h>
 #include <sys/types.h>
 #include <ctype.h>
+#endif
+
+#ifdef __APPLE__
+	#include <unistd.h>
+	#include <CoreFoundation/CoreFoundation.h>
+	#include <IOKit/IOKitLib.h>
+	#include <IOKit/IOCFPlugIn.h>
+	#include <IOKit/usb/IOUSBLib.h>
+	#include <mach/mach.h>
+
+	#define fseeko64 fseeko
+	#define fopen64 fopen
 #endif
 
 #include "expat.h"

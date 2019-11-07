@@ -8,6 +8,12 @@ CCWIN=i686-w64-mingw32-gcc
 CCWINSTRIP=i686-w64-mingw32-strip
 WINDRES=i686-w64-mingw32-windres
 
+CCAPPLE64=/home/savan/Desktop/osxtoolchain/osxcross/target/bin/x86_64-apple-darwin11-cc
+CCAPPLESTRIP64=/home/savan/Desktop/osxtoolchain/osxcross/target/bin/x86_64-apple-darwin11-strip
+
+CCAPPLE=/home/savan/Desktop/osxtoolchain/osxcross/target/bin/i386-apple-darwin11-cc
+CCAPPLESTRIP=/home/savan/Desktop/osxtoolchain/osxcross/target/bin/i386-apple-darwin11-strip
+
 CC=gcc
 STRIP=strip
 
@@ -18,7 +24,7 @@ CROSS_CFLAGS=${CFLAGS} -static -I include -L lib
 default: newflasher
 
 .PHONY: cross
-cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64
+cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 #newflasher.i386-apple-darwin11 newflasher.x86_64-apple-darwin11
 
 newflasher: newflasher.c version.h
 	${CC} ${CFLAGS} $< -o $@ -lz -lexpat
@@ -45,10 +51,18 @@ newflasher.arm64: newflasher.c version.h
 	${ARMCC64} ${CROSS_CFLAGS} newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
 	${ARMSTRIP64} newflasher.arm64
 
+newflasher.i386-apple-darwin11: newflasher.c version.h
+	${CCAPPLE} ${CROSS_CFLAGS} newflasher.c -o newflasher.i386-apple-darwin11 -lzdarwin11 -lexpatdarwin11
+	${CCAPPLESTRIP} newflasher.i386-apple-darwin11
+
+newflasher.x86_64-apple-darwin11: newflasher.c version.h
+	${CCAPPLE64} ${CROSS_CFLAGS} newflasher.c -o newflasher.x86_64-apple-darwin11 -lzdarwin11_64 -lexpatdarwin11_64
+	${CCAPPLESTRIP64} newflasher.x86_64-apple-darwin11
+
 .PHONY: clean
 clean:
 	rm -rf *.o *.rc *.res
 
 .PHONY: distclean
 distclean:
-	rm -rf *.o *.rc *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher
+	rm -rf *.o *.rc *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher.i386-apple-darwin11 newflasher.x86_64-apple-darwin11 newflasher
