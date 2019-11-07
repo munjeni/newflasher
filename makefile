@@ -12,7 +12,7 @@ CC=gcc
 STRIP=strip
 
 CFLAGS=-Wall -O2
-CROSS_CFLAGS=${CFLAGS} -static -I include -I expat/include -L lib -L expat/lib
+CROSS_CFLAGS=${CFLAGS} -static -I include -L lib
 
 .PHONY: default
 default: newflasher
@@ -20,28 +20,28 @@ default: newflasher
 .PHONY: cross
 cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64
 
-newflasher: newflasher.c version.h GordonGate.h
+newflasher: newflasher.c version.h
 	${CC} ${CFLAGS} $< -o $@ -lz -lexpat
 
-newflasher.exe: newflasher.c version.h GordonGate.h newflasher.rc.in
+newflasher.exe: newflasher.c version.h newflasher.rc.in
 	sed "s/@VERSION@/$$(sed 's/^.*VERSION //' version.h)/" newflasher.rc.in >newflasher.rc
 	${WINDRES} newflasher.rc -O coff -o newflasher.res
 	${CCWIN} ${CROSS_CFLAGS} newflasher.c newflasher.res -o newflasher.exe -lsetupapi -lzwin -lexpat.win
 	${CCWINSTRIP} newflasher.exe
 
-newflasher.x64: newflasher.c version.h GordonGate.h
+newflasher.x64: newflasher.c version.h
 	${CC} ${CROSS_CFLAGS} newflasher.c -o newflasher.x64 -lz64 -lexpat.x64
 	${STRIP} newflasher.x64
 
-newflasher.i386: newflasher.c version.h GordonGate.h
+newflasher.i386: newflasher.c version.h
 	${CC} ${CROSS_CFLAGS} -m32 newflasher.c -o newflasher.i386 -lz32 -lexpat.i386
 	${STRIP} newflasher.i386
 
-newflasher.arm32: newflasher.c version.h GordonGate.h
+newflasher.arm32: newflasher.c version.h
 	${ARMCC} ${CROSS_CFLAGS} newflasher.c -o newflasher.arm32 -lzarm32 -lexpat.arm32
 	${ARMSTRIP} newflasher.arm32
 
-newflasher.arm64: newflasher.c version.h GordonGate.h
+newflasher.arm64: newflasher.c version.h
 	${ARMCC64} ${CROSS_CFLAGS} newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
 	${ARMSTRIP64} newflasher.arm64
 
@@ -51,4 +51,4 @@ clean:
 
 .PHONY: distclean
 distclean:
-	rm -rf *.o *.rc *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64
+	rm -rf *.o *.rc *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher
