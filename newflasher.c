@@ -11,7 +11,7 @@
  *
  * The above copyright notice and this permission notice shall be
  * included in all copies or substantial portions of the Software.
-
+ *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
  * EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
  * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
@@ -192,6 +192,7 @@ static char get_root_key_hash[0x41];
 
 static char slot_count[2];
 static char current_slot[2];
+static char remember_current_slot[2];
 
 static unsigned int something_flashed = 0;
 
@@ -2334,6 +2335,8 @@ int main(int argc, char *argv[])
 	char searchfor[1024];
 	int bootdelivery_found = 0;
 
+	bool flash_booth_slots = false;
+
 	HANDLE dev;
 
 	unsigned long available_mb;
@@ -2584,6 +2587,17 @@ int main(int argc, char *argv[])
 		goto endflashing;
 	}
 #endif
+
+/*============  Ask user for flashing bootloader,bluetooth,dsp,modem,rdimage to booth a,b slots =========*/
+
+	printf("\nOptional step! Type 'y' and press ENTER if you need to flash bootloader,bluetooth,dsp,modem,rdimage to booth a,b slots, or type 'n' to skip.\n");
+	printf("By default it is NOT flashed to booth slots, do on your own risk!\n");
+	if (scanf(" %c", &ch)) { }
+	if (ch == 'y' || ch == 'Y')
+	{
+		flash_booth_slots = true;
+	}
+
 /*=========================================  DEVICE INFO  ============================================*/
 
 	snprintf(tmp, sizeof(tmp), "getvar:max-download-size");
@@ -3466,6 +3480,54 @@ int main(int argc, char *argv[])
 								}
 								else
 								{
+									/*============= flash booth a,b slots =============*/
+
+									if (flash_booth_slots)
+									{
+										memset(searchfor, 0, sizeof(searchfor));
+
+										if (fread(searchfor, 1, 32, a) < 32)
+										{
+											fclose(a);
+											remove(fld);
+											closedir(dir);
+											goto getoutofflashing;
+										}
+										else
+										{
+											fseeko64(a, 0, SEEK_SET);
+
+											if (memcmp(searchfor, "bootloader.", 11) == 0 ||
+												 memcmp(searchfor, "bluetooth.", 10) == 0 ||
+												 memcmp(searchfor, "dsp.", 4) == 0 ||
+												 memcmp(searchfor, "modem.", 6) == 0 ||
+												 memcmp(searchfor, "rdimage.", 8) == 0)
+											{
+												memcpy(remember_current_slot, current_slot, 1);
+
+												if (memcmp(current_slot, "a", 1) == 0)
+													memcpy(current_slot, "b", 1);
+
+												if (memcmp(current_slot, "b", 1) == 0)
+													memcpy(current_slot, "a", 1);
+
+												if (!process_sins(dev, a, sinfil, working_path, "flash_session", "flash"))
+												{
+													fclose(a);
+													remove(fld);
+													closedir(dir);
+													goto getoutofflashing;
+												}
+
+												memcpy(current_slot, remember_current_slot, 1);
+
+												fseeko64(a, 0, SEEK_SET);
+											}
+										}
+									}
+
+									/*==============================================*/
+
 									if (!process_sins(dev, a, sinfil, working_path, "flash_session", "flash"))
 									{
 										fclose(a);
@@ -3473,6 +3535,7 @@ int main(int argc, char *argv[])
 										closedir(dir);
 										goto getoutofflashing;
 									}
+
 									fclose(a);
 								}
 
