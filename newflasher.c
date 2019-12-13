@@ -3552,6 +3552,54 @@ int main(int argc, char *argv[])
 								}
 								else
 								{
+									/*============= flash booth a,b slots =============*/
+
+									if (flash_booth_slots)
+									{
+										memset(searchfor, 0, sizeof(searchfor));
+
+										if (fread(searchfor, 1, 32, a) < 32)
+										{
+											fclose(a);
+											remove(fld);
+											closedir(dir);
+											goto getoutofflashing;
+										}
+										else
+										{
+											fseeko64(a, 0, SEEK_SET);
+
+											if (memcmp(searchfor, "bootloader.", 11) == 0 ||
+												 memcmp(searchfor, "bluetooth.", 10) == 0 ||
+												 memcmp(searchfor, "dsp.", 4) == 0 ||
+												 memcmp(searchfor, "modem.", 6) == 0 ||
+												 memcmp(searchfor, "rdimage.", 8) == 0)
+											{
+												memcpy(remember_current_slot, current_slot, 1);
+
+												if (memcmp(current_slot, "a", 1) == 0)
+													memcpy(current_slot, "b", 1);
+
+												if (memcmp(current_slot, "b", 1) == 0)
+													memcpy(current_slot, "a", 1);
+
+												if (!process_sins(dev, a, sinfil, working_path, "flash_session", "flash"))
+												{
+													fclose(a);
+													remove(fld);
+													closedir(dir);
+													goto getoutofflashing;
+												}
+
+												memcpy(current_slot, remember_current_slot, 1);
+
+												fseeko64(a, 0, SEEK_SET);
+											}
+										}
+									}
+
+									/*==============================================*/
+
 									if (!process_sins(dev, a, sinfil, working_path, "flash_session", "flash"))
 									{
 										fclose(a);
@@ -3559,6 +3607,7 @@ int main(int argc, char *argv[])
 										closedir(dir);
 										goto getoutofflashing;
 									}
+
 									fclose(a);
 								}
 							}
