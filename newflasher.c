@@ -43,7 +43,7 @@
 #endif
 
 #ifdef _WIN32
-	#define __USE_MINGW_ANSI_STDIO 1
+#define __USE_MINGW_ANSI_STDIO 1
 
 #include <windows.h>
 #include <setupapi.h>
@@ -60,6 +60,8 @@
 #ifdef HAS_STDINT_H
 	#include <stdint.h>
 #endif
+#include <stdbool.h>
+
 #ifdef unix
 	#include <unistd.h>
 	#include <sys/types.h>
@@ -1339,7 +1341,7 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 	char tmpg[256];
 	char command[64];
 	char flashfile[256];
-	int have_slot=0;
+	bool has_slot = false;
 
 	printf(" - Extracting from %s\n", basenamee(filename));
 
@@ -1652,7 +1654,11 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 						if (memcmp(tmp_reply, "yes", 3) == 0)
 						{
 							printf("      Partition: %s have slot: %s\n", flashfile, tmp_reply);
+							has_slot = true;
+						}
 
+						if (has_slot)
+						{
 							if (strstr(basenamee(filename), "_other_") != NULL)
 							{
 								if (memcmp(current_slot, "a", 1) == 0)
@@ -1670,8 +1676,6 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 									snprintf(command, sizeof(command), "erase:%s_b", flashfile);
 
 							}
-
-							have_slot = 1;
 						}
 						else
 						{
@@ -1720,39 +1724,32 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 			}
 			else
 			{
-
-				if (memcmp(current_slot, "a", 1) == 0 || memcmp(current_slot, "b", 1) == 0)
+				if (has_slot)
 				{
-
-					if (have_slot)
+					if (strstr(basenamee(filename), "_other_") != NULL)
 					{
-						if (strstr(basenamee(filename), "_other_") != NULL)
-						{
-							if (memcmp(current_slot, "a", 1) == 0)
-								snprintf(command, sizeof(command), "%s:%s_b", endcommand, flashfile);
+						if (memcmp(current_slot, "a", 1) == 0)
+							snprintf(command, sizeof(command), "%s:%s_b", endcommand, flashfile);
 
-							if (memcmp(current_slot, "b", 1) == 0)
-								snprintf(command, sizeof(command), "%s:%s_a", endcommand, flashfile);
-						}
-						else
-						{
-							if (memcmp(current_slot, "a", 1) == 0)
-								snprintf(command, sizeof(command), "%s:%s_a", endcommand, flashfile);
-
-							if (memcmp(current_slot, "b", 1) == 0)
-								snprintf(command, sizeof(command), "%s:%s_b", endcommand, flashfile);
-						}
+						if (memcmp(current_slot, "b", 1) == 0)
+							snprintf(command, sizeof(command), "%s:%s_a", endcommand, flashfile);
 					}
 					else
 					{
-						snprintf(command, sizeof(command), "%s:%s", endcommand, flashfile);
+						if (memcmp(current_slot, "a", 1) == 0)
+							snprintf(command, sizeof(command), "%s:%s_a", endcommand, flashfile);
+
+						if (memcmp(current_slot, "b", 1) == 0)
+							snprintf(command, sizeof(command), "%s:%s_b", endcommand, flashfile);
 					}
 				}
 				else
 				{
 					snprintf(command, sizeof(command), "%s:%s", endcommand, flashfile);
 				}
+
 				printf("      %s\n", command);
+				has_slot = false;
 			}
 
 			if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
