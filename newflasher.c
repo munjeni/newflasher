@@ -127,13 +127,16 @@
 
 #ifdef __APPLE__
 	#include <unistd.h>
-	#include <CoreFoundation/CoreFoundation.h>
-	#include <IOKit/IOKitLib.h>
-	#include <IOKit/IOCFPlugIn.h>
-	#include <IOKit/usb/IOUSBLib.h>
-	#include <mach/mach.h>
+	//#include <CoreFoundation/CoreFoundation.h>
+	//#include <IOKit/IOKitLib.h>
+	//#include <IOKit/IOCFPlugIn.h>
+	//#include <IOKit/usb/IOUSBLib.h>
+	//#include <mach/mach.h>
+
+	#include "libusb.h"
 
 	#define fseeko64 fseeko
+	#define ftello64 ftello
 	#define fopen64 fopen
 #endif
 
@@ -469,6 +472,13 @@ static GUID GUID_DEVINTERFACE_USB_DEVICE = {0xA5DCBF10L, 0x6530, 0x11D2, {0x90, 
 
 HDEVINFO	hDevInfo;
 #else
+#ifdef __APPLE__
+typedef struct libusb_device_handle *HANDLE;
+#define CloseHandle libusb_close
+#define SetupDiDestroyDeviceInfoList(...)
+int32_t OSAtomicDecrement32Barrier(volatile int32_t *__theValue) { return 0; }
+int32_t OSAtomicIncrement32Barrier(volatile int32_t *__theValue) { return 0; }
+#else
 #define SetupDiDestroyDeviceInfoList(...)
 
 /* The max bulk size for linux is 16384 which is defined
@@ -507,6 +517,7 @@ static int get_vidpid(int fd, unsigned short VID, unsigned short PID)
 	dev = (void *)desc;
 	/*printf("found vid: %04x\n", dev->idVendor);
 	printf("found pid: %04x\n", dev->idProduct);*/
+
 	if (dev->idVendor != VID || dev->idProduct != PID)
 		return 0;
 
@@ -595,6 +606,7 @@ int usb_close(struct usb_handle *h)
 }
 
 #define CloseHandle usb_close
+#endif
 #endif
 
 #ifdef _WIN32
@@ -821,6 +833,99 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 	return nBytesRead;
 }
 #else
+#ifdef __APPLE__
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void callbackUSBTransferComplete(struct libusb_transfer *xfr)
+{
+	switch(xfr->status)
+	{
+		case LIBUSB_TRANSFER_COMPLETED:
+			// Success here, data transfered are inside
+			// xfr->buffer
+			// and the length is
+			// xfr->actual_length
+			break;
+
+		case LIBUSB_TRANSFER_CANCELLED:
+		case LIBUSB_TRANSFER_NO_DEVICE:
+		case LIBUSB_TRANSFER_TIMED_OUT:
+		case LIBUSB_TRANSFER_ERROR:
+		case LIBUSB_TRANSFER_STALL:
+		case LIBUSB_TRANSFER_OVERFLOW:
+			// Various type of errors here
+			break;
+	}
+}
+
+static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsigned long size, int timeout, int exact)
+{
+	struct libusb_transfer *xfr;
+	xfr = libusb_alloc_transfer(0);
+
+	if (ep == EP_IN)
+	{
+		libusb_fill_bulk_transfer(xfr,
+                          dev,
+                          0x81, // In
+                          (unsigned char *)bytes,
+                          size,
+                          callbackUSBTransferComplete,
+                          NULL,
+                          timeout
+                          );
+
+		if (libusb_submit_transfer(xfr) < 0)
+		{
+			// Error
+			libusb_free_transfer(xfr);
+			return 0;
+		}
+
+		while(1)
+		{
+			if (libusb_handle_events(NULL) != LIBUSB_SUCCESS) break;
+		}
+	}
+
+	if (ep == EP_OUT)
+	{
+		libusb_fill_bulk_transfer(xfr,
+                          dev,
+                          0x01, // Out
+                          (unsigned char *)bytes,
+                          size,
+                          callbackUSBTransferComplete,
+                          NULL,
+                          timeout
+                          );
+
+		if (libusb_submit_transfer(xfr) < 0)
+		{
+			// Error
+			libusb_free_transfer(xfr);
+			return 0;
+		}
+
+		while(1)
+		{
+			if (libusb_handle_events(NULL) != LIBUSB_SUCCESS) break;
+		}
+	}
+
+	if (exact) {
+		if (xfr->actual_length != size) {
+			printf(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n", (ep == EP_IN) ? "read" : "write", size, (unsigned long)xfr->actual_length);
+			display_buffer_hex_ascii("nBytes", bytes, xfr->actual_length);
+			return 0;
+		}
+	}
+
+	return xfr->actual_length;
+}
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+#else
 static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const void *_bytes, unsigned long size, int timeout, int exact)
 {
 	char *bytes = (char *)_bytes;
@@ -926,6 +1031,7 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 #endif
 	return count;
 }
+#endif
 #endif
 
 static char *get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int timeout, int exact)
@@ -2340,7 +2446,7 @@ int main(int argc, char *argv[])
 
 	bool flash_booth_slots = false;
 
-	HANDLE dev;
+	HANDLE dev = NULL;
 
 	unsigned long available_mb;
 
@@ -2417,6 +2523,40 @@ int main(int argc, char *argv[])
 		goto pauza;
 	}
 #else
+#ifdef __APPLE__
+libusb_device **list;
+size_t count=0, di;
+
+// Initialize library
+libusb_init(NULL);
+
+// Get list of USB devices currently connected
+count = libusb_get_device_list(NULL, &list);
+
+for(di=0; di < count; ++di)
+{
+   struct libusb_device_descriptor desc;
+
+   libusb_get_device_descriptor(list[di], &desc);
+
+   // Is our device?
+   if (desc.idVendor == VID && desc.idProduct == PID)
+   {
+      // Open USB device and get handle
+      libusb_open(list[di], &dev);
+      break;
+   }
+}
+
+libusb_free_device_list(list, 1);
+
+if (dev == NULL) {
+	printf("\nNo usb device with vid:0x%04x pid:0x%04x !\n", VID, PID);
+	ret = 1;
+	goto pauza;
+}
+
+#else
 	dev = get_flashmode(VID, PID);
 
 	if (dev == NULL) {
@@ -2424,6 +2564,7 @@ int main(int argc, char *argv[])
 		ret = 1;
 		goto pauza;
 	}
+#endif
 #endif
 
 /*==========================================  dump trim area  ========================================*/
