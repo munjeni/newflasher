@@ -56,7 +56,7 @@ newflasher.i386-apple-darwin11: newflasher.c version.h
 	${CCAPPLESTRIP} newflasher.i386-apple-darwin11
 
 newflasher.x86_64-apple-darwin11: newflasher.c version.h
-	${CCAPPLE64} ${CROSS_CFLAGS} newflasher.c -o newflasher.x86_64-apple-darwin11 -lzdarwin11_64 -lexpatdarwin11_64 -lusb-1.0 -lobjc -Wl,-framework,IOKit -Wl,-framework,CoreFoundation
+	${CCAPPLE64} ${CROSS_CFLAGS} newflasher.c -o newflasher.x86_64-apple-darwin11 -lzdarwin11_64 -lexpatdarwin11_64 -lusb-1.0darwin11_64 -lobjc -Wl,-framework,IOKit -Wl,-framework,CoreFoundation
 	${CCAPPLESTRIP64} newflasher.x86_64-apple-darwin11
 
 .PHONY: clean
