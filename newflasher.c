@@ -4023,8 +4023,9 @@ endflashing:
 			goto pauza;
 		}
 		printf("Sent command: Sync\n");
-#if 0
+#if 1
 		if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
+			printf("Error, no sync response!\n");
 			CloseHandle(dev);
 			SetupDiDestroyDeviceInfoList(hDevInfo);
 			ret = 1;
@@ -4032,7 +4033,7 @@ endflashing:
 		}
 #endif
 	}
-#if 0
+#if 1
 	snprintf(tmp, sizeof(tmp), "powerdown");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1) {
 		printf(" - Error writing command %s!\n", tmp);
@@ -4044,6 +4045,7 @@ endflashing:
 	printf("Sent command: powerdown\n");
 
 	if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
+		printf("Error, no powerdown response!\n");
 		CloseHandle(dev);
 		SetupDiDestroyDeviceInfoList(hDevInfo);
 		ret = 1;
