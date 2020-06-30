@@ -2435,6 +2435,9 @@ int main(int argc, char *argv[])
 	int i, j, ret=0;
 	char ch;
 
+	char *unit_store = NULL;
+	unsigned int unit_sz = 0;
+
 	DIR *dir = NULL;
 	struct dirent *ep = NULL;
 	char *extension = NULL;
@@ -2575,7 +2578,6 @@ if (dev == NULL) {
 
 	if (ch == 'y' || ch == 'Y')
 	{
-		char *unit_store = NULL;
 		FILE *dump = NULL;
 		FILE *dump_log = fopen("tadump.log", "wb");
 
@@ -2644,7 +2646,7 @@ if (dev == NULL) {
 					else
 					{
 						/* DATA reply */
-						unsigned int unit_sz=0;
+						unit_sz=0;
 						if (get_reply_len != 12) {
 							fprintf(dump_log, "Errornous DATA reply!\n");
 							display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
@@ -3105,9 +3107,16 @@ if (dev == NULL) {
 		}
 	}
 
-	snprintf(tmp, sizeof(tmp), "Read-TA:2:%d", TA_BATTERY_CAPACITY);
-	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1) {
+	if ((unit_store = (char *)malloc(256)) == NULL) {
+		printf("Error malloc unit store for battery capacity!\n");
+		ret = 1;
+		goto endflashing;
+	}
+
+	snprintf(unit_store, 16, "Read-TA:2:%d", TA_BATTERY_CAPACITY);
+	if (transfer_bulk_async(dev, EP_OUT, unit_store, strlen(unit_store), USB_TIMEOUT, 1) < 1) {
 		printf("Error writing command %s!\n", tmp);
+		if (unit_store) free(unit_store);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3115,35 +3124,37 @@ if (dev == NULL) {
 	{
 		if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
 			printf("Error, no reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
+			if (unit_store) free(unit_store);
 			ret = 1;
 			goto endflashing;
 		}
 
 		if (memcmp(tmp_reply, "FAIL", 4) == 0) {
 			printf("%s\n", tmp_reply);
+			if (unit_store) free(unit_store);
 			ret = 1;
 			goto endflashing;
 		}
 		else
 		{
+			unit_sz = 0;
 			if (get_reply_len != 12) {
 				printf("Errornous DATA reply!\n");
 				display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+				if (unit_store) free(unit_store);
 				ret = 1;
 				goto endflashing;
 			}
 
-			if (get_reply(dev, EP_IN, tmp, 1, USB_TIMEOUT, 1) == NULL) {
-				printf("Error retrieving unit data on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
-				ret = 1;
-				goto endflashing;
-			}
-			else
+			sscanf(tmp_reply+4, "%08x", &unit_sz);
+
+			if (!unit_sz)
 			{
-				battery_capacity = (unsigned char)tmp[0];
+				battery_capacity = 0;
 
-				if (get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0) == NULL) {
+				if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
 					printf("Error retrieving OKAY reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
+					if (unit_store) free(unit_store);
 					ret = 1;
 					goto endflashing;
 				}
@@ -3151,12 +3162,44 @@ if (dev == NULL) {
 				if (strstr(tmp_reply, "OKAY") == NULL)
 				{
 					printf("Error, no OKAY reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
+					display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
+					if (unit_store) free(unit_store);
 					ret = 1;
 					goto endflashing;
 				}
 			}
+			else
+			{
+				if (get_reply(dev, EP_IN, unit_store, unit_sz, USB_TIMEOUT, 1) == NULL) {
+					printf("Error retrieving unit data on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
+					if (unit_store) free(unit_store);
+					ret = 1;
+					goto endflashing;
+				}
+				else
+				{
+					battery_capacity = (unsigned char)unit_store[0];
+
+					if (get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0) == NULL) {
+						printf("Error retrieving OKAY reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
+						if (unit_store) free(unit_store);
+						ret = 1;
+						goto endflashing;
+					}
+
+					if (strstr(tmp_reply, "OKAY") == NULL)
+					{
+						printf("Error, no OKAY reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
+						if (unit_store) free(unit_store);
+						ret = 1;
+						goto endflashing;
+					}
+				}
+			}
 		}
 	}
+
+	if (unit_store) free(unit_store);
 
 	printf("Product: %s\n", product);
 	printf("Version: %s\n", version);
