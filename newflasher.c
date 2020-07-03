@@ -2485,18 +2485,18 @@ int main(int argc, char *argv[])
 /*========================================  extract GordonGate  ======================================*/
 #ifdef _WIN32
 	printf("\nOptional step! Type 'y' and press ENTER if you need GordonGate flash driver, or type 'n' to skip.\n");
-	printf("This creates GordonGate.7z archive in the same dir with %s!\n", progname);
+	printf("This creates GordonGate driver installer in the same dir with %s!\n", progname);
 	if (scanf(" %c", &ch)) { }
 	if (ch == 'y' || ch == 'Y')
 	{
-		FILE *gg = fopen("GordonGate.7z", "wb");
+		FILE *gg = fopen("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi", "wb");
 		if (gg == NULL) {
-			printf("Unable to create GordonGate.7z!\n");
+			printf("Unable to create Sony_Mobile_Software_Update_Drivers_x64_Setup.msi!\n");
 			goto pauza;
 		}
-		fwrite(GordonGate_7z, 1, GordonGate_7z_len, gg);
+		fwrite(GordonGate, 1, GordonGate_len, gg);
 		fclose(gg);
-		printf("GordonGate.7z archive created.\n");
+		printf("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi created.\n");
 		goto pauza;
 	}
 #endif
