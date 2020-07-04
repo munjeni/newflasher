@@ -162,9 +162,6 @@
 
 #define ENABLE_DEBUG 1
 
-/* ta units definitions here */
-#define TA_BATTERY_CAPACITY 2490
-
 #if ENABLE_DEBUG
 #define LOG printf
 #else
@@ -198,7 +195,6 @@ static char get_root_key_hash[0x41];
 static char slot_count[2];
 static char current_slot[2];
 static char remember_current_slot[2];
-static unsigned char battery_capacity = 0;
 
 static unsigned int something_flashed = 0;
 
@@ -3107,100 +3103,6 @@ if (dev == NULL) {
 		}
 	}
 
-	if ((unit_store = (char *)malloc(256)) == NULL) {
-		printf("Error malloc unit store for battery capacity!\n");
-		ret = 1;
-		goto endflashing;
-	}
-
-	snprintf(unit_store, 16, "Read-TA:2:%d", TA_BATTERY_CAPACITY);
-	if (transfer_bulk_async(dev, EP_OUT, unit_store, strlen(unit_store), USB_TIMEOUT, 1) < 1) {
-		printf("Error writing command %s!\n", tmp);
-		if (unit_store) free(unit_store);
-		ret = 1;
-		goto endflashing;
-	}
-	else
-	{
-		if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
-			printf("Error, no reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
-			if (unit_store) free(unit_store);
-			ret = 1;
-			goto endflashing;
-		}
-
-		if (memcmp(tmp_reply, "FAIL", 4) == 0) {
-			printf("%s\n", tmp_reply);
-			if (unit_store) free(unit_store);
-			ret = 1;
-			goto endflashing;
-		}
-		else
-		{
-			unit_sz = 0;
-			if (get_reply_len != 12) {
-				printf("Errornous DATA reply!\n");
-				display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
-				if (unit_store) free(unit_store);
-				ret = 1;
-				goto endflashing;
-			}
-
-			sscanf(tmp_reply+4, "%08x", &unit_sz);
-
-			if (!unit_sz)
-			{
-				battery_capacity = 0;
-
-				if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
-					printf("Error retrieving OKAY reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
-					if (unit_store) free(unit_store);
-					ret = 1;
-					goto endflashing;
-				}
-
-				if (strstr(tmp_reply, "OKAY") == NULL)
-				{
-					printf("Error, no OKAY reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
-					display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
-					if (unit_store) free(unit_store);
-					ret = 1;
-					goto endflashing;
-				}
-			}
-			else
-			{
-				if (get_reply(dev, EP_IN, unit_store, unit_sz, USB_TIMEOUT, 1) == NULL) {
-					printf("Error retrieving unit data on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
-					if (unit_store) free(unit_store);
-					ret = 1;
-					goto endflashing;
-				}
-				else
-				{
-					battery_capacity = (unsigned char)unit_store[0];
-
-					if (get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0) == NULL) {
-						printf("Error retrieving OKAY reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
-						if (unit_store) free(unit_store);
-						ret = 1;
-						goto endflashing;
-					}
-
-					if (strstr(tmp_reply, "OKAY") == NULL)
-					{
-						printf("Error, no OKAY reply on partition: 2, unit: %d (TA_BATTERY_CAPACITY)!\n", TA_BATTERY_CAPACITY);
-						if (unit_store) free(unit_store);
-						ret = 1;
-						goto endflashing;
-					}
-				}
-			}
-		}
-	}
-
-	if (unit_store) free(unit_store);
-
 	printf("Product: %s\n", product);
 	printf("Version: %s\n", version);
 	printf("Bootloader version: %s\n", version_bootloader);
@@ -3224,14 +3126,6 @@ if (dev == NULL) {
 	printf("Root key hash: %s\n", get_root_key_hash);
 	printf("Slot count: %s\n", slot_count);
 	printf("Current slot: %s\n", current_slot);
-	printf("Battery capacity: %d percent\n", battery_capacity);
-
-	if (battery_capacity < 30)
-	{
-		printf("Sorry you must charge your battery, it is below minimum 30 percent!\n");
-		ret = 1;
-		goto endflashing;
-	}
 
 /*======================================  put into flash mode  =======================================*/
 
