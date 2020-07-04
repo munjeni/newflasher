@@ -2592,7 +2592,7 @@ if (dev == NULL) {
 
 		for (i=1; i<=2; ++i)
 		{
-			char part[5];
+			char part[16];
 			snprintf(part, sizeof(part), "%02x.ta", i);
 
 			if ((dump = fopen(part, "wb")) == NULL) {
