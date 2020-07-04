@@ -2460,8 +2460,6 @@ int main(int argc, char *argv[])
 	}
 #endif
 
-	if (argc) { }
-
 	printf("--------------------------------------------------------\n");
 	printf("            %s v%d by Munjeni @ 2017/2019           \n", progname, VERSION);
 	printf("--------------------------------------------------------\n");
@@ -2480,20 +2478,23 @@ int main(int argc, char *argv[])
 
 /*========================================  extract GordonGate  ======================================*/
 #ifdef _WIN32
-	printf("\nOptional step! Type 'y' and press ENTER if you need GordonGate flash driver, or type 'n' to skip.\n");
-	printf("This creates GordonGate driver installer in the same dir with %s!\n", progname);
-	if (scanf(" %c", &ch)) { }
-	if (ch == 'y' || ch == 'Y')
+	if (argc < 2)
 	{
-		FILE *gg = fopen("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi", "wb");
-		if (gg == NULL) {
-			printf("Unable to create Sony_Mobile_Software_Update_Drivers_x64_Setup.msi!\n");
+		printf("\nOptional step! Type 'y' and press ENTER if you need GordonGate flash driver, or type 'n' to skip.\n");
+		printf("This creates GordonGate driver installer in the same dir with %s!\n", progname);
+		if (scanf(" %c", &ch)) { }
+		if (ch == 'y' || ch == 'Y')
+		{
+			FILE *gg = fopen("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi", "wb");
+			if (gg == NULL) {
+				printf("Unable to create Sony_Mobile_Software_Update_Drivers_x64_Setup.msi!\n");
+				goto pauza;
+			}
+			fwrite(GordonGate, 1, GordonGate_len, gg);
+			fclose(gg);
+			printf("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi created.\n");
 			goto pauza;
 		}
-		fwrite(GordonGate, 1, GordonGate_len, gg);
-		fclose(gg);
-		printf("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi created.\n");
-		goto pauza;
 	}
 #endif
 /*====================================================================================================*/
@@ -2566,6 +2567,115 @@ if (dev == NULL) {
 #endif
 #endif
 
+/*======================================= commands from script =======================================*/
+
+if (argc > 1)
+{
+	if (transfer_bulk_async(dev, EP_OUT, argv[1], strlen(argv[1]), USB_TIMEOUT, 1) < 1)
+	{
+		printf("Error writing commad: %s\n", argv[1]);
+		goto endflashing;
+	}
+	else
+	{
+		printf("Writing command: %s\n", argv[1]);
+
+		if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL)
+		{
+			printf("Error, null reply\n");
+			goto endflashing;
+		}
+		else
+		{
+			display_buffer_hex_ascii("got first reply", tmp_reply, get_reply_len);
+
+			if (memcmp(tmp_reply, "FAIL", 4) == 0)
+			{
+				printf("got fail reply: %s\n", tmp_reply);
+				goto endflashing;
+			}
+			else
+			{
+				if (memcmp(tmp_reply, "DATA", 4) == 0)
+				{
+					unsigned int data_len = 0;
+
+					if (get_reply_len != 12) {
+						printf("Errornous DATA reply!\n");
+						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+						goto endflashing;
+					}
+
+					sscanf(tmp_reply+4, "%08x", &data_len);
+
+					if (!data_len)
+					{
+						printf("got null data_len!\n");
+
+						if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL)
+						{
+							printf("Error retrieving seccond reply!\n");
+							goto endflashing;
+						}
+
+						display_buffer_hex_ascii("got last reply", tmp_reply, get_reply_len);
+
+						if (strstr(tmp_reply, "OKAY") == NULL)
+						{
+							printf("Error, no OKAY reply!\n");
+							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
+							goto endflashing;
+						}
+					}
+					else
+					{
+						char *data_buf = NULL;
+
+						if ((data_buf = (char *)malloc(data_len)) == NULL)
+						{
+							printf("error allocating 0x%x bytes!\n", data_len);
+							goto endflashing;
+						}
+
+						if (get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1) == NULL)
+						{
+							printf("Error retrieving data!\n");
+							free(data_buf);
+							goto endflashing;
+						}
+						else
+						{
+							display_buffer_hex_ascii("data_buf", data_buf, data_len);
+
+							if (get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0) == NULL)
+							{
+								printf("Error retrieving OKAY reply!\n");
+								free(data_buf);
+								goto endflashing;
+							}
+
+							if (strstr(tmp_reply, "OKAY") == NULL)
+							{
+								printf("Error, no OKAY reply!\n");
+								free(data_buf);
+								goto endflashing;
+							}
+							else
+							{
+								display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+							}
+						}
+
+						free(data_buf);
+					}
+				}
+			}
+		}
+	}
+
+	goto endflashing;
+}
+
 /*==========================================  dump trim area  ========================================*/
 #if 1
 	printf("\nOptional step! Type 'y' and press ENTER if you want dump trim area, or type 'n' and press ENTER to skip.\n");
@@ -2608,9 +2718,9 @@ if (dev == NULL) {
 
 			for (j=0; j<80000; ++j)
 			{
-				snprintf(unit_store, 16, "Read-TA:%d:%d", i, j);
+				snprintf(unit_store, 32, "Read-TA:%d:%d", i, j);
 
-				if ((j % 500) == 0)
+				if ((j % 100) == 0)
 					printf(".");
 
 				if ((j % 30000) == 0)
@@ -4111,27 +4221,31 @@ endflashing:
 		}
 #endif
 	}
-#if 1
-	snprintf(tmp, sizeof(tmp), "powerdown");
-	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1) {
-		printf(" - Error writing command %s!\n", tmp);
-		CloseHandle(dev);
-		SetupDiDestroyDeviceInfoList(hDevInfo);
-		ret = 1;
-		goto pauza;
-	}
-	printf("Sent command: powerdown\n");
 
-	if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
-		printf("Error, no powerdown response!\n");
-		CloseHandle(dev);
-		SetupDiDestroyDeviceInfoList(hDevInfo);
-		ret = 1;
-		goto pauza;
-	}
+	if (argc < 2)
+	{
+#if 1
+		snprintf(tmp, sizeof(tmp), "powerdown");
+		if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1) {
+			printf(" - Error writing command %s!\n", tmp);
+			CloseHandle(dev);
+			SetupDiDestroyDeviceInfoList(hDevInfo);
+			ret = 1;
+			goto pauza;
+		}
+		printf("Sent command: powerdown\n");
+
+		if (get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0) == NULL) {
+			printf("Error, no powerdown response!\n");
+			CloseHandle(dev);
+			SetupDiDestroyDeviceInfoList(hDevInfo);
+			ret = 1;
+			goto pauza;
+		}
 #endif
 
-	printf("\nEnd. You can disconnect your device when you close %s\n", progname);
+		printf("\nEnd. You can disconnect your device when you close %s\n", progname);
+	}
 
 	CloseHandle(dev);
 	SetupDiDestroyDeviceInfoList(hDevInfo);
