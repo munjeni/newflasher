@@ -830,94 +830,42 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 }
 #else
 #ifdef __APPLE__
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-void callbackUSBTransferComplete(struct libusb_transfer *xfr)
-{
-	switch(xfr->status)
-	{
-		case LIBUSB_TRANSFER_COMPLETED:
-			// Success here, data transfered are inside
-			// xfr->buffer
-			// and the length is
-			// xfr->actual_length
-			break;
-
-		case LIBUSB_TRANSFER_CANCELLED:
-		case LIBUSB_TRANSFER_NO_DEVICE:
-		case LIBUSB_TRANSFER_TIMED_OUT:
-		case LIBUSB_TRANSFER_ERROR:
-		case LIBUSB_TRANSFER_STALL:
-		case LIBUSB_TRANSFER_OVERFLOW:
-			// Various type of errors here
-			break;
-	}
-}
-
 static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsigned long size, int timeout, int exact)
 {
-	struct libusb_transfer *xfr;
-	xfr = libusb_alloc_transfer(0);
+	int res;
+	int actual_length = 0;
 
 	if (ep == EP_IN)
 	{
-		libusb_fill_bulk_transfer(xfr,
-                          dev,
-                          0x81, // In
-                          (unsigned char *)bytes,
-                          size,
-                          callbackUSBTransferComplete,
-                          NULL,
-                          timeout
-                          );
-
-		if (libusb_submit_transfer(xfr) < 0)
+		res = libusb_bulk_transfer(dev, 0x01, (unsigned char *)bytes, size, &actual_length, timeout);
+		if (res < 0)
 		{
-			// Error
-			libusb_free_transfer(xfr);
+			printf("bulk transfer (in): %s\n", libusb_error_name(res));
 			return 0;
-		}
-
-		while(1)
-		{
-			if (libusb_handle_events(NULL) != LIBUSB_SUCCESS) break;
 		}
 	}
 
 	if (ep == EP_OUT)
 	{
-		libusb_fill_bulk_transfer(xfr,
-                          dev,
-                          0x01, // Out
-                          (unsigned char *)bytes,
-                          size,
-                          callbackUSBTransferComplete,
-                          NULL,
-                          timeout
-                          );
-
-		if (libusb_submit_transfer(xfr) < 0)
+		res = libusb_bulk_transfer(dev, 0x81, (unsigned char *)bytes, size, &actual_length, timeout);
+		if (res < 0)
 		{
-			// Error
-			libusb_free_transfer(xfr);
-			return 0;
-		}
-
-		while(1)
-		{
-			if (libusb_handle_events(NULL) != LIBUSB_SUCCESS) break;
-		}
-	}
-
-	if (exact) {
-		if (xfr->actual_length != size) {
-			printf(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n", (ep == EP_IN) ? "read" : "write", size, (unsigned long)xfr->actual_length);
-			display_buffer_hex_ascii("nBytes", bytes, xfr->actual_length);
+			printf("bulk transfer (out): %s\n", libusb_error_name(res));
 			return 0;
 		}
 	}
 
-	return xfr->actual_length;
+	if (exact)
+	{
+		if ((unsigned long)actual_length != size)
+		{
+			printf(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n", (ep == EP_IN) ? "read" : "write", size, (unsigned long)actual_length);
+			display_buffer_hex_ascii("nBytes", bytes, actual_length);
+			return 0;
+		}
+	}
+
+	return (unsigned long)actual_length;
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -2524,34 +2472,25 @@ int main(int argc, char *argv[])
 	}
 #else
 #ifdef __APPLE__
-libusb_device **list;
-size_t count=0, di;
-
-// Initialize library
-libusb_init(NULL);
-
-// Get list of USB devices currently connected
-count = libusb_get_device_list(NULL, &list);
-
-for(di=0; di < count; ++di)
+if (libusb_init(NULL))
 {
-   struct libusb_device_descriptor desc;
-
-   libusb_get_device_descriptor(list[di], &desc);
-
-   // Is our device?
-   if (desc.idVendor == VID && desc.idProduct == PID)
-   {
-      // Open USB device and get handle
-      libusb_open(list[di], &dev);
-      break;
-   }
+	printf("libusb init error!\n");
+	ret = 1;
+	goto pauza;
 }
 
-libusb_free_device_list(list, 1);
-
-if (dev == NULL) {
+dev = libusb_open_device_with_vid_pid(NULL, VID, PID);
+if (!dev)
+{
 	printf("\nNo usb device with vid:0x%04x pid:0x%04x !\n", VID, PID);
+	ret = 1;
+	goto pauza;
+}
+
+if (libusb_claim_interface(dev, 0) < 0)
+{
+	printf("claim interface error!\n");
+	CloseHandle(dev);
 	ret = 1;
 	goto pauza;
 }
@@ -4251,6 +4190,10 @@ endflashing:
 	SetupDiDestroyDeviceInfoList(hDevInfo);
 
 pauza:
+#ifdef __APPLE__
+	libusb_exit(NULL);
+#endif
+
 #ifdef _WIN32
 	system("pause");
 #endif
