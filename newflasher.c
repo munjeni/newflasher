@@ -2779,9 +2779,9 @@ if (argc > 1)
 }
 
 /*==========================================  dump trim area  ========================================*/
-#if 1
+
 	printf("\nOptional step! Type 'y' and press ENTER if you want dump trim area, or type 'n' and press ENTER to skip.\n");
-	printf("Do in mind this doesn't dump drm key since sake authentifiction is need for that!\n");
+	printf("Do in mind this doesn't dump drm key since sake authentifiction is need for that! But it is recommend to have dump in case hard brick!\n");
 	if (scanf(" %c", &ch)) { }
 
 	if (ch == 'y' || ch == 'Y')
@@ -2949,7 +2949,6 @@ if (argc > 1)
 		memset(tmp_reply, 0, BUFF_MAX);
 		goto endflashing;
 	}
-#endif
 
 /*============  Ask user for flashing bootloader,bluetooth,dsp,modem,rdimage to booth a,b slots =========*/
 
