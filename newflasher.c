@@ -2410,12 +2410,16 @@ int main(int argc, char *argv[])
 
 	unsigned long available_mb;
 
+	unsigned char reboot_mode = 0;
+	char reboot_string[32];
+
 #ifdef _WIN32
 	char *device = NULL;
 	char *working_path = _getcwd(0, 0);
 #else
 	char working_path[PATH_MAX];
-	if (getcwd(working_path, sizeof(working_path)) == NULL) {
+	if (getcwd(working_path, sizeof(working_path)) == NULL)
+	{
 		perror("getcwd() error");
 		goto pauza;
 	}
@@ -2436,6 +2440,34 @@ int main(int argc, char *argv[])
 
 	memset(slot_count, 0x30, sizeof(slot_count));
 	memset(current_slot, 0x30, sizeof(current_slot));
+
+/*============================================  reboot mode ==========================================*/
+
+	printf("\nReboot mode at the end of flashing:\n  typa 'a' for reboot to android, type 'f' for reboot to fastboot, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
+	if (scanf(" %c", &ch)) { }
+	switch(ch)
+	{
+		case 'a':
+		case 'A':
+			reboot_mode = 1; /* android */
+			break;
+
+		case 'f':
+		case 'F':
+			reboot_mode = 2; /* fastboot */
+			break;
+
+		case 's':
+		case 'S':
+			reboot_mode = 3; /* flashmode */
+			break;
+
+		case 'p':
+		case 'P':
+		default:
+			reboot_mode = 0; /* power off */
+			break;
+	}
 
 /*========================================  extract GordonGate  ======================================*/
 #ifdef _WIN32
@@ -4437,20 +4469,39 @@ endflashing:
 	if (argc < 2)
 	{
 #if 1
-		snprintf(tmp, sizeof(tmp), "powerdown");
-		if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
+		switch(reboot_mode)
 		{
-			printf(" - Error writing command %s!\n", tmp);
+			case 1:
+				snprintf(reboot_string, sizeof(reboot_string), "continue");
+				break;
+
+			case 2:
+				snprintf(reboot_string, sizeof(reboot_string), "reboot-bootloader");
+				break;
+
+			case 3:
+				snprintf(reboot_string, sizeof(reboot_string), "reboot");
+				break;
+
+			case 0:
+			default:
+				snprintf(reboot_string, sizeof(reboot_string), "powerdown");
+				break;
+		}
+
+		if (transfer_bulk_async(dev, EP_OUT, reboot_string, strlen(reboot_string), USB_TIMEOUT, 1) < 1)
+		{
+			printf(" - Error writing command %s!\n", reboot_string);
 			CloseHandle(dev);
 			SetupDiDestroyDeviceInfoList(hDevInfo);
 			ret = 1;
 			goto pauza;
 		}
-		printf("Sent command: powerdown\n");
+		printf("Sent command: %s.\n", reboot_string);
 
 		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
-			printf("Error, no powerdown response!\n");
+			printf("Error, no %s response!\n", reboot_string);
 			CloseHandle(dev);
 			SetupDiDestroyDeviceInfoList(hDevInfo);
 			ret = 1;
@@ -4458,7 +4509,10 @@ endflashing:
 		}
 #endif
 
-		printf("\nEnd. You can disconnect your device when you close %s\n", progname);
+		if (reboot_mode == 0)
+			printf("\nEnd. You can disconnect your device when you close %s\n", progname);
+		else
+			printf("\nDone.\n");
 	}
 
 #ifdef __APPLE__
