@@ -2486,167 +2486,166 @@ int main(int argc, char *argv[])
 #else
 #ifdef __APPLE__
 #define usb_interface interface
-libusb_device *device = NULL;
-unsigned char bus, port_path[8];
-int k;
-int iface, nb_ifaces, first_iface = -1;
-int iface_detached = -1;
-struct libusb_config_descriptor *conf_desc;
-const struct libusb_endpoint_descriptor *endpoint;
-struct libusb_device_descriptor dev_desc;
-const char* speed_name[5] = {
+	libusb_device *device = NULL;
+	unsigned char bus, port_path[8];
+	int k;
+	int iface, nb_ifaces, first_iface = -1;
+	int iface_detached = -1;
+	struct libusb_config_descriptor *conf_desc;
+	const struct libusb_endpoint_descriptor *endpoint;
+	struct libusb_device_descriptor dev_desc;
+	const char* speed_name[5] = {
 				"Unknown", "1.5 Mbit/s (USB LowSpeed)",
 				"12 Mbit/s (USB FullSpeed)",
 				"480 Mbit/s (USB HighSpeed)",
 				"5000 Mbit/s (USB SuperSpeed)"
-};
+	};
 
-char string[128];
-unsigned char string_index[3];                      // indexes of the string descriptors
+	char string[128];
+	unsigned char string_index[3];                      // indexes of the string descriptors
 
-if (libusb_init(NULL))
-{
-	printf("libusb init error!\n");
-	ret = 1;
-	goto pauza;
-}
-
-dev = libusb_open_device_with_vid_pid(NULL, VID, PID);
-if (dev == NULL)
-{
-	printf("\nNo usb device with vid:0x%04x pid:0x%04x !\n", VID, PID);
-	ret = 1;
-	goto pauza;
-}
-
-device = libusb_get_device(dev);
-bus = libusb_get_bus_number(device);
-
-ret = libusb_get_port_path(NULL, device, port_path, sizeof(port_path));
-if (ret > 0)
-{
-	printf("\nDevice properties:\n");
-	printf("        bus number: %d\n", bus);
-	printf("         port path: %d", port_path[0]);
-
-	for (i=1; i<ret; i++) {
-		printf("->%d", port_path[i]);
-	}
-	printf(" (from root hub)\n");
-}
-
-ret = libusb_get_device_speed(device);
-if ((ret < 0) || (ret > 4))
-	ret = 0;
-printf("             speed: %s\n", speed_name[ret]);
-
-printf("\nReading device descriptor:\n");
-libusb_get_device_descriptor(device, &dev_desc);
-printf("            length: %d\n", dev_desc.bLength);
-printf("      device class: %d\n", dev_desc.bDeviceClass);
-printf("               S/N: %d\n", dev_desc.iSerialNumber);
-printf("           VID:PID: 0x%X:0x%X\n", dev_desc.idVendor, dev_desc.idProduct);
-printf("         bcdDevice: 0x%X\n", dev_desc.bcdDevice);
-printf("   iMan:iProd:iSer: %d:%d:%d\n", dev_desc.iManufacturer, dev_desc.iProduct, dev_desc.iSerialNumber);
-printf("          nb confs: %d\n", dev_desc.bNumConfigurations);
-
-/* Copy the string descriptors for easier parsing */
-string_index[0] = dev_desc.iManufacturer;
-string_index[1] = dev_desc.iProduct;
-string_index[2] = dev_desc.iSerialNumber;
-
-////////////////////////////////
-printf("\nReading configuration descriptors:\n");
-libusb_get_config_descriptor(device, 0, &conf_desc);
-nb_ifaces = conf_desc->bNumInterfaces;
-printf("             nb interfaces: %d\n", nb_ifaces);
-
-if (nb_ifaces > 0)
-	first_iface = conf_desc->usb_interface[0].altsetting[0].bInterfaceNumber;
-
-for (i=0; i < nb_ifaces; ++i)
-{
-	printf("              interface[%d]: id = %d\n",
-				i,
-				conf_desc->usb_interface[i].altsetting[0].bInterfaceNumber);
-
-	for (j=0; j < conf_desc->usb_interface[i].num_altsetting; ++j)
+	if (libusb_init(NULL))
 	{
-		printf("interface[%d].altsetting[%d]: num endpoints = %d\n",
+		printf("libusb init error!\n");
+		ret = 1;
+		goto pauza;
+	}
+
+	dev = libusb_open_device_with_vid_pid(NULL, VID, PID);
+	if (dev == NULL)
+	{
+		printf("\nNo usb device with vid:0x%04x pid:0x%04x !\n", VID, PID);
+		ret = 1;
+		goto pauza;
+	}
+
+	device = libusb_get_device(dev);
+	bus = libusb_get_bus_number(device);
+
+	ret = libusb_get_port_path(NULL, device, port_path, sizeof(port_path));
+	if (ret > 0)
+	{
+		printf("\nDevice properties:\n");
+		printf("        bus number: %d\n", bus);
+		printf("         port path: %d", port_path[0]);
+
+		for (i=1; i<ret; i++) {
+			printf("->%d", port_path[i]);
+		}
+		printf(" (from root hub)\n");
+	}
+
+	ret = libusb_get_device_speed(device);
+	if ((ret < 0) || (ret > 4))
+		ret = 0;
+	printf("             speed: %s\n", speed_name[ret]);
+
+	printf("\nReading device descriptor:\n");
+	libusb_get_device_descriptor(device, &dev_desc);
+	printf("            length: %d\n", dev_desc.bLength);
+	printf("      device class: %d\n", dev_desc.bDeviceClass);
+	printf("               S/N: %d\n", dev_desc.iSerialNumber);
+	printf("           VID:PID: 0x%X:0x%X\n", dev_desc.idVendor, dev_desc.idProduct);
+	printf("         bcdDevice: 0x%X\n", dev_desc.bcdDevice);
+	printf("   iMan:iProd:iSer: %d:%d:%d\n", dev_desc.iManufacturer, dev_desc.iProduct, dev_desc.iSerialNumber);
+	printf("          nb confs: %d\n", dev_desc.bNumConfigurations);
+
+	/* Copy the string descriptors for easier parsing */
+	string_index[0] = dev_desc.iManufacturer;
+	string_index[1] = dev_desc.iProduct;
+	string_index[2] = dev_desc.iSerialNumber;
+
+	printf("\nReading configuration descriptors:\n");
+	libusb_get_config_descriptor(device, 0, &conf_desc);
+	nb_ifaces = conf_desc->bNumInterfaces;
+	printf("             nb interfaces: %d\n", nb_ifaces);
+
+	if (nb_ifaces > 0)
+		first_iface = conf_desc->usb_interface[0].altsetting[0].bInterfaceNumber;
+
+	for (i=0; i < nb_ifaces; ++i)
+	{
+		printf("              interface[%d]: id = %d\n",
+					i,
+					conf_desc->usb_interface[i].altsetting[0].bInterfaceNumber);
+
+		for (j=0; j < conf_desc->usb_interface[i].num_altsetting; ++j)
+		{
+			printf("interface[%d].altsetting[%d]: num endpoints = %d\n",
 				i, j, conf_desc->usb_interface[i].altsetting[j].bNumEndpoints);
 
-		printf("   Class.SubClass.Protocol: 0x%X 0x%X 0x%X\n",
+			printf("   Class.SubClass.Protocol: 0x%X 0x%X 0x%X\n",
 				conf_desc->usb_interface[i].altsetting[j].bInterfaceClass,
 				conf_desc->usb_interface[i].altsetting[j].bInterfaceSubClass,
 				conf_desc->usb_interface[i].altsetting[j].bInterfaceProtocol);
 
-		for (k=0; k < conf_desc->usb_interface[i].altsetting[j].bNumEndpoints; ++k)
-		{
-			endpoint = &conf_desc->usb_interface[i].altsetting[j].endpoint[k];
-			printf("       endpoint[%d].address: 0x%02X\n", k, endpoint->bEndpointAddress);
-
-			/* Use the first interrupt or bulk IN/OUT endpoints as default */
-			if ((endpoint->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK) & (LIBUSB_TRANSFER_TYPE_BULK | LIBUSB_TRANSFER_TYPE_INTERRUPT))
+			for (k=0; k < conf_desc->usb_interface[i].altsetting[j].bNumEndpoints; ++k)
 			{
-				if (endpoint->bEndpointAddress & LIBUSB_ENDPOINT_IN)
-				{
-					if (!endpoint_in)
-						endpoint_in = endpoint->bEndpointAddress;
-				}
+				endpoint = &conf_desc->usb_interface[i].altsetting[j].endpoint[k];
+				printf("       endpoint[%d].address: 0x%02X\n", k, endpoint->bEndpointAddress);
 
-				if (endpoint->bEndpointAddress & LIBUSB_ENDPOINT_OUT)
+				/* Use the first interrupt or bulk IN/OUT endpoints as default */
+				if ((endpoint->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK) & (LIBUSB_TRANSFER_TYPE_BULK | LIBUSB_TRANSFER_TYPE_INTERRUPT))
 				{
-					if (!endpoint_out)
-						endpoint_out = endpoint->bEndpointAddress;
+					if (endpoint->bEndpointAddress & LIBUSB_ENDPOINT_IN)
+					{
+						if (!endpoint_in)
+							endpoint_in = endpoint->bEndpointAddress;
+					}
+
+					if (endpoint->bEndpointAddress & LIBUSB_ENDPOINT_OUT)
+					{
+						if (!endpoint_out)
+							endpoint_out = endpoint->bEndpointAddress;
+					}
 				}
+				printf("           max packet size: 0x%X\n", endpoint->wMaxPacketSize);
+				printf("          polling interval: 0x%X\n", endpoint->bInterval);
 			}
-			printf("           max packet size: 0x%X\n", endpoint->wMaxPacketSize);
-			printf("          polling interval: 0x%X\n", endpoint->bInterval);
 		}
 	}
-}
 
-libusb_free_config_descriptor(conf_desc);
+	libusb_free_config_descriptor(conf_desc);
 
-for (iface=0; iface < nb_ifaces; ++iface)
-{
-	printf("\nClaiming interface %d...\n", iface);
-	ret = libusb_claim_interface(dev, iface);
-
-	if ((ret != LIBUSB_SUCCESS) && libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER) && (libusb_kernel_driver_active(dev, iface) > 0))
+	for (iface=0; iface < nb_ifaces; ++iface)
 	{
-		/* Try to detach the kernel driver */
-		printf("   A kernel driver is active, trying to detach it...\n");
-		ret = libusb_detach_kernel_driver(dev, iface);
-		if (ret == LIBUSB_SUCCESS)
+		printf("\nClaiming interface %d...\n", iface);
+		ret = libusb_claim_interface(dev, iface);
+
+		if ((ret != LIBUSB_SUCCESS) && libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER) && (libusb_kernel_driver_active(dev, iface) > 0))
 		{
-			iface_detached = iface;
-			printf("   Claiming interface again...\n");
-			ret = libusb_claim_interface(dev, iface);
+			/* Try to detach the kernel driver */
+			printf("   A kernel driver is active, trying to detach it...\n");
+			ret = libusb_detach_kernel_driver(dev, iface);
+			if (ret == LIBUSB_SUCCESS)
+			{
+				iface_detached = iface;
+				printf("   Claiming interface again...\n");
+				ret = libusb_claim_interface(dev, iface);
+			}
+		}
+
+		if (ret != LIBUSB_SUCCESS)
+		{
+			printf("   Failed.\n");
+			CloseHandle(dev);
+			ret = 1;
+			goto pauza;
 		}
 	}
 
-	if (ret != LIBUSB_SUCCESS)
+	printf("\nReading string descriptors:\n");
+	for (i=0; i<3; ++i)
 	{
-		printf("   Failed.\n");
-		CloseHandle(dev);
-		ret = 1;
-		goto pauza;
+		if (string_index[i] == 0)
+			continue;
+
+		if (libusb_get_string_descriptor_ascii(dev, string_index[i], (unsigned char*)string, 128) >= 0)
+			printf("   String (0x%02X): \"%s\"\n", string_index[i], string);
 	}
-}
 
-printf("\nReading string descriptors:\n");
-for (i=0; i<3; ++i)
-{
-	if (string_index[i] == 0)
-		continue;
-
-	if (libusb_get_string_descriptor_ascii(dev, string_index[i], (unsigned char*)string, 128) >= 0)
-		printf("   String (0x%02X): \"%s\"\n", string_index[i], string);
-}
-
-/* Read the OS String Descriptor */
-if (libusb_get_string_descriptor_ascii(dev, 0xEE, (unsigned char*)string, 128) >= 0)
+	/* Read the OS String Descriptor */
+	if (libusb_get_string_descriptor_ascii(dev, 0xEE, (unsigned char*)string, 128) >= 0)
 		printf("   String (0x%02X): \"%s\"\n", 0xEE, string);
 
 #else
