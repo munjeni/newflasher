@@ -842,9 +842,19 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 	if (ep == EP_IN)
 	{
 		do {
-			res = libusb_bulk_transfer(dev, endpoint_in, (unsigned char *)bytes, size, &actual_length, timeout);
+			res = libusb_bulk_transfer(dev, endpoint_in, (unsigned char *)bytes, size, &actual_length, 2000);
 			if (res == LIBUSB_ERROR_PIPE)
-				libusb_clear_halt(dev, endpoint_in);
+			{
+				int halt = libusb_clear_halt(dev, endpoint_in);
+				if (halt != LIBUSB_SUCCESS)
+				{
+					printf("clear halt (in): %s\n", libusb_error_name(halt));
+				}
+				else
+				{
+					printf("halt clear after: %d\n", try);
+				}
+			}
 			try++;
 		} while ((res == LIBUSB_ERROR_PIPE) && (try < 3));
 
@@ -858,9 +868,19 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 	if (ep == EP_OUT)
 	{
 		do {
-			res = libusb_bulk_transfer(dev, endpoint_out, (unsigned char *)bytes, size, &actual_length, timeout);
+			res = libusb_bulk_transfer(dev, endpoint_out, (unsigned char *)bytes, size, &actual_length, 2000);
 			if (res == LIBUSB_ERROR_PIPE)
-				libusb_clear_halt(dev, endpoint_out);
+			{
+				int halt = libusb_clear_halt(dev, endpoint_out);
+				if (halt != LIBUSB_SUCCESS)
+				{
+					printf("clear halt (out): %s\n", libusb_error_name(halt));
+				}
+				else
+				{
+					printf("halt clear after: %d\n", try);
+				}
+			}
 			try++;
 		} while ((res == LIBUSB_ERROR_PIPE) && (try < 3));
 
@@ -2636,7 +2656,7 @@ int main(int argc, char *argv[])
 
 	for (iface=0; iface < nb_ifaces; ++iface)
 	{
-		ret = libusb_set_configuration(dev,1);
+		ret = libusb_set_configuration(dev, 1);
 
 		if (ret == LIBUSB_SUCCESS)
 		{
@@ -4531,6 +4551,8 @@ endflashing:
 		printf("Releasing interface %d.\n", iface);
 		libusb_release_interface(dev, iface);
 	}
+
+	libusb_reset_device(dev);
 
 	if (iface_detached >= 0)
 	{
