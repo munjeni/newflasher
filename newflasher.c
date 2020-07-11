@@ -476,7 +476,7 @@ typedef struct libusb_device_handle *HANDLE;
 #define SetupDiDestroyDeviceInfoList(...)
 int32_t OSAtomicDecrement32Barrier(volatile int32_t *__theValue) { return 0; }
 int32_t OSAtomicIncrement32Barrier(volatile int32_t *__theValue) { return 0; }
-unsigned char endpoint_in = 0x01, endpoint_out = 0x81;    // default IN and OUT endpoints
+int endpoint_in = 0x81, endpoint_out = 0x01;    // default IN and OUT endpoints
 #else
 #define SetupDiDestroyDeviceInfoList(...)
 
@@ -833,6 +833,7 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 }
 #else
 #ifdef __APPLE__
+
 static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsigned long size, int timeout, int exact)
 {
 	int res = 0;
@@ -2538,7 +2539,7 @@ int main(int argc, char *argv[])
 #else
 #ifdef __APPLE__
 #define usb_interface interface
-	putenv("LIBUSB_DEBUG=4");
+	//putenv("LIBUSB_DEBUG=4"); // set debug level
 	libusb_device *device = NULL;
 	unsigned char bus, port_path[8];
 	int k;
@@ -2640,10 +2641,10 @@ int main(int argc, char *argv[])
 
 				if (conf_desc->usb_interface[i].altsetting[j].bNumEndpoints == 2)
 				{
-					if (k == 0)
+					if (k == 1)
 						endpoint_out = endpoint->bEndpointAddress;
 
-					if (k == 1)
+					if (k == 0)
 						endpoint_in = endpoint->bEndpointAddress;
 				}
 				printf("           max packet size: 0x%X\n", endpoint->wMaxPacketSize);
@@ -4551,8 +4552,6 @@ endflashing:
 		printf("Releasing interface %d.\n", iface);
 		libusb_release_interface(dev, iface);
 	}
-
-	libusb_reset_device(dev);
 
 	if (iface_detached >= 0)
 	{
