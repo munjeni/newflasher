@@ -2554,7 +2554,7 @@ int main(int argc, char *argv[])
 	device = libusb_get_device(dev);
 	bus = libusb_get_bus_number(device);
 
-	ret = libusb_get_port_path(NULL, device, port_path, sizeof(port_path));
+	ret = libusb_get_port_numbers(device, port_path, sizeof(port_path));
 	if (ret > 0)
 	{
 		printf("\nDevice properties:\n");
