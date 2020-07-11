@@ -2464,30 +2464,33 @@ int main(int argc, char *argv[])
 
 /*============================================  reboot mode ==========================================*/
 
-	printf("\nReboot mode at the end of flashing:\n  typa 'a' for reboot to android, type 'f' for reboot to fastboot, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
-	if (scanf(" %c", &ch)) { }
-	switch(ch)
+	if (argc < 2)
 	{
-		case 'a':
-		case 'A':
-			reboot_mode = 1; /* android */
-			break;
+		printf("\nReboot mode at the end of flashing:\n  typa 'a' for reboot to android, type 'f' for reboot to fastboot, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
+		if (scanf(" %c", &ch)) { }
+		switch(ch)
+		{
+			case 'a':
+			case 'A':
+				reboot_mode = 1; /* android */
+				break;
 
-		case 'f':
-		case 'F':
-			reboot_mode = 2; /* fastboot */
-			break;
+			case 'f':
+			case 'F':
+				reboot_mode = 2; /* fastboot */
+				break;
 
-		case 's':
-		case 'S':
-			reboot_mode = 3; /* flashmode */
-			break;
+			case 's':
+			case 'S':
+				reboot_mode = 3; /* flashmode */
+				break;
 
-		case 'p':
-		case 'P':
-		default:
-			reboot_mode = 0; /* power off */
-			break;
+			case 'p':
+			case 'P':
+			default:
+				reboot_mode = 0; /* power off */
+				break;
+		}
 	}
 
 /*========================================  extract GordonGate  ======================================*/
