@@ -8,26 +8,28 @@ CCWIN=i686-w64-mingw32-gcc
 CCWINSTRIP=i686-w64-mingw32-strip
 WINDRES=i686-w64-mingw32-windres
 
-CCAPPLE64=/home/savan/Desktop/osxtoolchain/osxcross/target/bin/x86_64-apple-darwin11-cc
-CCAPPLESTRIP64=/home/savan/Desktop/osxtoolchain/osxcross/target/bin/x86_64-apple-darwin11-strip
-
-CCAPPLE=/home/savan/Desktop/osxtoolchain/osxcross/target/bin/i386-apple-darwin11-cc
-CCAPPLESTRIP=/home/savan/Desktop/osxtoolchain/osxcross/target/bin/i386-apple-darwin11-strip
+OS := $(shell uname)
 
 CC=gcc
 STRIP=strip
 
+LIBS=
+
 CFLAGS=-Wall -O2
+ifeq ($(OS),Darwin)
+CFLAGS+= -I/usr/local/Cellar/libusb/1.0.23/include/libusb-1.0
+LIBS+=-lusb-1.0
+endif
 CROSS_CFLAGS=${CFLAGS} -I include -L lib
 
 .PHONY: default
 default: newflasher
 
 .PHONY: cross
-cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher.x86_64-apple-darwin11 #newflasher.i386-apple-darwin11
+cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64
 
 newflasher: newflasher.c version.h
-	${CC} ${CFLAGS} $< -o $@ -lz -lexpat
+	${CC} ${CFLAGS} $< -o $@ -lz -lexpat ${LIBS}
 
 newflasher.exe: newflasher.c version.h newflasher.rc.in
 	sed "s/@VERSION@/$$(sed 's/^.*VERSION //' version.h)/" newflasher.rc.in >newflasher.rc
@@ -51,18 +53,10 @@ newflasher.arm64: newflasher.c version.h
 	${ARMCC64} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
 	${ARMSTRIP64} newflasher.arm64
 
-newflasher.i386-apple-darwin11: newflasher.c version.h
-	${CCAPPLE} ${CROSS_CFLAGS} newflasher.c -o newflasher.i386-apple-darwin11 -lzdarwin11 -lexpatdarwin11
-	${CCAPPLESTRIP} newflasher.i386-apple-darwin11
-
-newflasher.x86_64-apple-darwin11: newflasher.c version.h
-	${CCAPPLE64} ${CROSS_CFLAGS} newflasher.c -o newflasher.x86_64-apple-darwin11 -lzdarwin11_64 -lexpatdarwin11_64 -lusb-1.0darwin11_64 -lobjc -Wl,-framework,IOKit -Wl,-framework,CoreFoundation
-	${CCAPPLESTRIP64} newflasher.x86_64-apple-darwin11
-
 .PHONY: clean
 clean:
 	rm -rf *.o *.rc *.res
 
 .PHONY: distclean
 distclean:
-	rm -rf *.o *.rc *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher.i386-apple-darwin11 newflasher.x86_64-apple-darwin11 newflasher
+	rm -rf *.o *.rc *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher

@@ -11,11 +11,15 @@ Install development versions of `zlib` and `expat`. On Debian-based systems such
 
     sudo apt-get install libexpat-dev libz-dev
 
+On Darwin you need to install libusb-1.0, this means:
+
+    brew install libusb
+
 Download, build and install, assuming that `~/bin` is in `$PATH`:
 
     git clone https://github.com/newflasher/newflasher.git ~/.local/share/newflasher
     make -C ~/.local/share/newflasher
-    ln -s ../.local/share/newflasher/newflasher ~/bin
+    ln -s ~/.local/share/newflasher/newflasher ~/bin
 
 ### Build (cross, static)
 
