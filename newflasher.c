@@ -842,7 +842,7 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 	if (ep == EP_IN)
 	{
 		do {
-			res = libusb_bulk_transfer(dev, endpoint_in, (unsigned char *)bytes, size, &actual_length, 2000);
+			res = libusb_bulk_transfer(dev, endpoint_in, (unsigned char *)bytes, size, &actual_length, timeout);
 			if (res == LIBUSB_ERROR_PIPE)
 			{
 				int halt = libusb_clear_halt(dev, endpoint_in);
@@ -868,7 +868,7 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 	if (ep == EP_OUT)
 	{
 		do {
-			res = libusb_bulk_transfer(dev, endpoint_out, (unsigned char *)bytes, size, &actual_length, 2000);
+			res = libusb_bulk_transfer(dev, endpoint_out, (unsigned char *)bytes, size, &actual_length, timeout);
 			if (res == LIBUSB_ERROR_PIPE)
 			{
 				int halt = libusb_clear_halt(dev, endpoint_out);
