@@ -476,7 +476,7 @@ typedef struct libusb_device_handle *HANDLE;
 #define SetupDiDestroyDeviceInfoList(...)
 int32_t OSAtomicDecrement32Barrier(volatile int32_t *__theValue) { return 0; }
 int32_t OSAtomicIncrement32Barrier(volatile int32_t *__theValue) { return 0; }
-unsigned char endpoint_in = 0, endpoint_out = 0;    // default IN and OUT endpoints
+unsigned char endpoint_in = 0x01, endpoint_out = 0x81;    // default IN and OUT endpoints
 #else
 #define SetupDiDestroyDeviceInfoList(...)
 
@@ -2518,14 +2518,16 @@ int main(int argc, char *argv[])
 #else
 #ifdef __APPLE__
 #define usb_interface interface
+	putenv("LIBUSB_DEBUG=4");
 	libusb_device *device = NULL;
 	unsigned char bus, port_path[8];
 	int k;
 	int iface, nb_ifaces, first_iface = -1;
 	int iface_detached = -1;
-	struct libusb_config_descriptor *conf_desc;
-	const struct libusb_endpoint_descriptor *endpoint;
+	struct libusb_config_descriptor *conf_desc = NULL;
+	const struct libusb_endpoint_descriptor *endpoint = NULL;
 	struct libusb_device_descriptor dev_desc;
+
 	const char* speed_name[5] = {
 				"Unknown", "1.5 Mbit/s (USB LowSpeed)",
 				"12 Mbit/s (USB FullSpeed)",
@@ -2616,20 +2618,13 @@ int main(int argc, char *argv[])
 				endpoint = &conf_desc->usb_interface[i].altsetting[j].endpoint[k];
 				printf("       endpoint[%d].address: 0x%02X\n", k, endpoint->bEndpointAddress);
 
-				/* Use the first interrupt or bulk IN/OUT endpoints as default */
-				if ((endpoint->bmAttributes & LIBUSB_TRANSFER_TYPE_MASK) & (LIBUSB_TRANSFER_TYPE_BULK | LIBUSB_TRANSFER_TYPE_INTERRUPT))
+				if (conf_desc->usb_interface[i].altsetting[j].bNumEndpoints == 2)
 				{
-					if (endpoint->bEndpointAddress & LIBUSB_ENDPOINT_IN)
-					{
-						if (!endpoint_in)
-							endpoint_in = endpoint->bEndpointAddress;
-					}
+					if (k == 0)
+						endpoint_out = endpoint->bEndpointAddress;
 
-					if (endpoint->bEndpointAddress & LIBUSB_ENDPOINT_OUT)
-					{
-						if (!endpoint_out)
-							endpoint_out = endpoint->bEndpointAddress;
-					}
+					if (k == 1)
+						endpoint_in = endpoint->bEndpointAddress;
 				}
 				printf("           max packet size: 0x%X\n", endpoint->wMaxPacketSize);
 				printf("          polling interval: 0x%X\n", endpoint->bInterval);
@@ -2641,8 +2636,23 @@ int main(int argc, char *argv[])
 
 	for (iface=0; iface < nb_ifaces; ++iface)
 	{
+		ret = libusb_set_configuration(dev,1);
+
+		if (ret == LIBUSB_SUCCESS)
+		{
+			printf("\nSet configuration success\n");
+		}
+		else
+		{
+			printf("\nSet configuration fail with error: %s\n", libusb_error_name(ret));
+			CloseHandle(dev);
+			ret = 1;
+			goto pauza;
+		}
+
 		printf("\nClaiming interface %d...\n", iface);
 		ret = libusb_claim_interface(dev, iface);
+
 
 		if ((ret != LIBUSB_SUCCESS) && libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER) && (libusb_kernel_driver_active(dev, iface) > 0))
 		{
@@ -2659,7 +2669,7 @@ int main(int argc, char *argv[])
 
 		if (ret != LIBUSB_SUCCESS)
 		{
-			printf("   Failed.\n");
+			printf("   Failed with: %s\n", libusb_error_name(ret));
 			CloseHandle(dev);
 			ret = 1;
 			goto pauza;
