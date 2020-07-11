@@ -4498,6 +4498,10 @@ endflashing:
 #if 1
 		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
+			/* FIXME: seems this is not working all the time so redirecting right now until we identify issue */
+			reboot_mode = 0;
+			goto redirect;
+
 			printf("Error, no sync response!\n");
 			CloseHandle(dev);
 			SetupDiDestroyDeviceInfoList(hDevInfo);
@@ -4550,6 +4554,7 @@ endflashing:
 		}
 #endif
 
+redirect:
 		if (reboot_mode == 0)
 			printf("\nEnd. You can disconnect your device when you close %s\n", progname);
 		else
