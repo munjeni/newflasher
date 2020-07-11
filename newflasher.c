@@ -2657,43 +2657,52 @@ int main(int argc, char *argv[])
 
 	for (iface=0; iface < nb_ifaces; ++iface)
 	{
+		printf("\nSet configuration:");
+
 		ret = libusb_set_configuration(dev, 1);
 
 		if (ret == LIBUSB_SUCCESS)
 		{
-			printf("\nSet configuration success\n");
+			printf(" succed.\n");
 		}
 		else
 		{
-			printf("\nSet configuration fail with error: %s\n", libusb_error_name(ret));
+			printf(" fail with error: %s\n", libusb_error_name(ret));
 			CloseHandle(dev);
 			ret = 1;
 			goto pauza;
 		}
 
-		printf("\nClaiming interface %d...\n", iface);
+		printf("\nClaiming interface %d:", iface);
 		ret = libusb_claim_interface(dev, iface);
 
 
 		if ((ret != LIBUSB_SUCCESS) && libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER) && (libusb_kernel_driver_active(dev, iface) > 0))
 		{
+			printf(" failed.\n");
+
 			/* Try to detach the kernel driver */
-			printf("   A kernel driver is active, trying to detach it...\n");
+			printf("A kernel driver is active, trying to detach it:");
 			ret = libusb_detach_kernel_driver(dev, iface);
 			if (ret == LIBUSB_SUCCESS)
 			{
+				printf(" succed.\n");
 				iface_detached = iface;
-				printf("   Claiming interface again...\n");
+				printf("Claiming interface again:");
 				ret = libusb_claim_interface(dev, iface);
 			}
 		}
 
 		if (ret != LIBUSB_SUCCESS)
 		{
-			printf("   Failed with: %s\n", libusb_error_name(ret));
+			printf(" failed with error: %s\n", libusb_error_name(ret));
 			CloseHandle(dev);
 			ret = 1;
 			goto pauza;
+		}
+		else
+		{
+			printf(" succed.\n");
 		}
 	}
 
@@ -2710,6 +2719,7 @@ int main(int argc, char *argv[])
 	/* Read the OS String Descriptor */
 	if (libusb_get_string_descriptor_ascii(dev, 0xEE, (unsigned char*)string, 128) >= 0)
 		printf("   String (0x%02X): \"%s\"\n", 0xEE, string);
+	printf("\n");
 
 #else
 	dev = get_flashmode(VID, PID);
