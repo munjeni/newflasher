@@ -2577,6 +2577,7 @@ int main(int argc, char *argv[])
 	{
 		printf("\nNo usb device with vid:0x%04x pid:0x%04x !\n", VID, PID);
 		ret = 1;
+		libusb_exit(NULL);
 		goto pauza;
 	}
 
@@ -2674,9 +2675,8 @@ int main(int argc, char *argv[])
 		else
 		{
 			printf(" fail with error: %s\n", libusb_error_name(ret));
-			CloseHandle(dev);
 			ret = 1;
-			goto pauza;
+			goto release;
 		}
 
 		printf("\nClaiming interface %d:", iface);
@@ -2702,9 +2702,8 @@ int main(int argc, char *argv[])
 		if (ret != LIBUSB_SUCCESS)
 		{
 			printf(" failed with error: %s\n", libusb_error_name(ret));
-			CloseHandle(dev);
 			ret = 1;
-			goto pauza;
+			goto release;
 		}
 		else
 		{
@@ -4497,10 +4496,8 @@ endflashing:
 		if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 		{
 			printf(" - Error writing command %s!\n", tmp);
-			CloseHandle(dev);
-			SetupDiDestroyDeviceInfoList(hDevInfo);
 			ret = 1;
-			goto pauza;
+			goto release;
 		}
 		printf("Sent command: Sync\n");
 #if 1
@@ -4518,10 +4515,8 @@ endflashing:
 		if (!sync_response)
 		{
 			printf(" error, no sync response!\n");
-			CloseHandle(dev);
-			SetupDiDestroyDeviceInfoList(hDevInfo);
 			ret = 1;
-			goto pauza;
+			goto release;
 		}
 		else
 		{
@@ -4557,20 +4552,16 @@ endflashing:
 		if (transfer_bulk_async(dev, EP_OUT, reboot_string, strlen(reboot_string), USB_TIMEOUT, 1) < 1)
 		{
 			printf(" - Error writing command %s!\n", reboot_string);
-			CloseHandle(dev);
-			SetupDiDestroyDeviceInfoList(hDevInfo);
 			ret = 1;
-			goto pauza;
+			goto release;
 		}
 		printf("Sent command: %s.\n", reboot_string);
 
 		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
 			printf("Error, no %s response!\n", reboot_string);
-			CloseHandle(dev);
-			SetupDiDestroyDeviceInfoList(hDevInfo);
 			ret = 1;
-			goto pauza;
+			goto release;
 		}
 #endif
 		if (reboot_mode == 0)
@@ -4578,6 +4569,8 @@ endflashing:
 		else
 			printf("\nDone.\n");
 	}
+
+release:
 
 #ifdef __APPLE__
 	for (iface=0; iface < nb_ifaces; ++iface)
@@ -4596,10 +4589,11 @@ endflashing:
 	CloseHandle(dev);
 	SetupDiDestroyDeviceInfoList(hDevInfo);
 
-pauza:
 #ifdef __APPLE__
 	libusb_exit(NULL);
 #endif
+
+pauza:
 
 memset(tmp_reply, 0, BUFF_MAX);
 
