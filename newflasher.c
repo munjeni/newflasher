@@ -1023,8 +1023,9 @@ static bool get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int t
 	ret_len = transfer_bulk_async(dev, ep, bytes, size, timeout, exact);
 	/*display_buffer_hex_ascii("Replied with ", bytes, ret_len);*/
 
-	if (!ret_len) {
-		printf(" - Error reply: null!\n");
+	if (!ret_len)
+	{
+		//printf(" - reply: null!\n");
 		return false;
 	}
 
@@ -4499,18 +4500,30 @@ endflashing:
 		}
 		printf("Sent command: Sync\n");
 #if 1
-		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+		/* 30 secconds enought for sync? */
+		time_t start = time(NULL);
+		bool sync_response = false;
+		printf("Waiting sync to finish...\n");
+		do
 		{
-			/* FIXME: seems this is not working all the time so redirecting right now until we identify issue */
-			reboot_mode = 0;
-			goto redirect;
+			sync_response = get_reply(dev, EP_IN, tmp, sizeof(tmp), 1000, 0);
+			printf(".");
+		}
+		while(time(NULL)-start < 30 && !sync_response);
 
-			printf("Error, no sync response!\n");
+		if (!sync_response)
+		{
+			printf(" error, no sync response!\n");
 			CloseHandle(dev);
 			SetupDiDestroyDeviceInfoList(hDevInfo);
 			ret = 1;
 			goto pauza;
 		}
+		else
+		{
+			printf(" done\n");
+		}
+
 #endif
 	}
 
@@ -4556,8 +4569,6 @@ endflashing:
 			goto pauza;
 		}
 #endif
-
-redirect:
 		if (reboot_mode == 0)
 			printf("\nEnd. You can disconnect your device when you close %s\n", progname);
 		else
