@@ -2435,6 +2435,8 @@ int main(int argc, char *argv[])
 	unsigned char reboot_mode = 0;
 	char reboot_string[32];
 
+	bool flash_session_created = false;
+
 #ifdef _WIN32
 	char *device = NULL;
 	char *working_path = _getcwd(0, 0);
@@ -3891,6 +3893,7 @@ if (argc > 1)
 			if (fld_cbck == 0)
 			{
 				printf("Created ouput folder flash_session\n");
+				flash_session_created = true;
 			}
 			else
 			{
@@ -3912,6 +3915,7 @@ if (argc > 1)
 	else
 	{
 		printf("Using existing folder flash_session\n");
+		flash_session_created = true;
 	}
 
 	if ((dir = opendir(working_path)) != NULL)
@@ -4598,7 +4602,9 @@ pauza:
 #endif
 
 memset(tmp_reply, 0, BUFF_MAX);
-rmdir("flash_session");
+
+if (flash_session_created)
+	rmdir("flash_session");
 
 #ifdef _WIN32
 	system("pause");
