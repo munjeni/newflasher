@@ -50,8 +50,7 @@ include $(BUILD_STATIC_LIBRARY)
 
 include $(CLEAR_VARS)
 LOCAL_MODULE := newflasher.arm64_pie
-LOCAL_CFLAGS += -Iinclude
-LOCAL_LDFLAGS += -Llib
+LOCAL_CFLAGS += -Iexpat/lib -Izlib
 LOCAL_STATIC_LIBRARIES += libz libexpat
 LOCAL_SRC_FILES := newflasher.c
 
