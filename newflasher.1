@@ -1,0 +1,79 @@
+.TH NEWFLASHER 1
+.SH NAME
+Newflasher \- Flash firmware to Sony Xperia phones
+.SH SYNOPSIS
+.B cd firmware-dir && newflasher
+.SH DESCRIPTION
+.PP
+This experimental software allows you to flash firmwares acquired
+through XperiFirm to Sony Xperia phones including and newer than
+the XZ Premium.
+.SH CAUTION
+.PP
+Newflasher was made for testing and educational purposes.  The author
+is not responsible for what you do on/with your device using
+Newflasher.  You must agree that you are using Newflasher on your own
+risk.  The author is not responsible if you brick your device or
+anything else!
+.SH USAGE
+.TP
+Optional step 1:
+If you have missing flash driver just double click exe and confirm
+driver extraction, 7z archive will become available, extract it and
+install driver.
+.TP
+Optional step 2:
+This step is realy optional and maybe not a functional: Dump the trim
+area.  Volunteers for confirmation are needed!
+.TP
+Step 1:
+Download the right firmware for your device using XperiFirm tool and
+change into the firmware dir created by XperiFirm tool.  Before you run
+Newflasher, do keep in mind that the Newflasher tool is programed to
+flash everything found in the same dir!  So the tool flashes all .ta
+files, all .sin files, boot delivery (whole boot folder),
+partition.zip, in short all files found in the directory!  If you do no
+want to flash something, just move file which you do no want to flash
+OUT OF THE FOLDER!  Partition.zip and .sin files can be flashed only if
+you extract partition.zip into newly created folder called partition!
+.TP
+Step 2:
+To start flashing phone put your phone into flash mode, run Newflasher
+and wait, wait, wait, until your device gets flashed, thats it.  Look
+into log to see if something goes wrong!  If all right you are done.
+If not post your log so I can look!  Happy flashing!
+.SH FEEDBACK
+Don't forget to report your opinion, sucess, reports, logs, and so on.
+Your suggestions are welcome!
+.PP
+.I https://forum.xda-developers.com/crossdevice-dev/sony/progress-newflasher-xperia-command-line-t3619426
+.PP
+.I https://github.com/newflasher/newflasher/issues
+.SH AUTHOR
+Mujeni
+.SH CREDITS
+.PP
+Without @tanipat and his pc companion debug logs this tool will never
+be possible!  Thank you a lot for your time providing me logs!  (By
+the influence of others, he was disappointed me with last post, but I
+still appreciate his help and can't forget it.)
+.PP
+Without @thrash001 who helped testing our tool I never be continue
+building our tool since I don't have device for testing, thanks mate!
+.PP
+Didn't forgot @beenoliu, thanks mate for testing!
+.PP
+Thanks to @porphyry for testing linux version!
+.PP
+Thanks to @Snow_Basinger for providing sniff log from 2018 device and
+for testing on his 2018 device.
+.PP
+Thanks to @frantisheq for testing Newflasher on his 2018 device and
+for notify about doublefree bug.
+.PP
+Thanks to @serajr for providing me some logs which helped me to figure
+out some things related to 2018 devices.
+.PP
+Thanks to @noelex for helping in Xperia 1 implementation.
+.PP
+Thanks to GitHub member RedL0tus for testing on Mac.

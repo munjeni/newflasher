@@ -55,15 +55,20 @@ newflasher.arm64: newflasher.c version.h
 	${ARMCC64} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
 	${ARMSTRIP64} newflasher.arm64
 
+newflasher.1.gz: newflasher.1
+	gzip -9fkn $<
+
 .PHONY: install
-install: newflasher
+install: newflasher newflasher.1.gz
 	$(INSTALL) -o root -g root -d $(DESTDIR)/usr/bin
 	$(INSTALL) -o root -g root -m 755 -s newflasher $(DESTDIR)/usr/bin/
+	$(INSTALL) -o root -g root -d $(DESTDIR)/usr/share/man/man1
+	$(INSTALL) -o root -g root -m 644 -s newflasher.1.gz $(DESTDIR)/usr/share/man/man1
 
 .PHONY: clean
 clean:
-	rm -rf *.o *.rc *.res
+	rm -rf *.gz *.o *.rc *.res
 
 .PHONY: distclean
 distclean:
-	rm -rf *.o *.rc *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher
+	rm -rf *.gz *.o *.rc *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher
