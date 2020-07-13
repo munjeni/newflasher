@@ -12,7 +12,9 @@ OS := $(shell uname)
 
 CC=gcc
 STRIP=strip
+INSTALL=install
 
+DESTDIR=
 LIBS=
 
 CFLAGS=-Wall -g -O2
@@ -52,6 +54,11 @@ newflasher.arm32: newflasher.c version.h
 newflasher.arm64: newflasher.c version.h
 	${ARMCC64} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
 	${ARMSTRIP64} newflasher.arm64
+
+.PHONY: install
+install: newflasher
+	$(INSTALL) -o root -g root -d $(DESTDIR)/usr/bin
+	$(INSTALL) -o root -g root -m 755 -s newflasher $(DESTDIR)/usr/bin/
 
 .PHONY: clean
 clean:
