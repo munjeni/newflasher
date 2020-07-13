@@ -11,7 +11,7 @@ Install `gcc`, `make` and development versions of `zlib` and `expat`. On Debian-
 
     sudo apt-get install gcc libexpat-dev libz-dev make
 
-On Darwin you need to install libusb-1.0, this means:
+On Darwin you need to install `libusb-1.0`, this means:
 
     brew install libusb
 
