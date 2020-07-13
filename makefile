@@ -15,7 +15,7 @@ STRIP=strip
 
 LIBS=
 
-CFLAGS=-Wall -O2
+CFLAGS=-Wall -g -O2
 ifeq ($(OS),Darwin)
 CFLAGS+= -I/usr/local/Cellar/libusb/1.0.23/include/libusb-1.0
 LIBS+=-lusb-1.0
