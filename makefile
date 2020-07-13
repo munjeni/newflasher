@@ -11,6 +11,7 @@ CCWINSTRIP=i686-w64-mingw32-strip
 WINDRES=i686-w64-mingw32-windres
 
 OS := $(shell uname)
+VERSION := $(shell sed 's/^.*VERSION //' version.h)
 
 CC=gcc
 STRIP=strip
@@ -36,7 +37,7 @@ newflasher: newflasher.c version.h
 	${CC} ${CFLAGS} $< -o $@ -lz -lexpat ${LIBS}
 
 newflasher.exe: newflasher.c version.h newflasher.rc.in
-	sed "s/@VERSION@/$$(sed 's/^.*VERSION //' version.h)/" newflasher.rc.in >newflasher.rc
+	sed "s/@VERSION@/$(VERSION)/" newflasher.rc.in >newflasher.rc
 	${WINDRES} newflasher.rc -O coff -o newflasher.res
 	${CCWIN} ${CROSS_CFLAGS} -static newflasher.c newflasher.res -o newflasher.exe -lsetupapi -lzwin -lexpat.win
 	${CCWINSTRIP} newflasher.exe
@@ -65,6 +66,17 @@ newflasher.arm64_pie:
 
 newflasher.1.gz: newflasher.1
 	gzip -9fkn $<
+
+newflasher-$(VERSION).txz: include/GordonGate.h makefile newflasher.1 newflasher.c newflasher.ico newflasher.rc.in readme.md version.h
+	rm -rf $(basename $@)
+	$(INSTALL) -d $(basename $@)
+	tar c $^ | tar xp -C $(basename $@)
+	chmod -R u=rwX,go=rX $(basename $@)
+	tar c --owner=0 --group=0 --numeric-owner $(basename $@) | xz -9v >$@
+	rm -rf $(basename $@)
+
+.PHONY: dist
+dist: newflasher-$(VERSION).txz
 
 .PHONY: install
 install: newflasher newflasher.1.gz
