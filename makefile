@@ -4,6 +4,8 @@ ARMSTRIP=/home/savan/Desktop/gcc-linaro-5.3.1-2016.05-x86_64_arm-linux-gnueabi/b
 ARMCC64=/home/savan/Desktop/gcc-linaro-5.3.1-2016.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-gcc
 ARMSTRIP64=/home/savan/Desktop/gcc-linaro-5.3.1-2016.05-x86_64_aarch64-linux-gnu/bin/aarch64-linux-gnu-strip
 
+NDK_BUILD := NDK_PROJECT_PATH=. /root/ndk/android-ndk-r21d/ndk-build NDK_APPLICATION_MK=./Application.mk
+
 CCWIN=i686-w64-mingw32-gcc
 CCWINSTRIP=i686-w64-mingw32-strip
 WINDRES=i686-w64-mingw32-windres
@@ -28,7 +30,7 @@ CROSS_CFLAGS=${CFLAGS} -I include -L lib
 default: newflasher
 
 .PHONY: cross
-cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64
+cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher.arm64_pie
 
 newflasher: newflasher.c version.h
 	${CC} ${CFLAGS} $< -o $@ -lz -lexpat ${LIBS}
@@ -53,7 +55,13 @@ newflasher.arm32: newflasher.c version.h
 
 newflasher.arm64: newflasher.c version.h
 	${ARMCC64} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.arm64 -lzarm64 -lexpat.arm64
-	${ARMSTRIP64} newflasher.arm64
+
+newflasher.arm64_pie:
+	@echo "Building Android pie binary"
+	@git clone https://android.googlesource.com/platform/external/zlib
+	@git clone https://android.googlesource.com/platform/external/expat
+	${NDK_BUILD}
+	@cp -fr libs/arm64-v8a/newflasher.arm64_pie ./newflasher.arm64_pie
 
 newflasher.1.gz: newflasher.1
 	gzip -9fkn $<
@@ -67,8 +75,8 @@ install: newflasher newflasher.1.gz
 
 .PHONY: clean
 clean:
-	rm -rf *.gz *.o *.rc *.res
+	rm -rf *.gz *.o *.rc *.res obj libs zlib expat
 
 .PHONY: distclean
 distclean:
-	rm -rf *.gz *.o *.rc *.res newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher
+	rm -rf *.gz *.o *.rc *.res obj libs zlib expat newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher.arm64_pie newflasher
