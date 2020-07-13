@@ -6,6 +6,10 @@
 /newflasher.rc
 /newflasher.res
 /newflasher.x64
-/newflasher.x86_64-apple-darwin11
+/newflasher.arm64_pie
 /dump.bin
 /.DS_Store
+/obj
+/libs
+/zlib
+/expat
