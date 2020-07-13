@@ -23,7 +23,7 @@ Download, build and install, assuming that `~/bin` is in `$PATH`:
 
 ### Build (cross, static)
 
-`make newflasher.[exe/x64/i386/arm32/arm64]`, exe referring to a Windows build, the rest being for Linux and Android. 
+`make newflasher.[exe/x64/i386/arm32/arm64/arm64_pie]`, exe referring to a Windows build, the rest being for Linux and Android. 
 
 ### Discussion
 
