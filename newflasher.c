@@ -917,7 +917,8 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 
 	if (ep == EP_IN)
 	{
-		if (h->ep_in == 0) {
+		if (h->ep_in == 0)
+		{
 			printf(" - ep_in is not 0x81!!!\n");
 			return 0;
 		}
@@ -934,8 +935,9 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 			do
 			{
 				n = ioctl(h->desc, USBDEVFS_BULK, &bulk);
-				if (n < 0) {
-					printf(" - (ep_in) ERROR: n = %d, errno = %d (%s)\n",n, errno, strerror(errno));
+				if (n < 0)
+				{
+					//printf(" - (ep_in) ERROR: n = %d, errno = %d (%s)\n",n, errno, strerror(errno));
 					return 0;
 				}
 			}
@@ -952,19 +954,22 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 
 	if (ep == EP_OUT)
 	{
-		if (h->ep_out == 0) {
+		if (h->ep_out == 0)
+		{
 			printf(" - ep_out is not 0x01!!!\n");
 			return 0;
 		}
 
-		if (size == 0) {
+		if (size == 0)
+		{
 			bulk.ep = h->ep_out;
 			bulk.len = 0;
 			bulk.data = bytes;
 			bulk.timeout = 0;
 
 			n = ioctl(h->desc, USBDEVFS_BULK, &bulk);
-			if (n != 0) {
+			if (n != 0)
+			{
 				printf(" - (ep_out size=0)ERROR: n = %d, errno = %d (%s)\n", n, errno, strerror(errno));
 				return 0;
 			}
@@ -981,7 +986,8 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 			bulk.timeout = timeout;
 
 			n = ioctl(h->desc, USBDEVFS_BULK, &bulk);
-			if (n != xfer) {
+			if (n != xfer)
+			{
 				printf(" - (ep_out size=%d)ERROR: n = %d, errno = %d (%s)\n", xfer, n, errno, strerror(errno));
 				return 0;
 			}
@@ -992,20 +998,24 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 		}
 	}
 
-	if (exact) {
-		if (count != size_tot) {
+	if (exact)
+	{
+		if (count != size_tot)
+		{
 			printf(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n", (ep == EP_IN) ? "read" : "write", size_tot, count);
 			display_buffer_hex_ascii("nBytes", bytes, count);
 			return 0;
 		}
 	}
 #if 0
-	if (ep == EP_IN) {
+	if (ep == EP_IN)
+	{
 		printf(" - Successfully read 0x%lx bytes from handle.\n", count);
 		display_buffer_hex_ascii("Raw input ", bytes, count);
 	}
 
-	if (ep == EP_OUT) {
+	if (ep == EP_OUT)
+	{
 		printf(" - Successfully write 0x%lx bytes to handle.\n", count);
 		/*display_buffer_hex_ascii("Raw output ", bytes, count);*/
 	}
