@@ -87,8 +87,9 @@ install: newflasher newflasher.1.gz
 
 .PHONY: clean
 clean:
-	rm -rf *.gz *.o *.rc *.res obj libs zlib expat
+	rm -rf *.gz *.o *.rc *.res obj libs zlib expat newflasher-*.txz
 
 .PHONY: distclean
 distclean:
-	rm -rf *.gz *.o *.rc *.res obj libs zlib expat newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher.arm64 newflasher.arm64_pie newflasher
+	rm -rf *.gz *.o *.rc *.res obj libs zlib expat newflasher.exe newflasher.x64 newflasher.i386
+	rm -rf newflasher.arm32 newflasher.arm64 newflasher.arm64_pie newflasher newflasher-*.txz
