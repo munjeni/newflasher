@@ -67,7 +67,7 @@ newflasher.arm64_pie:
 newflasher.1.gz: newflasher.1
 	gzip -9fkn $<
 
-newflasher-$(VERSION).txz: include/GordonGate.h makefile newflasher.1 newflasher.c newflasher.ico newflasher.rc.in readme.md version.h
+newflasher-$(VERSION).txz: makefile newflasher.1 newflasher.c readme.md version.h
 	rm -rf $(basename $@)
 	$(INSTALL) -d $(basename $@)
 	tar c $^ | tar xp -C $(basename $@)
