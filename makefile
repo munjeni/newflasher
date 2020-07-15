@@ -85,8 +85,10 @@ newflasher.arm64: libs newflasher.c version.h
 
 newflasher.arm64_pie:
 	@echo "Building Android pie binary"
-	@git clone https://android.googlesource.com/platform/external/zlib
-	@git clone https://android.googlesource.com/platform/external/expat
+	@test -d zlib && echo "" || git clone https://android.googlesource.com/platform/external/zlib
+	@test -d expat && echo "" || git clone https://android.googlesource.com/platform/external/expat
+	@cat cross_blob | base64 -d > cross_blob.tar.gz && tar xzf cross_blob.tar.gz
+	@rm cross_blob.tar.gz
 	${NDK_BUILD}
 	@cp -fr libs/arm64-v8a/newflasher.arm64_pie ./newflasher.arm64_pie
 
