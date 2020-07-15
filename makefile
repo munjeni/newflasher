@@ -47,8 +47,6 @@ newflasher: newflasher.c version.h
 	${CC} ${CFLAGS} $< -o $@ -lz -lexpat ${LIBS}
 
 newflasher.exe: libs newflasher.c version.h
-	@cat cross_blob | base64 -d > cross_blob.tar.gz && tar xzf cross_blob.tar.gz
-	@rm cross_blob.tar.gz
 	@cd zlib-1.2.11 && CC=${CCWIN} ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="${CCWIN} -fPIC" ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
 	@test -f include/GordonGate.h && echo "" || wget https://github.com/Androxyde/Flashtool/blob/master/drivers/GordonGate/Sony_Mobile_Software_Update_Drivers_x64_Setup.msi?raw=true -O GordonGate
@@ -87,8 +85,6 @@ newflasher.arm64_pie:
 	@echo "Building Android pie binary"
 	@test -d zlib && echo "" || git clone https://android.googlesource.com/platform/external/zlib
 	@test -d expat && echo "" || git clone https://android.googlesource.com/platform/external/expat
-	@cat cross_blob | base64 -d > cross_blob.tar.gz && tar xzf cross_blob.tar.gz
-	@rm cross_blob.tar.gz
 	${NDK_BUILD}
 	@cp -fr libs/arm64-v8a/newflasher.arm64_pie ./newflasher.arm64_pie
 
