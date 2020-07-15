@@ -11,6 +11,12 @@
 /.DS_Store
 /obj
 /libs
-/zlib
-/expat
+/zlib*
+/expat*
 /newflasher-*.txz
+/Android.mk
+/Application.mk
+/expat-2.2.9/
+/include
+/newflasher.ico
+/newflasher.rc.in
