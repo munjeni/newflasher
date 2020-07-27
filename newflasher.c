@@ -2201,7 +2201,7 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 							unit 0x10471 (66673) protocol switch? Or keystore? What is this? Depend on existance of unit 0x36A (https://forum.xda-developers.com/showpost.php?p=80176195&postcount=1093)
 						*/
 
-						if (memcmp(unit, "000008B2", 8) == 0 || /* unlock key */
+						if (/*memcmp(unit, "000008B2", 8) == 0 || unlock key */
 						    memcmp(unit, "000007D3", 8) == 0 || /* hardware config */
 						    memcmp(unit, "000007DA", 8) == 0 || /* simlock */
 						    memcmp(unit, "00000851", 8) == 0 || /* simlock signature */
