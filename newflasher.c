@@ -199,6 +199,7 @@ static char current_slot[2];
 static char remember_current_slot[2];
 
 static unsigned int something_flashed = 0;
+static bool sync_sent = false;
 
 unsigned int swap_uint32(unsigned int val) {
 	val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF);
@@ -730,8 +731,11 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 								break;
 
 							case WAIT_TIMEOUT:
-								DisplayError(TEXT("TIMEOUT:"));
-								CancelIo(dev);
+								if (!sync_sent)
+								{
+									DisplayError(TEXT("TIMEOUT:"));
+									CancelIo(dev);
+								}
 								break;
 
 							default:
@@ -861,8 +865,9 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 
 		if (res != LIBUSB_SUCCESS)
 		{
+			if (!sync_sent)
 				printf("bulk transfer (in): %s\n", libusb_error_name(res));
-				return 0;
+			return 0;
 		}
 	}
 
@@ -937,7 +942,8 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 				n = ioctl(h->desc, USBDEVFS_BULK, &bulk);
 				if (n < 0)
 				{
-					//printf(" - (ep_in) ERROR: n = %d, errno = %d (%s)\n",n, errno, strerror(errno));
+					if (!sync_sent)
+						printf(" - (ep_in) ERROR: n = %d, errno = %d (%s)\n",n, errno, strerror(errno));
 					return 0;
 				}
 			}
@@ -4510,6 +4516,7 @@ endflashing:
 			goto release;
 		}
 		printf("Sent command: Sync\n");
+		sync_sent = true;
 #if 1
 		/* 30 secconds enought for sync? */
 		time_t start = time(NULL);
