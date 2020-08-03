@@ -96,7 +96,7 @@ install: newflasher newflasher.1.gz
 	$(INSTALL) -o root -g root -d $(DESTDIR)/usr/bin
 	$(INSTALL) -o root -g root -m 755 -s newflasher $(DESTDIR)/usr/bin/
 	$(INSTALL) -o root -g root -d $(DESTDIR)/usr/share/man/man1
-	$(INSTALL) -o root -g root -m 644 -s newflasher.1.gz $(DESTDIR)/usr/share/man/man1
+	$(INSTALL) -o root -g root -m 644 newflasher.1.gz $(DESTDIR)/usr/share/man/man1
 
 .PHONY: clean
 clean:
