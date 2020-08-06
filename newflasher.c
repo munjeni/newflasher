@@ -2079,15 +2079,19 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 	ssize_t read;
 
 	char unit[9];
-	char unit_sz_tmp[5];
+	char unit_sz_tmp[9];
 	char command[64];
 	unsigned int unit_sz;
 	char *unit_data=NULL;
 	unsigned int i, j, unit_dec=0, the_rest=0, partition=0, finished=0, ret=1;
 
+	/* some devices have some units which exceeds sizeof uint16_t */
+	bool is_32bit = false;
+
 	printf("Processing %s\n", ta_file);
 
-	if ((unit_data = (char *)malloc(MAX_UNIT_LINE_LEN)) == NULL) {
+	if ((unit_data = (char *)malloc(MAX_UNIT_LINE_LEN)) == NULL)
+	{
 		printf(" - Error allocating unit_data!\n");
 		return 0;
 	}
@@ -2099,6 +2103,8 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 
 	while((read = g_getline(&line, &len, fp)) != -1)
 	{
+		is_32bit = false;
+
 		switch(read)
 		{
 			case 1:
@@ -2114,7 +2120,8 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 				break;
 
 			default:
-				if (line[0] == '/') {
+				if (line[0] == '/')
+				{
 					/*LOG("Skipped comment line.\n\n");*/
 				}
 				else
@@ -2127,49 +2134,119 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 						memcpy(unit, line, 8);
 						unit[8] = '\0';
 						to_uppercase(unit);
-						trim(line);
-						/*LOG("Line lenght after trim: %lu\n", strlen(line));*/
 						sscanf(unit, "%x", &unit_dec);
 						printf(" - Unit: %X (%u)\n", unit_dec, unit_dec);
 
-						/* unit(8) + unit size(4) + at least one hex(2) */
-						if (strlen(line) < 14)
+						/*
+						 * in case of 32 bit unit size!
+						 * unit(8) + space(1) + unit size(8) + space(1)
+						 */
+						if (strlen(line) >= 18)
 						{
-							if (strlen(line) == 12) {
-								printf(" - Found specific unit which don't contain data.\n");
-								the_rest = 0;
-								finished = 1;
-								unit_sz = 0;
-							} else {
-								printf(" - Error: corrupted unit! Skipping this unit!\n\n");
-								the_rest = 0;
-								break;
+							if (line[8] == ' ' && line[17] == ' ')
+							{
+								is_32bit = true;
+							}
+						}
+
+						trim(line);
+						/*LOG("Line lenght after trim: %lu\n", strlen(line));*/
+
+						if (is_32bit)
+						{
+							/* unit(8) + unit size(8) + at least one hex(2) */
+							if (strlen(line) < 18)
+							{
+								if (strlen(line) == 16)
+								{
+									printf(" - Found specific unit which don't contain data.\n");
+									the_rest = 0;
+									finished = 1;
+									unit_sz = 0;
+								}
+								else
+								{
+									printf(" - Error: corrupted unit! Skipping this unit!\n\n");
+									the_rest = 0;
+									break;
+								}
+							}
+							else
+							{
+								memcpy(unit_sz_tmp, line+8, 4);
+								unit_sz_tmp[8] = '\0';
+								sscanf(unit_sz_tmp, "%x", &unit_sz);
+								printf(" - Unit size: 0x%x\n", unit_sz);
+								memset(unit_data, '\0', MAX_UNIT_LINE_LEN);
+								i = 0;
+								do {
+									memcpy(unit_data+i, line+16+i, 1);
+								} while(++i < strlen(line));
+								unit_data[i] = '\0';
+
+								if ((unsigned int)strlen(line)-16 < unit_sz*2)
+								{
+									/*LOG("Data probably continues in a new line (%u not match %u)!\n",
+										(unsigned int)strlen(line)-16, unit_sz*2);*/
+									the_rest = 1;
+								}
+								else
+								{
+									the_rest = 0;
+								}
+
+								if ((unsigned int)strlen(unit_data) == unit_sz*2)
+									finished = 1;
 							}
 						}
 						else
 						{
-							memcpy(unit_sz_tmp, line+8, 4);
-							unit_sz_tmp[4] = '\0';
-							sscanf(unit_sz_tmp, "%x", &unit_sz);
-							printf(" - Unit size: 0x%x\n", unit_sz);
-							memset(unit_data, '\0', MAX_UNIT_LINE_LEN);
-							i = 0;
-							do {
-								memcpy(unit_data+i, line+12+i, 1);
-							} while(++i < strlen(line));
-							unit_data[i] = '\0';
+							/* unit(8) + unit size(4) + at least one hex(2) */
+							if (strlen(line) < 14)
+							{
+								if (strlen(line) == 12)
+								{
+									printf(" - Found specific unit which don't contain data.\n");
+									the_rest = 0;
+									finished = 1;
+									unit_sz = 0;
+								}
+								else
+								{
+									printf(" - Error: corrupted unit! Skipping this unit!\n\n");
+									the_rest = 0;
+									break;
+								}
+							}
+							else
+							{
+								memcpy(unit_sz_tmp, line+8, 4);
+								unit_sz_tmp[4] = '\0';
+								sscanf(unit_sz_tmp, "%x", &unit_sz);
+								printf(" - Unit size: 0x%x\n", unit_sz);
+								memset(unit_data, '\0', MAX_UNIT_LINE_LEN);
+								i = 0;
+								do {
+									memcpy(unit_data+i, line+12+i, 1);
+								} while(++i < strlen(line));
+								unit_data[i] = '\0';
 
-							if ((unsigned int)strlen(line)-12 < unit_sz*2) {
-								/*LOG("Data probably continues in a new line (%u not match %u)!\n",
-									(unsigned int)strlen(line)-12, unit_sz*2);*/
-								the_rest = 1;
-							} else
-								the_rest = 0;
+								if ((unsigned int)strlen(line)-12 < unit_sz*2)
+								{
+									/*LOG("Data probably continues in a new line (%u not match %u)!\n",
+										(unsigned int)strlen(line)-12, unit_sz*2);*/
+									the_rest = 1;
+								}
+								else
+								{
+									the_rest = 0;
+								}
 
-							if ((unsigned int)strlen(unit_data) == unit_sz*2)
-								finished = 1;
+								if ((unsigned int)strlen(unit_data) == unit_sz*2)
+									finished = 1;
+							}
+
 						}
-
 					}
 					else
 					{
@@ -2186,7 +2263,8 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 							} while(++i < strlen(line));
 							unit_data[j+i] = '\0';
 
-							if ((unsigned int)strlen(unit_data) == unit_sz*2) {
+							if ((unsigned int)strlen(unit_data) == unit_sz*2)
+							{
 								the_rest = 0;
 								finished = 1;
 							}
@@ -3011,7 +3089,10 @@ if (argc > 1)
 											unitt_sz = 0;
 											memcpy(&unitt_sz, data_buf+x, 4);
 											unitt_sz = swap_uint32(unitt_sz);
-											fprintf(dumpme, "%04X ", unitt_sz & 0xffff);
+											if (unitt_sz > 0xffff)
+												fprintf(dumpme, "%04X ", unitt_sz & 0xffff);
+											else
+												fprintf(dumpme, "%08X ", unitt_sz);
 
 											x += 4;
 
