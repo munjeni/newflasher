@@ -2173,7 +2173,7 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 							}
 							else
 							{
-								memcpy(unit_sz_tmp, line+8, 4);
+								memcpy(unit_sz_tmp, line+8, 8);
 								unit_sz_tmp[8] = '\0';
 								sscanf(unit_sz_tmp, "%x", &unit_sz);
 								printf(" - Unit size: 0x%x\n", unit_sz);
