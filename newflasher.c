@@ -168,7 +168,7 @@
 #define LOG(...)
 #endif
 
-#define BUFF_MAX 0x200000
+#define BUFF_MAX 0x800000
 
 static char tmp[4096];
 static char tmp_reply[BUFF_MAX];
@@ -2539,6 +2539,7 @@ int main(int argc, char *argv[])
 	if (getcwd(working_path, sizeof(working_path)) == NULL)
 	{
 		perror("getcwd() error");
+		ret = 1;
 		goto pauza;
 	}
 #endif
@@ -2553,6 +2554,7 @@ int main(int argc, char *argv[])
 	{
 		printf("  Error! You do not have needed 10240 MB available free space on your\n");
 		printf("  disk drive! You have only %lu MB free.\n", available_mb);
+		ret = 1;
 		goto pauza;
 	}
 
@@ -2602,6 +2604,7 @@ int main(int argc, char *argv[])
 			FILE *gg = fopen("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi", "wb");
 			if (gg == NULL) {
 				printf("Unable to create Sony_Mobile_Software_Update_Drivers_x64_Setup.msi!\n");
+				ret = 1;
 				goto pauza;
 			}
 			fwrite(GordonGate, 1, GordonGate_len, gg);
@@ -2838,6 +2841,7 @@ if (argc > 1)
 	if (transfer_bulk_async(dev, EP_OUT, argv[1], strlen(argv[1]), USB_TIMEOUT, 1) < 1)
 	{
 		printf("Error writing commad: %s\n", argv[1]);
+		ret = 1;
 		goto endflashing;
 	}
 	else
@@ -2847,6 +2851,7 @@ if (argc > 1)
 		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
 			printf("Error, null reply\n");
+			ret = 1;
 			goto endflashing;
 		}
 		else
@@ -2856,6 +2861,7 @@ if (argc > 1)
 			if (memcmp(tmp_reply, "FAIL", 4) == 0)
 			{
 				printf("got fail reply: %s\n", tmp_reply);
+				ret = 1;
 				goto endflashing;
 			}
 			else
@@ -2867,6 +2873,7 @@ if (argc > 1)
 					if (get_reply_len != 12) {
 						printf("Errornous DATA reply!\n");
 						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+						ret = 1;
 						goto endflashing;
 					}
 
@@ -2879,6 +2886,7 @@ if (argc > 1)
 						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 						{
 							printf("Error retrieving seccond reply!\n");
+							ret = 1;
 							goto endflashing;
 						}
 
@@ -2888,6 +2896,7 @@ if (argc > 1)
 						{
 							printf("Error, no OKAY reply!\n");
 							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
+							ret = 1;
 							goto endflashing;
 						}
 					}
@@ -2898,6 +2907,7 @@ if (argc > 1)
 						if ((data_buf = (char *)malloc(data_len)) == NULL)
 						{
 							printf("error allocating 0x%x bytes!\n", data_len);
+							ret = 1;
 							goto endflashing;
 						}
 
@@ -2905,6 +2915,7 @@ if (argc > 1)
 						{
 							printf("Error retrieving data!\n");
 							free(data_buf);
+							ret = 1;
 							goto endflashing;
 						}
 
@@ -2914,6 +2925,7 @@ if (argc > 1)
 						{
 							printf("Error retrieving OKAY reply!\n");
 							free(data_buf);
+							ret = 1;
 							goto endflashing;
 						}
 
@@ -2921,6 +2933,7 @@ if (argc > 1)
 						{
 							printf("Error, no OKAY reply!\n");
 							free(data_buf);
+							ret = 1;
 							goto endflashing;
 						}
 						else
@@ -2964,6 +2977,7 @@ if (argc > 1)
 			if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 			{
 				printf("Error dumping trimarea partition %d !!\n", i);
+				ret = 1;
 				goto endflashing;
 			}
 			else
@@ -2973,6 +2987,7 @@ if (argc > 1)
 				if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 				{
 					printf("Error, null reply\n");
+					ret = 1;
 					goto endflashing;
 				}
 				else
@@ -2982,6 +2997,7 @@ if (argc > 1)
 					if (memcmp(tmp_reply, "FAIL", 4) == 0)
 					{
 						printf("got fail reply: %s\n", tmp_reply);
+						ret = 1;
 						goto endflashing;
 					}
 					else
@@ -2994,6 +3010,7 @@ if (argc > 1)
 							{
 								printf("Errornous DATA reply!\n");
 								display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+								ret = 1;
 								goto endflashing;
 							}
 
@@ -3006,6 +3023,7 @@ if (argc > 1)
 								if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 								{
 									printf("Error retrieving seccond reply!\n");
+									ret = 1;
 									goto endflashing;
 								}
 
@@ -3015,6 +3033,7 @@ if (argc > 1)
 								{
 									printf("Error, no OKAY reply!\n");
 									display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
+									ret = 1;
 									goto endflashing;
 								}
 							}
@@ -3022,9 +3041,17 @@ if (argc > 1)
 							{
 								char *data_buf = NULL;
 
+								if (data_len > BUFF_MAX)
+								{
+									printf("Bug!!! DATA_LEN: 0x%x > BUFF_MAX: 0x%x\n", data_len, BUFF_MAX);
+									ret = 1;
+									goto endflashing;
+								}
+
 								if ((data_buf = (char *)malloc(data_len)) == NULL)
 								{
 									printf("error allocating 0x%x bytes!\n", data_len);
+									ret = 1;
 									goto endflashing;
 								}
 
@@ -3032,6 +3059,7 @@ if (argc > 1)
 								{
 									printf("Error retrieving data!\n");
 									free(data_buf);
+									ret = 1;
 									goto endflashing;
 								}
 
@@ -3041,6 +3069,7 @@ if (argc > 1)
 								{
 									printf("Error retrieving OKAY reply!\n");
 									free(data_buf);
+									ret = 1;
 									goto endflashing;
 								}
 
@@ -3048,13 +3077,55 @@ if (argc > 1)
 								{
 									printf("Error, no OKAY reply!\n");
 									free(data_buf);
+									ret = 1;
 									goto endflashing;
 								}
 								else
 								{
 									FILE *dumpme = NULL;
-									snprintf(tmp, sizeof(tmp), "tadump_%d.ta", i);
 
+									snprintf(fld, sizeof(fld), "tadump/");
+									if (0 != access(fld, F_OK))
+									{
+										if (ENOENT == errno)
+										{
+#ifdef _WIN32
+											fld_cbck = mkdir("tadump");
+#else
+											fld_cbck = mkdir("tadump", 0755);
+#endif
+											if (fld_cbck == 0)
+											{
+												printf("Created ouput folder tadump.\n");
+											}
+											else
+											{
+												printf("FAILURE to create output folder tadump!\n");
+												free(data_buf);
+												ret = 1;
+												goto endflashing;
+											}
+										}
+
+										if (ENOTDIR == errno)
+										{
+											printf("FAILURE to create output folder tadump because there is file called tadump!!\n"
+												"Remove or rename file tadump first!\n");
+											free(data_buf);
+											ret = 1;
+											goto endflashing;
+										}
+
+									}
+									else
+									{
+										printf("Dumping trim area to tadump folder.\n");
+									}
+#ifdef _WIN32
+									snprintf(tmp, sizeof(tmp), "%s\\tadump\\tadump_%d.ta", working_path, i);
+#else
+									snprintf(tmp, sizeof(tmp), "./tadump/tadump_%d.ta", i);
+#endif
 									//display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
 
 									if ((dumpme = fopen64(tmp, "wb")) == NULL)
@@ -3074,7 +3145,7 @@ if (argc > 1)
 										else
 											fprintf(dumpme, "//misc partition\n02\n\n");
 
-										while(x <= data_len)
+										while(x < data_len)
 										{
 											for (y=0; y < 4; ++y)
 											{
@@ -3090,9 +3161,9 @@ if (argc > 1)
 											memcpy(&unitt_sz, data_buf+x, 4);
 											unitt_sz = swap_uint32(unitt_sz);
 											if (unitt_sz > 0xffff)
-												fprintf(dumpme, "%04X ", unitt_sz & 0xffff);
-											else
 												fprintf(dumpme, "%08X ", unitt_sz);
+											else
+												fprintf(dumpme, "%04X ", unitt_sz & 0xffff);
 
 											x += 4;
 
@@ -3693,7 +3764,11 @@ if (argc > 1)
 			printf("Found partition_delivery.xml in partition folder.\n");
 
 			if (!parse_xml(sinfil))
+			{
+				printf("Error parsing partition_delivery.xml!\n");
+				ret = 1;
 				goto getoutofflashing;
+			}
 
 			printf("Determining LUN0 size...\n");
 
@@ -3817,6 +3892,7 @@ if (argc > 1)
 									fclose(a);
 									remove(fld);
 									closedir(dir);
+									ret = 1;
 									goto getoutofflashing;
 								}
 								fclose(a);
@@ -3840,6 +3916,7 @@ if (argc > 1)
 									fclose(a);
 									remove(fld);
 									closedir(dir);
+									ret = 1;
 									goto getoutofflashing;
 								}
 								fclose(a);
@@ -3925,6 +4002,7 @@ if (argc > 1)
 											fclose(a);
 											remove(fld);
 											closedir(dir);
+											ret = 1;
 											goto getoutofflashing;
 										}
 										fclose(a);
@@ -3948,6 +4026,7 @@ if (argc > 1)
 											fclose(a);
 											remove(fld);
 											closedir(dir);
+											ret = 1;
 											goto getoutofflashing;
 										}
 										fclose(a);
@@ -4108,6 +4187,7 @@ if (argc > 1)
 											fclose(a);
 											remove(fld);
 											closedir(dir);
+											ret = 1;
 											goto getoutofflashing;
 										}
 										else
@@ -4133,6 +4213,7 @@ if (argc > 1)
 													fclose(a);
 													remove(fld);
 													closedir(dir);
+													ret = 1;
 													goto getoutofflashing;
 												}
 
@@ -4150,6 +4231,7 @@ if (argc > 1)
 										fclose(a);
 										remove(fld);
 										closedir(dir);
+										ret = 1;
 										goto getoutofflashing;
 									}
 
@@ -4180,6 +4262,7 @@ if (argc > 1)
 											fclose(a);
 											remove(fld);
 											closedir(dir);
+											ret = 1;
 											goto getoutofflashing;
 										}
 										else
@@ -4205,6 +4288,7 @@ if (argc > 1)
 													fclose(a);
 													remove(fld);
 													closedir(dir);
+													ret = 1;
 													goto getoutofflashing;
 												}
 
@@ -4222,6 +4306,7 @@ if (argc > 1)
 										fclose(a);
 										remove(fld);
 										closedir(dir);
+										ret = 1;
 										goto getoutofflashing;
 									}
 
@@ -4295,17 +4380,23 @@ skip_this:
 	if (stat(sinfil, &filestat) < 0)
 	{
 		printf("boot_delivery.xml not exist in boot folder or no boot folder.\n");
+		ret = 1;
 		goto getoutofflashing;
 	}
 	else
 		printf("Found boot_delivery.xml in boot folder.\n");
 
 	if (!parse_xml(sinfil))
+	{
+		printf("Error parsing boot_delivery.xml!\n");
+		ret = 1;
 		goto getoutofflashing;
+	}
 
 	if (!strlen(bootdelivery_version))
 	{
 		printf(" - Unable to determine boot delivery version, skipping bootdelivery.\n");
+		ret = 1;
 		goto getoutofflashing;
 	}
 
@@ -4411,6 +4502,7 @@ skip_this:
 									{
 										fclose(a);
 										remove(fld);
+										ret = 1;
 										goto getoutofflashing;
 									}
 									fclose(a);
@@ -4434,6 +4526,7 @@ skip_this:
 										fclose(a);
 										remove(fld);
 										closedir(dir);
+										ret = 1;
 										goto getoutofflashing;
 									}
 									fclose(a);
