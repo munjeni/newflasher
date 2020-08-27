@@ -2177,10 +2177,9 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 								sscanf(unit_sz_tmp, "%x", &unit_sz);
 								printf(" - Unit size: 0x%x\n", unit_sz);
 								memset(unit_data, '\0', MAX_UNIT_LINE_LEN);
-								i = 0;
-								do {
-									memcpy(unit_data+i, line+16+i, 1);
-								} while(++i < strlen(line));
+								i = strlen(line);
+								if (i)
+									memcpy(unit_data, line+16, i);
 								unit_data[i] = '\0';
 
 								if ((unsigned int)strlen(line)-16 < unit_sz*2)
@@ -2224,10 +2223,9 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 								sscanf(unit_sz_tmp, "%x", &unit_sz);
 								printf(" - Unit size: 0x%x\n", unit_sz);
 								memset(unit_data, '\0', MAX_UNIT_LINE_LEN);
-								i = 0;
-								do {
-									memcpy(unit_data+i, line+12+i, 1);
-								} while(++i < strlen(line));
+								i = strlen(line);
+								if (i)
+									memcpy(unit_data, line+12, i);
 								unit_data[i] = '\0';
 
 								if ((unsigned int)strlen(line)-12 < unit_sz*2)
@@ -2256,10 +2254,9 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 							/*LOG("Line lenght after trim: %lu\n", strlen(line));
 							LOG("Found the rest ot the data!\n");*/
 							j = strlen(unit_data);
-							i = 0;
-							do {
-								memcpy(unit_data+j+i, line+i, 1);
-							} while(++i < strlen(line));
+							i = strlen(line);
+							if (i)
+								memcpy(unit_data+j, line, i);
 							unit_data[j+i] = '\0';
 
 							if ((unsigned int)strlen(unit_data) == unit_sz*2)
@@ -2392,7 +2389,8 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 
 						printf("      OKAY.\n");
 
-						if (unit_total_temp) free(unit_total_temp);
+						if (unit_total_temp)
+							free(unit_total_temp);
 					}
 					/*LOG("\n");*/
 				}
