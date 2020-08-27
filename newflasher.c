@@ -169,6 +169,7 @@
 #endif
 
 #define BUFF_MAX 0x800000
+#define MAX_UNIT_LINE_LEN 0x80000
 
 static char tmp[4096];
 static char tmp_reply[BUFF_MAX];
@@ -275,8 +276,6 @@ static char *basenamee(char *in) {
 
 	return in;
 }
-
-#define MAX_UNIT_LINE_LEN 0x20000
 
 static ssize_t g_getline(char **lineptr, size_t *n, FILE *stream) {
 	char *cur_pos, *new_lineptr;
