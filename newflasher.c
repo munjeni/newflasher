@@ -188,6 +188,7 @@ static char device_id[64];
 static char rooting_status[32];
 static char ufs_info[64];
 static char emmc_info[64];
+static bool have_ufs = false;
 static char default_security[16];
 static char platform_id[64];
 static unsigned int keystore_counter = 0;
@@ -3755,7 +3756,6 @@ if (argc > 1)
 		}
 		else
 		{
-			unsigned char ufs_desc_sz = 0;
 			unsigned long long lun0_sz = 0;
 
 			printf("Found partition_delivery.xml in partition folder.\n");
@@ -3769,7 +3769,13 @@ if (argc > 1)
 
 			printf("Determining LUN0 size...\n");
 
-			snprintf(tmp, sizeof(tmp), "Get-ufs-info");
+			if (strstr(ufs_info, "FAIL") == NULL)
+			{
+				have_ufs = true;
+			}
+
+			snprintf(tmp, sizeof(tmp), "%s", have_ufs ? "Get-ufs-info" : "Get-emmc-info");
+
 			if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 			{
 				printf(" - Error writing command %s!\n", tmp);
@@ -3799,16 +3805,27 @@ if (argc > 1)
 
 				if (get_reply_len <= 0)
 				{
-					printf("Error receiving UFS header!\n");
+					printf("Error receiving %s header!\n", have_ufs ? "UFS" : "EMMC");
 					ret = 1;
 					goto getoutofflashing;
 				}
 				else
 				{
-					display_buffer_hex_ascii("UFS raw data", tmp_reply, get_reply_len);
+					if (have_ufs)
+					{
+						unsigned char ufs_desc_sz = 0;
 
-					memcpy(&ufs_desc_sz, tmp_reply, 1);
-					memcpy(&lun0_sz, tmp_reply + ufs_desc_sz + 0x1c, 4);
+						display_buffer_hex_ascii("UFS raw data", tmp_reply, get_reply_len);
+
+						memcpy(&ufs_desc_sz, tmp_reply, 1);
+						memcpy(&lun0_sz, tmp_reply + ufs_desc_sz + 0x1c, 4);
+					}
+					else
+					{
+						display_buffer_hex_ascii("EMMC raw data", tmp_reply, get_reply_len);
+
+						memcpy(&lun0_sz, tmp_reply + 0x1e8, 4);
+					}
 
 					lun0_sz = swap_uint32(lun0_sz);
 					lun0_sz *= sector_size;
