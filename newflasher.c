@@ -3819,19 +3819,23 @@ if (argc > 1)
 
 						memcpy(&ufs_desc_sz, tmp_reply, 1);
 						memcpy(&lun0_sz, tmp_reply + ufs_desc_sz + 0x1c, 4);
+
+						lun0_sz = swap_uint32(lun0_sz);
+						lun0_sz *= sector_size;
+						lun0_sz /= 1024;
 					}
 					else
 					{
 						display_buffer_hex_ascii("EMMC raw data", tmp_reply, get_reply_len);
 
-						memcpy(&lun0_sz, tmp_reply + 0x1e8, 4);
+						memcpy(&lun0_sz, tmp_reply + 0xd4, 4);
+
+						lun0_sz *= sector_size;
+						lun0_sz /= 1024;
+						lun0_sz -= 4096;
 					}
 
-					lun0_sz = swap_uint32(lun0_sz);
-					lun0_sz *= sector_size;
-					lun0_sz /= 1024;
-
-					printf("LUN0 size = %llu\n", lun0_sz);
+					printf("%s size = %llu\n", have_ufs ? "LUN0" : "EMMC", lun0_sz);
 				}
 
 				if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
@@ -3862,6 +3866,7 @@ if (argc > 1)
 				snprintf(sinfil, sizeof(sinfil), "./partition/%s", partitiondelivery_xml[i]);
 #endif
 				if ((strstr(sinfil, "LUN0") != NULL && strstr(sinfil, lun0) != NULL) ||
+					 (strstr(sinfil, "partition-image_") != NULL && strstr(sinfil, lun0) != NULL) ||
 					 strstr(sinfil, "LUN0_X-FLASH-ALL") != NULL ||
 					 strstr(sinfil, "LUN1") != NULL ||
 					 strstr(sinfil, "LUN2") != NULL ||
