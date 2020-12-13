@@ -174,6 +174,7 @@
 static char tmp[4096];
 static char tmp_reply[BUFF_MAX];
 static unsigned long get_reply_len;
+static bool okay_replied = false;
 static char product[12];
 static char version[64];
 static char version_bootloader[64];
@@ -2919,35 +2920,41 @@ if (argc > 1)
 
 						display_buffer_hex_ascii("data_buf", data_buf, data_len);
 
-						if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
+						// sometimes OKAY reply is inside data buffer
+						if (data_len >= 4 && data_buf[data_len - 4] == 'O' && data_buf[data_len - 3] == 'K' && data_buf[data_len - 2] == 'A' && data_buf[data_len - 1] == 'Y')
 						{
-							printf("Error retrieving OKAY reply!\n");
-							free(data_buf);
-							ret = 1;
-							goto endflashing;
-						}
-
-						if (strstr(tmp_reply, "OKAY") == NULL)
-						{
-							printf("Error, no OKAY reply!\n");
-							free(data_buf);
-							ret = 1;
-							goto endflashing;
+							data_len -= 4;
 						}
 						else
 						{
-							FILE *dumpme = NULL;
-							display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
-							if ((dumpme = fopen64("dump.bin", "wb")) == NULL)
+							if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
 							{
-								printf("dump.bin will not be created!\n");
+								printf("Error retrieving OKAY reply!\n");
+								free(data_buf);
+								ret = 1;
+								goto endflashing;
 							}
-							else
+
+							if (strstr(tmp_reply, "OKAY") == NULL)
 							{
-								fwrite(data_buf, 1, data_len, dumpme);
-								fclose(dumpme);
-								printf("dump.bin created.\n");
+								printf("Error, no OKAY reply!\n");
+								free(data_buf);
+								ret = 1;
+								goto endflashing;
 							}
+						}
+
+						FILE *dumpme = NULL;
+						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+						if ((dumpme = fopen64("dump.bin", "wb")) == NULL)
+						{
+							printf("dump.bin will not be created!\n");
+						}
+						else
+						{
+							fwrite(data_buf, 1, data_len, dumpme);
+							fclose(dumpme);
+							printf("dump.bin created.\n");
 						}
 
 						free(data_buf);
@@ -3063,122 +3070,128 @@ if (argc > 1)
 
 								//display_buffer_hex_ascii("data_buf", data_buf, data_len);
 
-								if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
+								// sometimes OKAY reply is inside data buffer
+								if (data_len >= 4 && data_buf[data_len - 4] == 'O' && data_buf[data_len - 3] == 'K' && data_buf[data_len - 2] == 'A' && data_buf[data_len - 1] == 'Y')
 								{
-									printf("Error retrieving OKAY reply!\n");
-									free(data_buf);
-									ret = 1;
-									goto endflashing;
-								}
-
-								if (strstr(tmp_reply, "OKAY") == NULL)
-								{
-									printf("Error, no OKAY reply!\n");
-									free(data_buf);
-									ret = 1;
-									goto endflashing;
+									data_len -= 4;
 								}
 								else
 								{
-									FILE *dumpme = NULL;
-
-									snprintf(fld, sizeof(fld), "tadump/");
-									if (0 != access(fld, F_OK))
+									if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
 									{
-										if (ENOENT == errno)
-										{
-#ifdef _WIN32
-											fld_cbck = mkdir("tadump");
-#else
-											fld_cbck = mkdir("tadump", 0755);
-#endif
-											if (fld_cbck == 0)
-											{
-												printf("Created ouput folder tadump.\n");
-											}
-											else
-											{
-												printf("FAILURE to create output folder tadump!\n");
-												free(data_buf);
-												ret = 1;
-												goto endflashing;
-											}
-										}
+										printf("Error retrieving OKAY reply!\n");
+										free(data_buf);
+										ret = 1;
+										goto endflashing;
+									}
 
-										if (ENOTDIR == errno)
+									if (strstr(tmp_reply, "OKAY") == NULL)
+									{
+										printf("Error, no OKAY reply!\n");
+										free(data_buf);
+										ret = 1;
+										goto endflashing;
+									}
+								}
+
+								FILE *dumpme = NULL;
+
+								snprintf(fld, sizeof(fld), "tadump/");
+								if (0 != access(fld, F_OK))
+								{
+									if (ENOENT == errno)
+									{
+#ifdef _WIN32
+										fld_cbck = mkdir("tadump");
+#else
+										fld_cbck = mkdir("tadump", 0755);
+#endif
+										if (fld_cbck == 0)
 										{
-											printf("FAILURE to create output folder tadump because there is file called tadump!!\n"
-												"Remove or rename file tadump first!\n");
+											printf("Created ouput folder tadump.\n");
+										}
+										else
+										{
+											printf("FAILURE to create output folder tadump!\n");
 											free(data_buf);
 											ret = 1;
 											goto endflashing;
 										}
+									}
 
-									}
-									else
+									if (ENOTDIR == errno)
 									{
-										printf("Dumping trim area to tadump folder.\n");
+										printf("FAILURE to create output folder tadump because there is file called tadump!!\n"
+											"Remove or rename file tadump first!\n");
+										free(data_buf);
+										ret = 1;
+										goto endflashing;
 									}
+
+								}
+								else
+								{
+									printf("Dumping trim area to tadump folder.\n");
+								}
 #ifdef _WIN32
-									snprintf(tmp, sizeof(tmp), "%s\\tadump\\tadump_%d.ta", working_path, i);
+								snprintf(tmp, sizeof(tmp), "%s\\tadump\\tadump_%d.ta", working_path, i);
 #else
-									snprintf(tmp, sizeof(tmp), "./tadump/tadump_%d.ta", i);
+								snprintf(tmp, sizeof(tmp), "./tadump/tadump_%d.ta", i);
 #endif
-									//display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+								//display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
 
-									if ((dumpme = fopen64(tmp, "wb")) == NULL)
-									{
-										printf("%s will not be created!\n", tmp);
-									}
+								if ((dumpme = fopen64(tmp, "wb")) == NULL)
+								{
+									printf("%s will not be created!\n", tmp);
+								}
+								else
+								{
+									unsigned int x = 0;
+									unsigned int y;
+									unsigned int unitt_sz;
+
+									fprintf(dumpme, "//created with %s v%d by Munjeni @ 2017/2020\n", progname, VERSION);
+
+									if (i == 1)
+										fprintf(dumpme, "//trim partition\n01\n\n");
 									else
+										fprintf(dumpme, "//misc partition\n02\n\n");
+
+									while(x < data_len)
 									{
-										unsigned int x = 0;
-										unsigned int y;
-										unsigned int unitt_sz;
-
-										fprintf(dumpme, "//created with %s v%d by Munjeni @ 2017/2020\n", progname, VERSION);
-
-										if (i == 1)
-											fprintf(dumpme, "//trim partition\n01\n\n");
-										else
-											fprintf(dumpme, "//misc partition\n02\n\n");
-
-										while(x < data_len)
+										for (y=0; y < 4; ++y)
 										{
-											for (y=0; y < 4; ++y)
-											{
-												memcpy(tmp_reply+y, data_buf+x+y, 1);
-												fprintf(dumpme, "%02X", tmp_reply[y] & 0xff);
-											}
-
-											fprintf(dumpme, " ");
-
-											x += 4;
-
-											unitt_sz = 0;
-											memcpy(&unitt_sz, data_buf+x, 4);
-											unitt_sz = swap_uint32(unitt_sz);
-											if (unitt_sz > 0xffff)
-												fprintf(dumpme, "%08X ", unitt_sz);
-											else
-												fprintf(dumpme, "%04X ", unitt_sz & 0xffff);
-
-											x += 4;
-
-											for (y=0; y < unitt_sz; ++y)
-											{
-												memcpy(tmp_reply+y, data_buf+x+y, 1);
-												fprintf(dumpme, "%02X ", tmp_reply[y] & 0xff);
-											}
-
-											fprintf(dumpme, "\n\n");
-
-											x += unitt_sz;
+											memcpy(tmp_reply+y, data_buf+x+y, 1);
+											fprintf(dumpme, "%02X", tmp_reply[y] & 0xff);
 										}
 
-										fclose(dumpme);
-										printf("%s created.\n", tmp);
+										fprintf(dumpme, " ");
+
+										x += 4;
+
+										unitt_sz = 0;
+										memcpy(&unitt_sz, data_buf+x, 4);
+										unitt_sz = swap_uint32(unitt_sz);
+										if (unitt_sz > 0xffff)
+											fprintf(dumpme, "%08X ", unitt_sz);
+										else
+											fprintf(dumpme, "%04X ", unitt_sz & 0xffff);
+
+										x += 4;
+
+										for (y=0; y < unitt_sz; ++y)
+										{
+											memcpy(tmp_reply+y, data_buf+x+y, 1);
+											fprintf(dumpme, "%02X ", tmp_reply[y] & 0xff);
+										}
+
+										fprintf(dumpme, "\n\n");
+
+										x += unitt_sz;
 									}
+
+									fclose(dumpme);
+									printf("%s created.\n", tmp);
 								}
 
 								free(data_buf);
@@ -3570,27 +3583,37 @@ if (argc > 1)
 		ret = 1;
 		goto endflashing;
 	}
-	else
+
+	// sometimes OKAY reply is inside data buffer
+	if (get_reply_len >= 4 && tmp_reply[get_reply_len - 4] == 'O' && tmp_reply[get_reply_len - 3] == 'K' && tmp_reply[get_reply_len - 2] == 'A' && tmp_reply[get_reply_len - 1] == 'Y')
 	{
-		for (i=0, j=0; i < (int)get_reply_len; ++i, j+=2)
+		get_reply_len -= 4;
+		okay_replied = true;
+	}
+
+	for (i=0, j=0; i < (int)get_reply_len; ++i, j+=2)
+	{
+		sprintf(get_root_key_hash+j, "%02X", tmp_reply[i] & 0xff);
+	}
+	get_root_key_hash[j] = '\0';
+
+	if (!okay_replied)
+	{
+		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
-			sprintf(get_root_key_hash+j, "%02X", tmp_reply[i] & 0xff);
+			ret = 1;
+			goto endflashing;
 		}
-		get_root_key_hash[j] = '\0';
+
+		if (memcmp(tmp_reply, "OKAY", 4) != 0)
+		{
+			printf(" - Error, no OKAY reply!\n");
+			ret = 1;
+			goto endflashing;
+		}
 	}
 
-	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
-	{
-		ret = 1;
-		goto endflashing;
-	}
-
-	if (memcmp(tmp_reply, "OKAY", 4) != 0)
-	{
-		printf(" - Error, no OKAY reply!\n");
-		ret = 1;
-		goto endflashing;
-	}
+	okay_replied = false;
 
 	snprintf(tmp, sizeof(tmp), "getvar:slot-count");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
@@ -3767,12 +3790,12 @@ if (argc > 1)
 				goto getoutofflashing;
 			}
 
-			printf("Determining LUN0 size...\n");
-
 			if (strstr(ufs_info, "FAIL") == NULL)
 			{
 				have_ufs = true;
 			}
+
+			printf("Determining %s size...\n", have_ufs ? "LUN0" : "EMMC");
 
 			snprintf(tmp, sizeof(tmp), "%s", have_ufs ? "Get-ufs-info" : "Get-emmc-info");
 
@@ -3838,217 +3861,233 @@ if (argc > 1)
 					printf("%s size = %llu\n", have_ufs ? "LUN0" : "EMMC", lun0_sz);
 				}
 
-				if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+				// sometimes OKAY reply is inside data buffer
+				if (get_reply_len >= 4 && tmp_reply[get_reply_len - 4] == 'O' && tmp_reply[get_reply_len - 3] == 'K' && tmp_reply[get_reply_len - 2] == 'A' && tmp_reply[get_reply_len - 1] == 'Y')
 				{
-					ret = 1;
-					goto getoutofflashing;
+					get_reply_len -= 4;
+					okay_replied = true;
 				}
 
-				if (memcmp(tmp_reply, "OKAY", 4) != 0)
+				if (!okay_replied)
 				{
-					printf(" - Error, no OKAY reply!\n");
-					ret = 1;
-					goto getoutofflashing;
+					if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+					{
+						ret = 1;
+						goto getoutofflashing;
+					}
+
+					if (memcmp(tmp_reply, "OKAY", 4) != 0)
+					{
+						printf(" - Error, no OKAY reply!\n");
+						ret = 1;
+						goto getoutofflashing;
+					}
 				}
+
+				okay_replied = false;
 			}
 
 			if (lun0_sz)
-			for(i=0; i<pd; ++i)
 			{
-				char lun0[10];
-				snprintf(lun0, sizeof(lun0), "%llu", lun0_sz);
-
-				printf("\n");
-				printf("Processing %s\n", partitiondelivery_xml[i]);
-#ifdef _WIN32
-				snprintf(sinfil, sizeof(sinfil), "%s\\partition\\%s", working_path, partitiondelivery_xml[i]);
-#else
-				snprintf(sinfil, sizeof(sinfil), "./partition/%s", partitiondelivery_xml[i]);
-#endif
-				if ((strstr(sinfil, "LUN0") != NULL && strstr(sinfil, lun0) != NULL) ||
-					 (strstr(sinfil, "partition-image_") != NULL && strstr(sinfil, lun0) != NULL) ||
-					 strstr(sinfil, "LUN0_X-FLASH-ALL") != NULL ||
-					 strstr(sinfil, "LUN1") != NULL ||
-					 strstr(sinfil, "LUN2") != NULL ||
-					 strstr(sinfil, "LUN3") != NULL)
+				for(i=0; i<pd; ++i)
 				{
-					fi = fopen64(sinfil, "rb");
-					if (fi == NULL)
-					{
-						printf(" - unable to open %s.\n", sinfil);
-						sin_found = 0;
-					}
-					else
-					{
-						fseeko64(fi, 0, SEEK_SET);
-						fread_unus_res(file_format, 1, 2, fi);
-						if (fi) fclose(fi);
-						sin_found = 1;
+					char lun0[10];
+					snprintf(lun0, sizeof(lun0), "%llu", lun0_sz);
 
-						if (memcmp(file_format, "\x1F\x8B", 2) == 0)
-						{
-							FILE *a = NULL;
+					printf("\n");
+					printf("Processing %s\n", partitiondelivery_xml[i]);
 #ifdef _WIN32
-							snprintf(fld, sizeof(fld), "%s\\partition\\converted.file", working_path);
+					snprintf(sinfil, sizeof(sinfil), "%s\\partition\\%s", working_path, partitiondelivery_xml[i]);
 #else
-							snprintf(fld, sizeof(fld), "./partition/converted.file");
+					snprintf(sinfil, sizeof(sinfil), "./partition/%s", partitiondelivery_xml[i]);
 #endif
-							if (gunziper(sinfil, fld))
-							{
-								ret = 1;
-								goto getoutofflashing;
-							}
-
-							a = fopen64(fld, "rb");
-							if (a == NULL)
-							{
-								printf(" - Unable to open %s\n", fld);
-							}
-							else
-							{
-								if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
-								{
-									fclose(a);
-									remove(fld);
-									closedir(dir);
-									ret = 1;
-									goto getoutofflashing;
-								}
-								fclose(a);
-							}
-
-							remove(fld);
+					if ((strstr(sinfil, "LUN0") != NULL && strstr(sinfil, lun0) != NULL) ||
+						 (strstr(sinfil, "partition-image_") != NULL && strstr(sinfil, lun0) != NULL) ||
+						 strstr(sinfil, "LUN0_X-FLASH-ALL") != NULL ||
+						 strstr(sinfil, "LUN1") != NULL ||
+						 strstr(sinfil, "LUN2") != NULL ||
+						 strstr(sinfil, "LUN3") != NULL)
+					{
+						fi = fopen64(sinfil, "rb");
+						if (fi == NULL)
+						{
+							printf(" - unable to open %s.\n", sinfil);
+							sin_found = 0;
 						}
 						else
 						{
-							FILE *a = NULL;
+							fseeko64(fi, 0, SEEK_SET);
+							fread_unus_res(file_format, 1, 2, fi);
+							if (fi) fclose(fi);
+							sin_found = 1;
 
-							a = fopen64(sinfil, "rb");
-							if (a == NULL)
+							if (memcmp(file_format, "\x1F\x8B", 2) == 0)
 							{
-								printf(" - Unable to open %s\n", sinfil);
-							}
-							else
-							{
-								if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
+								FILE *a = NULL;
+#ifdef _WIN32
+								snprintf(fld, sizeof(fld), "%s\\partition\\converted.file", working_path);
+#else
+								snprintf(fld, sizeof(fld), "./partition/converted.file");
+#endif
+								if (gunziper(sinfil, fld))
 								{
-									fclose(a);
-									remove(fld);
-									closedir(dir);
 									ret = 1;
 									goto getoutofflashing;
 								}
-								fclose(a);
+
+								a = fopen64(fld, "rb");
+								if (a == NULL)
+								{
+									printf(" - Unable to open %s\n", fld);
+								}
+								else
+								{
+									if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
+									{
+										fclose(a);
+										remove(fld);
+										closedir(dir);
+										ret = 1;
+										goto getoutofflashing;
+									}
+									fclose(a);
+								}
+
+								remove(fld);
+							}
+							else
+							{
+								FILE *a = NULL;
+
+								a = fopen64(sinfil, "rb");
+								if (a == NULL)
+								{
+									printf(" - Unable to open %s\n", sinfil);
+								}
+								else
+								{
+									if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
+									{
+										fclose(a);
+										remove(fld);
+										closedir(dir);
+										ret = 1;
+										goto getoutofflashing;
+									}
+									fclose(a);
+								}
 							}
 						}
 					}
-				}
-				else
-				{
-					printf("Skipping %s\n", partitiondelivery_xml[i]);
+					else
+					{
+						printf("Skipping %s\n", partitiondelivery_xml[i]);
+					}
 				}
 			}
 		}
 
 		if (pd == 0)
-		while ((ep = readdir(dir)) != NULL)
 		{
-			/*if (ep->d_type == DT_REG)*/
+			while ((ep = readdir(dir)) != NULL)
 			{
-				if (strcmp(ep->d_name, ".") != 0 && strcmp(ep->d_name, "..") != 0)
+				/*if (ep->d_type == DT_REG)*/
 				{
-					if ((extension = strrchr(ep->d_name, '.')) != NULL)
+					if (strcmp(ep->d_name, ".") != 0 && strcmp(ep->d_name, "..") != 0)
 					{
-						if (strcmp(extension, ".sin") == 0)
+						if ((extension = strrchr(ep->d_name, '.')) != NULL)
 						{
-							sin_found = 1;
-							printf("\n");
-							printf("Processing %s\n", ep->d_name);
+							if (strcmp(extension, ".sin") == 0)
+							{
+								sin_found = 1;
+								printf("\n");
+								printf("Processing %s\n", ep->d_name);
 #ifdef _WIN32
-							snprintf(sinfil, sizeof(sinfil), "%s\\partition\\%s", working_path, ep->d_name);
+								snprintf(sinfil, sizeof(sinfil), "%s\\partition\\%s", working_path, ep->d_name);
 #else
-							snprintf(sinfil, sizeof(sinfil), "./partition/%s", ep->d_name);
+								snprintf(sinfil, sizeof(sinfil), "./partition/%s", ep->d_name);
 #endif
-							if (!strlen(sinfil))
-							{
-								printf("Oops!!! Sinfile name empty!\n");
-								ret = 1;
-								goto getoutofflashing;
-							}
-
-							if (strstr(sinfil, "artition") == NULL)
-							{
-								printf("Oops!! Found non partition sin file!\n");
-								printf("Please read instructions carefully if you no want brick!\n");
-								printf("Skipping non partition %s file.\n", sinfil);
-								sin_found = 0;
-							}
-							else
-							{
-								fi = fopen64(sinfil, "rb");
-								if (fi == NULL) {
-									printf(" - unable to open %s!\n", sinfil);
+								if (!strlen(sinfil))
+								{
+									printf("Oops!!! Sinfile name empty!\n");
 									ret = 1;
 									goto getoutofflashing;
 								}
-								fseeko64(fi, 0, SEEK_SET);
-								fread_unus_res(file_format, 1, 2, fi);
-								if (fi) fclose(fi);
 
-								if (memcmp(file_format, "\x1F\x8B", 2) == 0)
+								if (strstr(sinfil, "artition") == NULL)
 								{
-									FILE *a = NULL;
-#ifdef _WIN32
-									snprintf(fld, sizeof(fld), "%s\\partition\\converted.file", working_path);
-#else
-									snprintf(fld, sizeof(fld), "./partition/converted.file");
-#endif
-									if (gunziper(sinfil, fld))
-									{
-										ret = 1;
-										goto getoutofflashing;
-									}
-
-									a = fopen64(fld, "rb");
-									if (a == NULL)
-									{
-										printf(" - Unable to open %s\n", fld);
-									}
-									else
-									{
-										if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
-										{
-											fclose(a);
-											remove(fld);
-											closedir(dir);
-											ret = 1;
-											goto getoutofflashing;
-										}
-										fclose(a);
-									}
-
-									remove(fld);
+									printf("Oops!! Found non partition sin file!\n");
+									printf("Please read instructions carefully if you no want brick!\n");
+									printf("Skipping non partition %s file.\n", sinfil);
+									sin_found = 0;
 								}
 								else
 								{
-									FILE *a = NULL;
-
-									a = fopen64(sinfil, "rb");
-									if (a == NULL)
-									{
-										printf(" - Unable to open %s\n", sinfil);
+									fi = fopen64(sinfil, "rb");
+									if (fi == NULL) {
+										printf(" - unable to open %s!\n", sinfil);
+										ret = 1;
+										goto getoutofflashing;
 									}
-									else
+									fseeko64(fi, 0, SEEK_SET);
+									fread_unus_res(file_format, 1, 2, fi);
+									if (fi) fclose(fi);
+
+									if (memcmp(file_format, "\x1F\x8B", 2) == 0)
 									{
-										if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
+										FILE *a = NULL;
+#ifdef _WIN32
+										snprintf(fld, sizeof(fld), "%s\\partition\\converted.file", working_path);
+#else
+										snprintf(fld, sizeof(fld), "./partition/converted.file");
+#endif
+										if (gunziper(sinfil, fld))
 										{
-											fclose(a);
-											remove(fld);
-											closedir(dir);
 											ret = 1;
 											goto getoutofflashing;
 										}
-										fclose(a);
+
+										a = fopen64(fld, "rb");
+										if (a == NULL)
+										{
+											printf(" - Unable to open %s\n", fld);
+										}
+										else
+										{
+											if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
+											{
+												fclose(a);
+												remove(fld);
+												closedir(dir);
+												ret = 1;
+												goto getoutofflashing;
+											}
+											fclose(a);
+										}
+
+										remove(fld);
+									}
+									else
+									{
+										FILE *a = NULL;
+
+										a = fopen64(sinfil, "rb");
+										if (a == NULL)
+										{
+											printf(" - Unable to open %s\n", sinfil);
+										}
+										else
+										{
+											if (!process_sins(dev, a, sinfil, working_path, "partition", "Repartition"))
+											{
+												fclose(a);
+												remove(fld);
+												closedir(dir);
+												ret = 1;
+												goto getoutofflashing;
+											}
+											fclose(a);
+										}
 									}
 								}
 							}
@@ -4057,6 +4096,7 @@ if (argc > 1)
 				}
 			}
 		}
+
 		closedir(dir);
 	}
 
@@ -4067,7 +4107,9 @@ if (argc > 1)
 		printf("On 2018 and UP models you must move partition sin files to 'partition' folder if you need flash partition images!\n");
 	}
 	else
+	{
 		something_flashed = 1;
+	}
 
 /*=======================================  process .sin files  =======================================*/
 
@@ -4730,6 +4772,7 @@ endflashing:
 		}
 		else
 		{
+			display_buffer_hex_ascii("sync response", tmp_reply, get_reply_len);
 			printf(" done\n");
 		}
 
@@ -4775,9 +4818,14 @@ endflashing:
 		}
 #endif
 		if (reboot_mode == 0)
+		{
 			printf("\nEnd. You can disconnect your device when you close %s\n", progname);
+		}
 		else
+		{
+			display_buffer_hex_ascii("reboot mode response", tmp_reply, get_reply_len);
 			printf("\nDone.\n");
+		}
 	}
 
 release:
