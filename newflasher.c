@@ -3795,7 +3795,7 @@ if (argc > 1)
 				have_ufs = true;
 			}
 
-			printf("Determining %s size...\n", have_ufs ? "LUN0" : "EMMC");
+			printf("Determining %s size...\n", have_ufs ? "LUN0" : "EMMC part 0");
 
 			snprintf(tmp, sizeof(tmp), "%s", have_ufs ? "Get-ufs-info" : "Get-emmc-info");
 
@@ -3851,14 +3851,14 @@ if (argc > 1)
 					{
 						display_buffer_hex_ascii("EMMC raw data", tmp_reply, get_reply_len);
 
+						// FIXME!
 						memcpy(&lun0_sz, tmp_reply + 0xd4, 4);
 
 						lun0_sz *= sector_size;
 						lun0_sz /= 1024;
-						lun0_sz -= 4096;
 					}
 
-					printf("%s size = %llu\n", have_ufs ? "LUN0" : "EMMC", lun0_sz);
+					printf("%s size = %llu\n", have_ufs ? "LUN0" : "EMMC part 0", lun0_sz);
 				}
 
 				// sometimes OKAY reply is inside data buffer
@@ -3892,6 +3892,15 @@ if (argc > 1)
 				for(i=0; i<pd; ++i)
 				{
 					char lun0[10];
+
+					/* FIXME!
+					 * temp solution since two diferent emmc csd info, I'm unable to calculate right, for idea:
+					 * https://forum.xda-developers.com/t/tool-newflasher-xperia-command-line-flasher.3619426/post-84072849
+					 * https://forum.xda-developers.com/t/tool-newflasher-xperia-command-line-flasher.3619426/post-84214113
+					 */
+					lun0_sz -= lun0_sz % 10000;
+					lun0_sz /= 10000;
+
 					snprintf(lun0, sizeof(lun0), "%llu", lun0_sz);
 
 					printf("\n");
