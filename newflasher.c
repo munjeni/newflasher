@@ -3851,7 +3851,6 @@ if (argc > 1)
 					{
 						display_buffer_hex_ascii("EMMC raw data", tmp_reply, get_reply_len);
 
-						// FIXME!
 						memcpy(&lun0_sz, tmp_reply + 0xd4, 4);
 
 						lun0_sz *= sector_size;
@@ -3898,8 +3897,8 @@ if (argc > 1)
 					 * https://forum.xda-developers.com/t/tool-newflasher-xperia-command-line-flasher.3619426/post-84072849
 					 * https://forum.xda-developers.com/t/tool-newflasher-xperia-command-line-flasher.3619426/post-84214113
 					 */
-					lun0_sz -= lun0_sz % 10000;
-					lun0_sz /= 10000;
+					//lun0_sz -= lun0_sz % 10000;
+					//lun0_sz /= 10000;
 
 					snprintf(lun0, sizeof(lun0), "%llu", lun0_sz);
 
@@ -3911,7 +3910,6 @@ if (argc > 1)
 					snprintf(sinfil, sizeof(sinfil), "./partition/%s", partitiondelivery_xml[i]);
 #endif
 					if ((strstr(sinfil, "LUN0") != NULL && strstr(sinfil, lun0) != NULL) ||
-						 (strstr(sinfil, "partition-image_") != NULL && strstr(sinfil, lun0) != NULL) ||
 						 strstr(sinfil, "LUN0_X-FLASH-ALL") != NULL ||
 						 strstr(sinfil, "LUN1") != NULL ||
 						 strstr(sinfil, "LUN2") != NULL ||
