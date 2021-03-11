@@ -4271,10 +4271,14 @@ if (argc > 1)
 												memcpy(remember_current_slot, current_slot, 1);
 
 												if (memcmp(current_slot, "a", 1) == 0)
+												{
 													memcpy(current_slot, "b", 1);
-
-												if (memcmp(current_slot, "b", 1) == 0)
-													memcpy(current_slot, "a", 1);
+												}
+												else
+												{
+													if (memcmp(current_slot, "b", 1) == 0)
+														memcpy(current_slot, "a", 1);
+												}
 
 												if (!process_sins(dev, a, sinfil, working_path, "flash_session", "flash"))
 												{
@@ -4346,10 +4350,14 @@ if (argc > 1)
 												memcpy(remember_current_slot, current_slot, 1);
 
 												if (memcmp(current_slot, "a", 1) == 0)
+												{
 													memcpy(current_slot, "b", 1);
-
-												if (memcmp(current_slot, "b", 1) == 0)
-													memcpy(current_slot, "a", 1);
+												}
+												else
+												{
+													if (memcmp(current_slot, "b", 1) == 0)
+														memcpy(current_slot, "a", 1);
+												}
 
 												if (!process_sins(dev, a, sinfil, working_path, "flash_session", "flash"))
 												{
