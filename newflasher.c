@@ -1575,7 +1575,7 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 				return 0;
 			}
 
-			if (strlen(tmp_reply) != 12) {
+			if (strlen(tmp_reply) < 12) {
 				printf("      Error, signature DATA reply size: %zu less than expected: 12!\n", strlen(tmp_reply));
 				return 0;
 			}
