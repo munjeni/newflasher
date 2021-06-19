@@ -204,6 +204,8 @@ static char remember_current_slot[2];
 static unsigned int something_flashed = 0;
 static bool sync_sent = false;
 
+static bool is_2021_device = false;
+
 unsigned int swap_uint32(unsigned int val) {
 	val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF);
 	return ((val << 16) | (val >> 16)) & 0xffffffff;
@@ -1562,7 +1564,8 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 				return 0;
 			}
 
-			snprintf(command, sizeof(command), "signature:%08x", fp_size);
+repeat_here:
+			snprintf(command, sizeof(command), "%s:%08x", is_2021_device ? "download" : "signature", fp_size);
 			printf("      %s\n", command);
 
 			if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
@@ -1575,14 +1578,37 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 				return 0;
 			}
 
-			if (strlen(tmp_reply) < 12) {
-				printf("      Error, signature DATA reply size: %zu less than expected: 12!\n", strlen(tmp_reply));
-				return 0;
+			if (strlen(tmp_reply) != 12)
+			{
+				if (memcmp(tmp_reply, "FAIL", 4) == 0 && !is_2021_device)
+				{
+					printf("      device from 2021 and up?\n");
+					is_2021_device = true;
+					goto repeat_here;
+				}
+				else
+				{
+					printf("      Error, signature DATA reply size: %zu less than expected: 12!\n", strlen(tmp_reply));
+					return 0;
+				}
 			}
 
-			if (memcmp(tmp_reply+4, command+10, 8) != 0) {
-				printf("      Error, signature DATA reply string: %s is not equal to expected: DATA%s!\n", tmp_reply, command+10);
-				return 0;
+
+			if (is_2021_device)
+			{
+				if (memcmp(tmp_reply+4, command+9, 8) != 0)
+				{
+					printf("      Error, signature DATA reply string: %s is not equal to expected: DATA%s!\n", tmp_reply, command+10);
+					return 0;
+				}
+			}
+			else
+			{
+				if (memcmp(tmp_reply+4, command+10, 8) != 0)
+				{
+					printf("      Error, signature DATA reply string: %s is not equal to expected: DATA%s!\n", tmp_reply, command+10);
+					return 0;
+				}
 			}
 
 			if ((buffer = (char *)malloc(fp_size+1)) == NULL) {
@@ -1631,6 +1657,34 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 			{
 				printf("      Error, didn't got signature OKAY reply! Got reply: %s\n", tmp_reply);
 				return 0;
+			}
+
+			if (is_2021_device)
+			{
+				snprintf(command, sizeof(command), "signature");
+				printf("      %s\n", command);
+
+				if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1)
+				{
+					printf("      Error writing signature command!\n");
+					return 0;
+				}
+
+				if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+				{
+					printf("      Error, no signature OKAY reply!\n");
+					return 0;
+				}
+
+				if (memcmp(tmp_reply, "OKAY", 4) != 0)
+				{
+					printf("      Error, signature OKAY reply, got reply: %s!\n", tmp_reply);
+					return 0;
+				}
+				else
+				{
+					printf("      OKAY.\n");
+				}
 			}
 		}
 		else
@@ -2560,37 +2614,6 @@ int main(int argc, char *argv[])
 	memset(slot_count, 0x30, sizeof(slot_count));
 	memset(current_slot, 0x30, sizeof(current_slot));
 
-/*============================================  reboot mode ==========================================*/
-
-	if (argc < 2)
-	{
-		printf("\nReboot mode at the end of flashing:\n  typa 'a' for reboot to android, type 'f' for reboot to fastboot, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
-		if (scanf(" %c", &ch)) { }
-		switch(ch)
-		{
-			case 'a':
-			case 'A':
-				reboot_mode = 1; /* android */
-				break;
-
-			case 'f':
-			case 'F':
-				reboot_mode = 2; /* fastboot */
-				break;
-
-			case 's':
-			case 'S':
-				reboot_mode = 3; /* flashmode */
-				break;
-
-			case 'p':
-			case 'P':
-			default:
-				reboot_mode = 0; /* power off */
-				break;
-		}
-	}
-
 /*========================================  extract GordonGate  ======================================*/
 #ifdef _WIN32
 	if (argc < 2)
@@ -2833,139 +2856,170 @@ int main(int argc, char *argv[])
 #endif
 #endif
 
+/*============================================  reboot mode ==========================================*/
+
+	if (argc < 2)
+	{
+		printf("\nReboot mode at the end of flashing:\n  typa 'a' for reboot to android, type 'f' for reboot to fastboot, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
+		if (scanf(" %c", &ch)) { }
+		switch(ch)
+		{
+			case 'a':
+			case 'A':
+				reboot_mode = 1; /* android */
+				break;
+
+			case 'f':
+			case 'F':
+				reboot_mode = 2; /* fastboot */
+				break;
+
+			case 's':
+			case 'S':
+				reboot_mode = 3; /* flashmode */
+				break;
+
+			case 'p':
+			case 'P':
+			default:
+				reboot_mode = 0; /* power off */
+				break;
+		}
+	}
+
 /*======================================= commands from script =======================================*/
 
-if (argc > 1)
-{
-	if (transfer_bulk_async(dev, EP_OUT, argv[1], strlen(argv[1]), USB_TIMEOUT, 1) < 1)
+	if (argc > 1)
 	{
-		printf("Error writing commad: %s\n", argv[1]);
-		ret = 1;
-		goto endflashing;
-	}
-	else
-	{
-		printf("Writing command: %s\n", argv[1]);
-
-		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+		if (transfer_bulk_async(dev, EP_OUT, argv[1], strlen(argv[1]), USB_TIMEOUT, 1) < 1)
 		{
-			printf("Error, null reply\n");
+			printf("Error writing commad: %s\n", argv[1]);
 			ret = 1;
 			goto endflashing;
 		}
 		else
 		{
-			display_buffer_hex_ascii("got first reply", tmp_reply, get_reply_len);
+			printf("Writing command: %s\n", argv[1]);
 
-			if (memcmp(tmp_reply, "FAIL", 4) == 0)
+			if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 			{
-				printf("got fail reply: %s\n", tmp_reply);
+				printf("Error, null reply\n");
 				ret = 1;
 				goto endflashing;
 			}
 			else
 			{
-				if (memcmp(tmp_reply, "DATA", 4) == 0)
+				display_buffer_hex_ascii("got first reply", tmp_reply, get_reply_len);
+
+				if (memcmp(tmp_reply, "FAIL", 4) == 0)
 				{
-					unsigned int data_len = 0;
-
-					if (get_reply_len != 12) {
-						printf("Errornous DATA reply!\n");
-						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
-						ret = 1;
-						goto endflashing;
-					}
-
-					sscanf(tmp_reply+4, "%08x", &data_len);
-
-					if (!data_len)
+					printf("got fail reply: %s\n", tmp_reply);
+					ret = 1;
+					goto endflashing;
+				}
+				else
+				{
+					if (memcmp(tmp_reply, "DATA", 4) == 0)
 					{
-						printf("got null data_len!\n");
+						unsigned int data_len = 0;
 
-						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
-						{
-							printf("Error retrieving seccond reply!\n");
+						if (get_reply_len != 12) {
+							printf("Errornous DATA reply!\n");
+							display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
 							ret = 1;
 							goto endflashing;
 						}
 
-						display_buffer_hex_ascii("got last reply", tmp_reply, get_reply_len);
+						sscanf(tmp_reply+4, "%08x", &data_len);
 
-						if (strstr(tmp_reply, "OKAY") == NULL)
+						if (!data_len)
 						{
-							printf("Error, no OKAY reply!\n");
-							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
-							ret = 1;
-							goto endflashing;
-						}
-					}
-					else
-					{
-						char *data_buf = NULL;
+							printf("got null data_len!\n");
 
-						if ((data_buf = (char *)malloc(data_len)) == NULL)
-						{
-							printf("error allocating 0x%x bytes!\n", data_len);
-							ret = 1;
-							goto endflashing;
-						}
-
-						if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
-						{
-							printf("Error retrieving data!\n");
-							free(data_buf);
-							ret = 1;
-							goto endflashing;
-						}
-
-						display_buffer_hex_ascii("data_buf", data_buf, data_len);
-
-						// sometimes OKAY reply is inside data buffer
-						if (data_len >= 4 && data_buf[data_len - 4] == 'O' && data_buf[data_len - 3] == 'K' && data_buf[data_len - 2] == 'A' && data_buf[data_len - 1] == 'Y')
-						{
-							data_len -= 4;
-						}
-						else
-						{
-							if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
+							if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 							{
-								printf("Error retrieving OKAY reply!\n");
-								free(data_buf);
+								printf("Error retrieving seccond reply!\n");
 								ret = 1;
 								goto endflashing;
 							}
+
+							display_buffer_hex_ascii("got last reply", tmp_reply, get_reply_len);
 
 							if (strstr(tmp_reply, "OKAY") == NULL)
 							{
 								printf("Error, no OKAY reply!\n");
-								free(data_buf);
+								display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
 								ret = 1;
 								goto endflashing;
 							}
 						}
-
-						FILE *dumpme = NULL;
-						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
-						if ((dumpme = fopen64("dump.bin", "wb")) == NULL)
-						{
-							printf("dump.bin will not be created!\n");
-						}
 						else
 						{
-							fwrite(data_buf, 1, data_len, dumpme);
-							fclose(dumpme);
-							printf("dump.bin created.\n");
-						}
+							char *data_buf = NULL;
 
-						free(data_buf);
+							if ((data_buf = (char *)malloc(data_len)) == NULL)
+							{
+								printf("error allocating 0x%x bytes!\n", data_len);
+								ret = 1;
+								goto endflashing;
+							}
+
+							if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
+							{
+								printf("Error retrieving data!\n");
+								free(data_buf);
+								ret = 1;
+								goto endflashing;
+							}
+
+							display_buffer_hex_ascii("data_buf", data_buf, data_len);
+
+							// sometimes OKAY reply is inside data buffer
+							if (data_len >= 4 && data_buf[data_len - 4] == 'O' && data_buf[data_len - 3] == 'K' && data_buf[data_len - 2] == 'A' && data_buf[data_len - 1] == 'Y')
+							{
+								data_len -= 4;
+							}
+							else
+							{
+								if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
+								{
+									printf("Error retrieving OKAY reply!\n");
+									free(data_buf);
+									ret = 1;
+									goto endflashing;
+								}
+
+								if (strstr(tmp_reply, "OKAY") == NULL)
+								{
+									printf("Error, no OKAY reply!\n");
+									free(data_buf);
+									ret = 1;
+									goto endflashing;
+								}
+							}
+
+							FILE *dumpme = NULL;
+							display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+							if ((dumpme = fopen64("dump.bin", "wb")) == NULL)
+							{
+								printf("dump.bin will not be created!\n");
+							}
+							else
+							{
+								fwrite(data_buf, 1, data_len, dumpme);
+								fclose(dumpme);
+								printf("dump.bin created.\n");
+							}
+
+							free(data_buf);
+						}
 					}
 				}
 			}
 		}
-	}
 
-	goto endflashing;
-}
+		goto endflashing;
+	}
 
 /*==========================================  dump trim area  ========================================*/
 
@@ -4838,7 +4892,7 @@ endflashing:
 		}
 		else
 		{
-			display_buffer_hex_ascii("reboot mode response", tmp_reply, get_reply_len);
+			//display_buffer_hex_ascii("reboot mode response", tmp_reply, get_reply_len);
 			printf("\nDone.\n");
 		}
 	}
