@@ -206,6 +206,8 @@ static bool sync_sent = false;
 
 static bool is_2021_device = false;
 
+static unsigned int battery_level = 0;
+
 unsigned int swap_uint32(unsigned int val) {
 	val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF);
 	return ((val << 16) | (val >> 16)) & 0xffffffff;
@@ -3693,6 +3695,33 @@ int main(int argc, char *argv[])
 		}
 	}
 
+	snprintf(tmp, sizeof(tmp), "getvar:Battery");
+	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
+	{
+		printf(" - Error writing command %s!\n", tmp);
+		ret = 1;
+		goto endflashing;
+	}
+
+	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+	{
+		ret = 1;
+		goto endflashing;
+	}
+
+	if (memcmp(tmp_reply, "FAIL", 4) != 0)
+	{
+		if (memcmp(tmp_reply, "OKAY", 4) == 0 && get_reply_len > 4)
+		{
+			sscanf(tmp_reply+4, "%d", &battery_level);
+		}
+		else
+		{
+			if (get_reply_len > 0)
+				sscanf(tmp_reply, "%d", &battery_level);
+		}
+	}
+
 	printf("Product: %s\n", product);
 	printf("Version: %s\n", version);
 	printf("Bootloader version: %s\n", version_bootloader);
@@ -3716,6 +3745,21 @@ int main(int argc, char *argv[])
 	printf("Root key hash: %s\n", get_root_key_hash);
 	printf("Slot count: %s\n", slot_count);
 	printf("Current slot: %s\n", current_slot);
+	printf("Battery level: %d%s\n", battery_level, (battery_level == 0) ? " unsupported command" : "");
+
+	if (battery_level > 0)
+	{
+		if (battery_level < 15)
+		{
+			printf("\nYour battery level is %d percent and you have risk for hard brick in case your battery get fully discharged durring flash session!\n", battery_level);
+			printf("Type 'y' and press ENTER if you understand the risk, or type 'n' to exit from flashing.\n");
+			if (scanf(" %c", &ch)) { }
+			if (ch == 'n' || ch == 'N')
+			{
+				goto endflashing;
+			}
+		}
+	}
 
 /*======================================  put into flash mode  =======================================*/
 
