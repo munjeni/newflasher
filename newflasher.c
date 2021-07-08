@@ -1824,7 +1824,7 @@ repeat_here:
 
 						if (has_slot)
 						{
-							if (strstr(basenamee(filename), "_other_") != NULL)
+							if (strstr(basenamee(filename), "_other") != NULL)
 							{
 								if (memcmp(current_slot, "a", 1) == 0)
 									snprintf(command, sizeof(command), "erase:%s_b", flashfile);
@@ -1891,7 +1891,7 @@ repeat_here:
 			{
 				if (has_slot)
 				{
-					if (strstr(basenamee(filename), "_other_") != NULL)
+					if (strstr(basenamee(filename), "_other") != NULL)
 					{
 						if (memcmp(current_slot, "a", 1) == 0)
 							snprintf(command, sizeof(command), "%s:%s_b", endcommand, flashfile);
@@ -1914,7 +1914,6 @@ repeat_here:
 				}
 
 				printf("      %s\n", command);
-				has_slot = false;
 			}
 
 			if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
