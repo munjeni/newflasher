@@ -4725,20 +4725,114 @@ getoutofflashing:
 	snprintf(tmp, sizeof(tmp), "Getlog");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf("Error writing commad: %s\n", tmp);
 		ret = 1;
 		goto slot_setup;
 	}
-
-	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+	else
 	{
-		ret = 1;
-		goto slot_setup;
-	}
+		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+		{
+			printf("Error, null reply\n");
+			ret = 1;
+			goto slot_setup;
+		}
+		else
+		{
+			if (memcmp(tmp_reply, "FAIL", 4) == 0)
+			{
+				printf("got fail reply: %s\n", tmp_reply);
+				ret = 1;
+				goto slot_setup;
+			}
+			else
+			{
+				if (memcmp(tmp_reply, "DATA", 4) == 0)
+				{
+					unsigned int data_len = 0;
 
-	printf("\n============ LOGS FROM BOOTLOADER ===============\n");
-	printf("%s\n", tmp_reply);
-	printf("=================================================\n");
+					if (get_reply_len != 12) {
+						printf("Errornous DATA reply!\n");
+						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+						ret = 1;
+						goto slot_setup;
+					}
+
+					sscanf(tmp_reply+4, "%08x", &data_len);
+
+					if (!data_len)
+					{
+						printf("got null data_len!\n");
+
+						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+						{
+							printf("Error retrieving seccond reply!\n");
+							ret = 1;
+							goto slot_setup;
+						}
+
+						if (strstr(tmp_reply, "OKAY") == NULL)
+						{
+							printf("Error, no OKAY reply!\n");
+							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
+							ret = 1;
+							goto slot_setup;
+						}
+					}
+					else
+					{
+						char *data_buf = NULL;
+
+						if ((data_buf = (char *)malloc(data_len)) == NULL)
+						{
+							printf("error allocating 0x%x bytes!\n", data_len);
+							ret = 1;
+							goto slot_setup;
+						}
+
+						if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
+						{
+							printf("Error retrieving data!\n");
+							free(data_buf);
+							ret = 1;
+							goto slot_setup;
+						}
+
+						printf("\n=========== BOOTLOADER LOG =============\n");
+						printf("%s\n", data_buf);
+						printf("=================================================\n");
+
+
+						// sometimes OKAY reply is inside data buffer
+						if (data_len >= 4 && data_buf[data_len - 4] == 'O' && data_buf[data_len - 3] == 'K' && data_buf[data_len - 2] == 'A' && data_buf[data_len - 1] == 'Y')
+						{
+							data_len -= 4;
+						}
+						else
+						{
+							if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
+							{
+								printf("Error retrieving OKAY reply!\n");
+								free(data_buf);
+								ret = 1;
+								goto slot_setup;
+							}
+
+							if (strstr(tmp_reply, "OKAY") == NULL)
+							{
+								printf("Error, no OKAY reply!\n");
+								free(data_buf);
+								ret = 1;
+								goto slot_setup;
+							}
+						}
+
+						free(data_buf);
+					}
+				}
+			}
+		}
+	}
 
 /*=========================================  firmwares history log    ========================================*/
 
