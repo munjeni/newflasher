@@ -4720,6 +4720,26 @@ skip_this:
 
 getoutofflashing:
 
+/*=========================================    display log    ========================================*/
+
+	snprintf(tmp, sizeof(tmp), "Getlog");
+	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
+	{
+		printf(" - Error writing command %s!\n", tmp);
+		ret = 1;
+		goto endflashing;
+	}
+
+	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+	{
+		ret = 1;
+		goto endflashing;
+	}
+
+	printf("\n============ LOGS FROM BOOTLOADER ===============\n");
+	printf("%s\n", tmp_reply);
+	printf("=================================================\n");
+
 /*=========================================  set slot active  ========================================*/
 
 	printf("\n");
