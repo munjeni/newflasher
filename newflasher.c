@@ -4283,15 +4283,15 @@ int main(int argc, char *argv[])
 							/* prompt for Persist or persist partition flash */
 							if (strstr(ep->d_name, "ersist") != NULL)
 							{
-								printf("\nRecommended step to skip this! Type 'y' and press ENTER if you want flash persist partition, or type 'n' and press ENTER to skip.\n");
-								printf("More info https://forum.xda-developers.com/xperia-xz1-compact/help/android-attest-key-lost-bootloader-t3829945\n");
-								if (scanf(" %c", &ch)) { }
+								//printf("\nRecommended step to skip this! Type 'y' and press ENTER if you want flash persist partition, or type 'n' and press ENTER to skip.\n");
+								//printf("More info https://forum.xda-developers.com/xperia-xz1-compact/help/android-attest-key-lost-bootloader-t3829945\n");
+								//if (scanf(" %c", &ch)) { }
 
-								if (ch == 'n' || ch == 'N')
-								{
+								//if (ch == 'n' || ch == 'N')
+								//{
 									file_is_skip = 1;
 									goto skip_this;
-								}
+								//}
 							}
 
 							sin_found = 1;
