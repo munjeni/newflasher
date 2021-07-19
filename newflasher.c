@@ -3261,17 +3261,6 @@ int main(int argc, char *argv[])
 		goto endflashing;
 	}
 
-/*============  Ask user for flashing bootloader,bluetooth,dsp,modem,rdimage to booth a,b slots =========*/
-
-	//printf("\nOptional step! Type 'y' and press ENTER if you need to flash bootloader,bluetooth,dsp,modem,rdimage to booth a,b slots, or type 'n' to skip.\n");
-	//printf("By default it is NOT flashed to booth slots, do on your own risk!\n");
-	//if (scanf(" %c", &ch)) { }
-	//if (ch == 'y' || ch == 'Y')
-	//{
-		/* now this is mandatory */
-		flash_booth_slots = true;
-	//}
-
 /*=========================================  DEVICE INFO  ============================================*/
 
 	snprintf(tmp, sizeof(tmp), "getvar:max-download-size");
@@ -3758,6 +3747,12 @@ int main(int argc, char *argv[])
 				goto endflashing;
 			}
 		}
+	}
+
+	if (slot_count[0] == '2')
+	{
+		/* flash bootloader,bluetooth,dsp,modem,rdimage to booth a,b slots */
+		flash_booth_slots = true;
 	}
 
 /*======================================  put into flash mode  =======================================*/
