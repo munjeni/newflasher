@@ -1077,11 +1077,19 @@ static bool get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int t
 
 		if (memcmp(bytes, "DATA", 4) == 0 && ret_len != 12)
 		{
+			// xperia 10 mark 3 XQ-BT41 send 13 bytes where last byte is null termination, fixing it to 12
+			if (ret_len == 13)
+			{
+				ret_len = 12;
+				goto solve_xqbt41;
+			}
+
 			printf(" - Errornous DATA reply!\n");
 			display_buffer_hex_ascii("Replied with ", bytes, ret_len);
 			return false;
 		}
 
+solve_xqbt41:
 		if (memcmp(bytes, "DATA", 4) == 0 && ret_len == 12)
 		{
 			memcpy(tmp_reply, bytes, ret_len);
