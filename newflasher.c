@@ -733,8 +733,6 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 						switch(WaitForSingleObject(gOverLapped_in.hEvent, timeout))
 						{
 							case WAIT_OBJECT_0:
-								printf("\n");
-
 								/* check on the results of the asynchronous read and update the nBytesRead... */
 								do
 								{
@@ -820,8 +818,6 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 						switch(WaitForSingleObject(gOverLapped_out.hEvent, timeout))
 						{
 							case WAIT_OBJECT_0:
-								printf("\n");
-
 								/* check on the results of the asynchronous read and update the nBytesRead... */
 								do
 								{
