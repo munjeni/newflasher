@@ -202,7 +202,6 @@ static char current_slot[2];
 static char remember_current_slot[2];
 
 static unsigned int something_flashed = 0;
-static bool sync_sent = false;
 
 static bool is_2021_device = false;
 
@@ -361,7 +360,8 @@ static void trim(char *ptr) {
 	ptr[i] = '\0';
 }
 
-#define USB_TIMEOUT 60000
+// 2 minute
+#define USB_TIMEOUT 120000
 
 #ifndef _WIN32
 static char *TEXT(char *what) {
@@ -686,6 +686,8 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 {
 	static unsigned long nBytesRead = 0;
 	BOOL bResult;
+	unsigned char progress = 0;
+	time_t start = time(NULL);
 
 	OVERLAPPED gOverLapped_in = {
 		.Internal     = 0,
@@ -705,7 +707,9 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 	{
 		nBytesRead = 0;
 		gOverLapped_in.hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
-		if (NULL == gOverLapped_in.hEvent) {
+
+		if (NULL == gOverLapped_in.hEvent)
+		{
 			DisplayError(TEXT("Error creating overlaped_in hEvent!"));
 			return 0;
 		}
@@ -713,9 +717,9 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 		{
 			bResult = ReadFile(dev, bytes, size, NULL, &gOverLapped_in);
 
-			if(!bResult)
+			if (!bResult)
 			{
-				switch (GetLastError())
+				switch(GetLastError())
 				{
 					case ERROR_HANDLE_EOF:
 					{
@@ -729,18 +733,37 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 						switch(WaitForSingleObject(gOverLapped_in.hEvent, timeout))
 						{
 							case WAIT_OBJECT_0:
+								printf("\n");
+
 								/* check on the results of the asynchronous read and update the nBytesRead... */
-								bResult = GetOverlappedResult(dev, &gOverLapped_in, &nBytesRead, TRUE);
+								do
+								{
+									// https://docs.microsoft.com/en-us/windows/win32/api/ioapiset/nf-ioapiset-getoverlappedresult
+									bResult = GetOverlappedResult(dev, &gOverLapped_in, &nBytesRead, FALSE);
+
+									if (time(NULL)-start > 5)
+									{
+										start = time(NULL);
+
+										progress += 1;
+										printf(".");
+
+										if (progress == 60)
+										{
+											progress = 0;
+											printf("\n");
+										}
+									}
+								}
+								while(!bResult && ERROR_IO_INCOMPLETE == GetLastError());
+
 								if (!bResult)
 									DisplayError(TEXT("GetOverlapped_in_Result:"));
 								break;
 
 							case WAIT_TIMEOUT:
-								if (!sync_sent)
-								{
-									DisplayError(TEXT("TIMEOUT:"));
-									CancelIo(dev);
-								}
+								DisplayError(TEXT("TIMEOUT:"));
+								CancelIo(dev);
 								break;
 
 							default:
@@ -749,8 +772,15 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 								break;
 						}
 					}
+					case ERROR_SUCCESS:
+					{
+						//printf("io read succed.\n");
+						CancelIo(dev);
+						break;
+					}
 					default:
 					{
+						DisplayError(TEXT("IO_OTHER:"));
 						CancelIo(dev);
 						break;
 					}
@@ -790,8 +820,30 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 						switch(WaitForSingleObject(gOverLapped_out.hEvent, timeout))
 						{
 							case WAIT_OBJECT_0:
+								printf("\n");
+
 								/* check on the results of the asynchronous read and update the nBytesRead... */
-								bResult = GetOverlappedResult(dev, &gOverLapped_out, &nBytesRead, TRUE);
+								do
+								{
+									// https://docs.microsoft.com/en-us/windows/win32/api/ioapiset/nf-ioapiset-getoverlappedresult
+									bResult = GetOverlappedResult(dev, &gOverLapped_out, &nBytesRead, FALSE);
+
+									if (time(NULL)-start > 5)
+									{
+										start = time(NULL);
+
+										progress += 1;
+										printf(".");
+
+										if (progress == 60)
+										{
+											progress = 0;
+											printf("\n");
+										}
+									}
+								}
+								while(!bResult && ERROR_IO_INCOMPLETE == GetLastError());
+
 								if (!bResult)
 									DisplayError(TEXT("GetOverLapped_out_Result:"));
 								break;
@@ -807,8 +859,15 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 								break;
 						}
 					}
+					case ERROR_SUCCESS:
+					{
+						//printf("io write succed.\n");
+						CancelIo(dev);
+						break;
+					}
 					default:
 					{
+						DisplayError(TEXT("IO_OTHER:"));
 						CancelIo(dev);
 						break;
 					}
@@ -870,8 +929,7 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 
 		if (res != LIBUSB_SUCCESS)
 		{
-			if (!sync_sent)
-				printf("bulk transfer (in): %s\n", libusb_error_name(res));
+			printf("bulk transfer (in): %s\n", libusb_error_name(res));
 			return 0;
 		}
 	}
@@ -947,8 +1005,7 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 				n = ioctl(h->desc, USBDEVFS_BULK, &bulk);
 				if (n < 0)
 				{
-					if (!sync_sent)
-						printf(" - (ep_in) ERROR: n = %d, errno = %d (%s)\n",n, errno, strerror(errno));
+					printf(" - (ep_in) ERROR: n = %d, errno = %d (%s)\n",n, errno, strerror(errno));
 					return 0;
 				}
 			}
@@ -1197,7 +1254,8 @@ int def(FILE *source, FILE *dest, int level)
    is an error reading or writing the files. */
 int inf(FILE *source, FILE *dest)
 {
-	int ret, progress=0;
+	int ret;
+	unsigned char progress = 0;
 	unsigned long long have;
 	z_stream strm;
 	unsigned char in[CHUNK];
@@ -5096,29 +5154,12 @@ endflashing:
 			goto release;
 		}
 		printf("Sent command: Sync\n");
-		sync_sent = true;
 #if 1
-		/* 30 secconds enought for sync? */
-		time_t start = time(NULL);
-		bool sync_response = false;
-		printf("Waiting sync to finish...\n");
-		do
-		{
-			sync_response = get_reply(dev, EP_IN, tmp, sizeof(tmp), 1000, 0);
-			printf(".");
-		}
-		while(time(NULL)-start < 30 && !sync_response);
-
-		if (!sync_response)
+		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
 			printf(" error, no sync response!\n");
 			ret = 1;
 			goto release;
-		}
-		else
-		{
-			display_buffer_hex_ascii("sync response", tmp_reply, get_reply_len);
-			printf(" done\n");
 		}
 
 #endif
