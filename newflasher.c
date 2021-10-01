@@ -1505,6 +1505,48 @@ static int verify_checksum(const char *p)
 	return (u == parseoct(p + 148, 8));
 }
 
+static bool keep_userdata = false;
+static bool file_found_in_updatexml = false;
+static void check_in_updatexml(char *updatexml_file, char *searchfor)
+{
+	FILE *fp = NULL;
+	char *line = NULL;
+	size_t len = 0;
+	ssize_t read;
+
+	if ((fp = fopen64(updatexml_file, "rb")) == NULL)
+	{
+		printf(" - Unable to open %s!\n", updatexml_file);
+		return;
+	}
+
+	while((read = g_getline(&line, &len, fp)) != -1)
+	{
+		switch(read)
+		{
+			case 1:
+				/*LOG("Skipped empty line.\n\n");*/
+				break;
+
+			default:
+				trim(line);
+
+				if (strstr(line, "<NOERASE>") != NULL && strstr(line, searchfor) != NULL)
+				{
+					printf("%s\n", line);
+					file_found_in_updatexml = true;
+				}
+				break;
+		}
+	}
+
+	if (fp)
+		fclose(fp);
+
+	if (line)
+		free(line);
+}
+
 static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, char *outfolder, char *endcommand)
 {
 	char buff[512];
@@ -1517,6 +1559,46 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 	char command[64];
 	char flashfile[256];
 	bool has_slot = false;
+	struct stat filestat;
+
+#ifdef _WIN32
+	char *working_path = _getcwd(0, 0);
+#else
+	char working_path[PATH_MAX];
+	if (getcwd(working_path, sizeof(working_path)) == NULL)
+	{
+		perror("getcwd() error");
+		return 0;
+	}
+#endif
+
+#ifdef _WIN32
+	snprintf(buff, sizeof(buff), "%s\\update.xml", working_path);
+#else
+	snprintf(buff, sizeof(buff), "./update.xml");
+#endif
+
+	if (stat(buff, &filestat) < 0)
+	{
+		//printf("\nupdate.xml not exist in current folder!\n");
+	}
+	else
+	{
+		if (keep_userdata)
+		{
+			file_found_in_updatexml = false;
+			check_in_updatexml(buff, basenamee(filename));
+		}
+	}
+
+	if (file_found_in_updatexml)
+	{
+		printf(" - Skipping %s\n", basenamee(filename));
+		file_found_in_updatexml = false;
+		return 1;
+	}
+
+	memset(buff, 0, sizeof(buff));
 
 	printf(" - Extracting from %s\n", basenamee(filename));
 
@@ -2918,6 +3000,29 @@ int main(int argc, char *argv[])
 	}
 #endif
 #endif
+
+/*========================================  keep userdata?  ======================================*/
+
+	/* search for update.xml */
+#ifdef _WIN32
+	snprintf(sinfil, sizeof(sinfil), "%s\\update.xml", working_path);
+#else
+	snprintf(sinfil, sizeof(sinfil), "./update.xml");
+#endif
+
+	if (stat(sinfil, &filestat) < 0)
+	{
+		printf("\nupdate.xml not exist in current folder!\n");
+	}
+	else
+	{
+		printf("\nDo you want to keep userdata? Type 'y' and press ENTER to confirm, or type 'n' to erase userdata.\n");
+		if (scanf(" %c", &ch)) { }
+		if (ch == 'y' || ch == 'Y')
+		{
+			keep_userdata = true;
+		}
+	}
 
 /*============================================  reboot mode ==========================================*/
 
@@ -4576,14 +4681,43 @@ skip_this:
 					{
 						if (strcmp(extension, ".ta") == 0)
 						{
-							sin_found = 1;
-							printf("\n");
+#ifdef _WIN32
+							snprintf(sinfil, sizeof(sinfil), "%s\\update.xml", working_path);
+#else
+							snprintf(sinfil, sizeof(sinfil), "./update.xml");
+#endif
 
-							if (!proced_ta_file(ep->d_name, dev))
+							if (stat(sinfil, &filestat) < 0)
 							{
-								closedir(dir);
-								ret = 1;
-								goto getoutofflashing;
+								//printf("\nupdate.xml not exist in current folder!\n");
+							}
+							else
+							{
+								if (keep_userdata)
+								{
+									file_found_in_updatexml = false;
+									check_in_updatexml(sinfil, ep->d_name);
+								}
+							}
+
+							if (file_found_in_updatexml)
+							{
+								printf("Skipping %s\n", ep->d_name);
+								sin_found = 0;
+								file_found_in_updatexml = false;
+								printf("\n");
+							}
+							else
+							{
+								sin_found = 1;
+								printf("\n");
+
+								if (!proced_ta_file(ep->d_name, dev))
+								{
+									closedir(dir);
+									ret = 1;
+									goto getoutofflashing;
+								}
 							}
 						}
 					}
