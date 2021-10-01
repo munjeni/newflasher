@@ -4911,6 +4911,7 @@ skip_this:
 
 getoutofflashing:
 
+#if 0
 /*=========================================    bootloader log    ========================================*/
 
 	snprintf(tmp, sizeof(tmp), "Getlog");
@@ -5024,6 +5025,7 @@ getoutofflashing:
 			}
 		}
 	}
+#endif
 
 /*=========================================  firmwares history log    ========================================*/
 
