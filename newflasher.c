@@ -3028,7 +3028,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 2)
 	{
-		printf("\nReboot mode at the end of flashing:\n  typa 'a' for reboot to android, type 'f' for reboot to fastboot, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
+		printf("\nReboot mode at the end of flashing:\n  type 'a' for reboot to android, type 'f' for reboot to fastboot, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
 		if (scanf(" %c", &ch)) { }
 		switch(ch)
 		{
