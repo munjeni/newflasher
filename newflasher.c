@@ -207,12 +207,30 @@ static bool is_2021_device = false;
 
 static unsigned int battery_level = 0;
 
-unsigned int swap_uint32(unsigned int val) {
+int is_big_endian(void)
+{
+	union {
+		uint32_t i;
+		char c[4];
+	} e = { 0x01000000 };
+
+	return e.c[0];
+}
+
+unsigned int swap_uint32(unsigned int val)
+{
+	if (is_big_endian())
+		return val;
+
 	val = ((val << 8) & 0xFF00FF00 ) | ((val >> 8) & 0xFF00FF);
 	return ((val << 16) | (val >> 16)) & 0xffffffff;
 }
 
-unsigned long long swap_uint64(unsigned long long val) {
+unsigned long long swap_uint64(unsigned long long val)
+{
+	if (is_big_endian())
+		return val;
+
 	val = ((val << 8) & 0xFF00FF00FF00FF00ULL) | ((val >> 8) & 0x00FF00FF00FF00FFULL);
 	val = ((val << 16) & 0xFFFF0000FFFF0000ULL) | ((val >> 16) & 0x0000FFFF0000FFFFULL);
 	return ((val << 32) | (val >> 32)) & 0xffffffffffffffffULL;
