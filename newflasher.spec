@@ -13,7 +13,7 @@
 # published by the Open Source Initiative.
 
 
-%define pkg_version 52
+%define pkg_version 55
 Name:           newflasher
 Version:        %{pkg_version}
 Release:        1

@@ -44,7 +44,8 @@ LOCAL_CFLAGS += -Iexpat \
 		-Wno-unused-parameter \
 		-Wno-missing-field-initializers \
 		-DHAVE_EXPAT_CONFIG_H \
-		-UWIN32_LEAN_AND_MEAN
+		-UWIN32_LEAN_AND_MEAN \
+		-DXML_POOR_ENTROPY
 
 include $(BUILD_STATIC_LIBRARY)
 

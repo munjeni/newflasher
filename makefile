@@ -25,7 +25,7 @@ ifeq ($(OS),Darwin)
 CFLAGS+= -I/usr/local/Cellar/libusb/1.0.23/include/libusb-1.0
 LIBS+=-lusb-1.0
 endif
-CROSS_CFLAGS=${CFLAGS} -I include -I zlib-1.2.11 -L zlib-1.2.11 -I expat-2.2.9/lib -L expat-2.2.9/lib/.libs
+CROSS_CFLAGS=${CFLAGS} -I include -I zlib-1.2.12 -L zlib-1.2.12 -I expat-2.2.9/lib -L expat-2.2.9/lib/.libs
 
 .PHONY: default
 default: newflasher
@@ -36,9 +36,9 @@ cross: newflasher.exe newflasher.x64 newflasher.i386 newflasher.arm32 newflasher
 .PHONY: libs
 libs:
 	@mkdir -p include
-	@test -d zlib-1.2.11 && echo "" || wget https://zlib.net/zlib-1.2.11.tar.gz
-	@test -d zlib-1.2.11 && echo "" || tar xzf zlib-1.2.11.tar.gz
-	@rm -rf zlib-1.2.11.tar.gz
+	@test -d zlib-1.2.12 && echo "" || wget https://zlib.net/zlib-1.2.12.tar.gz
+	@test -d zlib-1.2.12 && echo "" || tar xzf zlib-1.2.12.tar.gz
+	@rm -rf zlib-1.2.12.tar.gz
 	@test -d expat-2.2.9 && echo "" || wget https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.gz
 	@test -d expat-2.2.9 && echo "" || tar xzf expat-2.2.9.tar.gz
 	@rm -rf expat-2.2.9.tar.gz
@@ -47,7 +47,7 @@ newflasher: newflasher.c version.h
 	${CC} ${CFLAGS} $< -o $@ -lz -lexpat ${LIBS}
 
 newflasher.exe: libs newflasher.c version.h
-	@cd zlib-1.2.11 && CC=${CCWIN} ./configure --static && make clean && make
+	@cd zlib-1.2.12 && CC=${CCWIN} ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="${CCWIN} -fPIC" ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
 	@test -f include/GordonGate.h && echo "" || wget https://github.com/Androxyde/Flashtool/blob/master/drivers/GordonGate/Sony_Mobile_Software_Update_Drivers_x64_Setup.msi?raw=true -O GordonGate
 	@test -f include/GordonGate.h && echo "" || xxd --include GordonGate > include/GordonGate.h
@@ -58,25 +58,25 @@ newflasher.exe: libs newflasher.c version.h
 	${CCWINSTRIP} newflasher.exe
 
 newflasher.x64: libs newflasher.c version.h
-	@cd zlib-1.2.11 && CC=gcc ./configure --static && make clean && make
+	@cd zlib-1.2.12 && CC=gcc ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="gcc -fPIC" ./configure --enable-static --disable-shared && make clean && make
 	${CC} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.x64 -lz -lexpat
 	${STRIP} newflasher.x64
 
 newflasher.i386: libs newflasher.c version.h
-	@cd zlib-1.2.11 && CC="gcc -m32" ./configure --static && make clean && make
+	@cd zlib-1.2.12 && CC="gcc -m32" ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="gcc -m32 -fPIC" ./configure --enable-static --disable-shared && make clean && make
 	${CC} ${CROSS_CFLAGS} -m32 -static newflasher.c -o newflasher.i386 -lz -lexpat
 	${STRIP} newflasher.i386
 
 newflasher.arm32: libs newflasher.c version.h
-	@cd zlib-1.2.11 && CC=${ARMCC} ./configure --static && make clean && make
+	@cd zlib-1.2.12 && CC=${ARMCC} ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="${ARMCC} -fPIC" ./configure --enable-static --disable-shared --host=arm-linux-gnueabi && make clean && make
 	${ARMCC} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.arm32 -lz -lexpat
 	${ARMSTRIP} newflasher.arm32
 
 newflasher.arm64: libs newflasher.c version.h
-	@cd zlib-1.2.11 && CC=${ARMCC64} ./configure --static && make clean && make
+	@cd zlib-1.2.12 && CC=${ARMCC64} ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="${ARMCC64} -fPIC" ./configure --enable-static --disable-shared --host=aarch64-linux-gnu && make clean && make
 	${ARMCC64} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.arm64 -lz -lexpat
 	${ARMSTRIP64} newflasher.arm64
@@ -100,10 +100,10 @@ install: newflasher newflasher.1.gz
 
 .PHONY: clean
 clean:
-	rm -rf *.gz *.o *.rc *.res obj libs zlib expat zlib-1.2.11 expat-2.2.9 include
+	rm -rf *.gz *.o *.rc *.res obj libs zlib expat zlib-1.2.12 expat-2.2.9 include
 
 .PHONY: distclean
 distclean:
 	rm -rf *.gz *.o *.rc *.res obj libs zlib expat newflasher.exe newflasher.x64 newflasher.i386
 	rm -rf newflasher.arm32 newflasher.arm64 newflasher.arm64_pie newflasher
-	rm -rf zlib-1.2.11 expat-2.2.9 include
+	rm -rf zlib-1.2.12 expat-2.2.9 include

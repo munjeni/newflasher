@@ -210,7 +210,7 @@ static unsigned int battery_level = 0;
 int is_big_endian(void)
 {
 	union {
-		uint32_t i;
+		unsigned int i;
 		char c[4];
 	} e = { 0x01000000 };
 
