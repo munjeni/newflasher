@@ -17,7 +17,7 @@
 Name:           newflasher
 Version:        %{pkg_version}
 Release:        1
-Summary:        Flash Sony Xperia firmwares for XZ Premium phones and later.
+Summary:        Flash Sony Xperia firmwares to XZ Premium devices and later.
 License:        MIT
 URL:            https://github.com/munjeni/newflasher
 Source0:        https://github.com/munjeni/newflasher/archive/refs/tags/%{pkg_version}.tar.gz
@@ -29,7 +29,7 @@ Requires:       zlib
 
 %description
 This _experimental_ software allows you to flash firmwares acquired
-through XperiFirm to Sony phones from the XZ Premium and newer.
+through XperiFirm to Sony devices beginning from the XZ Premium and newer.
 
 %prep
 %setup -q
