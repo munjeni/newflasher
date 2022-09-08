@@ -91,6 +91,9 @@ newflasher.arm64_pie:
 newflasher.1.gz: newflasher.1
 	gzip -9fkn $<
 
+spec:
+	sed "s/@VERSION@/$(VERSION)/" newflasher.spec.in > newflasher.spec
+
 .PHONY: install
 install: newflasher newflasher.1.gz
 	$(INSTALL) -o root -g root -d $(DESTDIR)/usr/bin
