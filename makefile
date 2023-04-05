@@ -49,7 +49,7 @@ newflasher: newflasher.c version.h
 newflasher.exe: libs newflasher.c version.h
 	@cd zlib-1.2.13 && CC=${CCWIN} ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="${CCWIN} -fPIC" ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
-	@test -f include/GordonGate.h && echo "" || wget https://github.com/Androxyde/Flashtool/blob/master/FlashtoolDrivers/src/main/resources/drivers/GordonGate/Sony_Mobile_Software_Update_Drivers_x64_Setup.msi?raw=true -O GordonGate
+	@test -f include/GordonGate.h && echo "" || wget https://software.sonymobile.com/drivers/installers/latest/Sony_Mobile_Software_Update_Drivers_x64_Setup.msi -O GordonGate
 	@test -f include/GordonGate.h && echo "" || xxd --include GordonGate > include/GordonGate.h
 	@rm -rf GordonGate
 	sed "s/@VERSION@/$(VERSION)/" newflasher.rc.in >newflasher.rc
