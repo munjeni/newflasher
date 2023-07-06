@@ -2761,7 +2761,7 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("--------------------------------------------------------\n");
-	printf("            %s v%d by Munjeni @ 2017/2020           \n", progname, VERSION);
+	printf("            %s v%d by Munjeni @ 2017/2023           \n", progname, VERSION);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
@@ -3390,7 +3390,7 @@ int main(int argc, char *argv[])
 									unsigned int y;
 									unsigned int unitt_sz;
 
-									fprintf(dumpme, "//created with %s v%d by Munjeni @ 2017/2020\n", progname, VERSION);
+									fprintf(dumpme, "//created with %s v%d by Munjeni @ 2017/2023\n", progname, VERSION);
 
 									if (i == 1)
 										fprintf(dumpme, "//trim partition\n01\n\n");
@@ -4805,7 +4805,20 @@ skip_this:
 				{
 					/*printf("%d: %s\n", j, bootdelivery_xml[i][1]);*/
 					if (strstr(bootdelivery_xml[i][1], searchfor) != NULL)
+					{
 						bootdelivery_found = 1;
+					}
+					else
+					{
+						// support for xperia 1 gen 5, Sony changed bootdeivery xml structure a bit
+						memset(searchfor, 0, sizeof(searchfor));
+						snprintf(searchfor, sizeof(searchfor), "PLF_ROOT_HASH=\"%s\"", get_root_key_hash);
+
+						if (strstr(bootdelivery_xml[i][1], searchfor) != NULL)
+						{
+							bootdelivery_found = 1;
+						}
+					}
 				}
 
 				if (bootdelivery_found && strstr(bootdelivery_xml[i][1], searchfor) != NULL)
