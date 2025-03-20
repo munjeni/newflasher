@@ -196,7 +196,7 @@ static unsigned int keystore_counter = 0;
 static char security_state[128];
 static char s1_root[64];
 static char sake_root[16];
-static char get_root_key_hash[0x41];
+static char get_root_key_hash[0x61];
 static char slot_count[2];
 static char current_slot[2];
 static char remember_current_slot[2];
