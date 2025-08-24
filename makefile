@@ -22,7 +22,7 @@ LIBS=
 
 CFLAGS?=-Wall -g -O2
 ifeq ($(OS),Darwin)
-CFLAGS+= -I/usr/local/Cellar/libusb/1.0.23/include/libusb-1.0
+CFLAGS+= -I/usr/local/include/libusb-1.0
 LIBS+=-lusb-1.0
 endif
 CROSS_CFLAGS=${CFLAGS} -I include -I zlib-1.3.1 -L zlib-1.3.1 -I expat-2.2.9/lib -L expat-2.2.9/lib/.libs
