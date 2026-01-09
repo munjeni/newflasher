@@ -3046,7 +3046,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 2)
 	{
-		printf("\nReboot mode at the end of flashing:\n  type 'a' for reboot to android, type 'f' for reboot to fastboot, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
+		printf("\nReboot mode at the end of flashing:\n  type 'a' for reboot to android, type 'f' for reboot to fastboot, type 'd' for reboot to fastbootd, type 'r' for reboot to recovery, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
 		if (scanf(" %c", &ch)) { }
 		switch(ch)
 		{
@@ -3060,9 +3060,19 @@ int main(int argc, char *argv[])
 				reboot_mode = 2; /* fastboot */
 				break;
 
+			case 'd':
+			case 'D':
+				reboot_mode = 3; /* fastbootd */
+				break;
+
+			case 'r':
+			case 'R':
+				reboot_mode = 4; /* recovery */
+				break;
+
 			case 's':
 			case 'S':
-				reboot_mode = 3; /* flashmode */
+				reboot_mode = 5; /* flashmode */
 				break;
 
 			case 'p':
@@ -5342,6 +5352,14 @@ endflashing:
 				break;
 
 			case 3:
+				snprintf(reboot_string, sizeof(reboot_string), "reboot-fastboot");
+				break;
+
+			case 4:
+				snprintf(reboot_string, sizeof(reboot_string), "reboot-recovery");
+				break;
+
+			case 5:
 				snprintf(reboot_string, sizeof(reboot_string), "reboot");
 				break;
 
