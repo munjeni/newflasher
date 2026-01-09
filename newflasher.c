@@ -5348,7 +5348,7 @@ endflashing:
 				break;
 
 			case 2:
-				snprintf(reboot_string, sizeof(reboot_string), "reboot-bootloader");
+				snprintf(reboot_string, sizeof(reboot_string), "Reboot-bootloader");
 				break;
 
 			case 3:
@@ -5369,6 +5369,7 @@ endflashing:
 				break;
 		}
 
+retry:
 		if (transfer_bulk_async(dev, EP_OUT, reboot_string, strlen(reboot_string), USB_TIMEOUT, 1) < 1)
 		{
 			printf(" - Error writing command %s!\n", reboot_string);
@@ -5382,6 +5383,11 @@ endflashing:
 			printf("Error, no %s response!\n", reboot_string);
 			ret = 1;
 			goto release;
+		}
+
+		if (memcmp(tmp, "OKAY", 4) && reboot_mode == 2 && reboot_string[0] == 'R') {
+			reboot_string[0] = 'r';
+			goto retry;
 		}
 #endif
 		if (reboot_mode == 0)
