@@ -4198,6 +4198,7 @@ int main(int argc, char *argv[])
 #endif
 					if ((strstr(sinfil, "LUN0") != NULL && strstr(sinfil, lun0) != NULL) ||
 						 strstr(sinfil, "LUN0_X-FLASH-ALL") != NULL ||
+						 strstr(sinfil, "partition-image") != NULL ||
 						 strstr(sinfil, "LUN1") != NULL ||
 						 strstr(sinfil, "LUN2") != NULL ||
 						 strstr(sinfil, "LUN3") != NULL)
