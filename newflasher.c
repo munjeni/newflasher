@@ -168,7 +168,7 @@
 #define LOG(...)
 #endif
 
-#define BUFF_MAX 0x800000
+#define BUFF_MAX 0x1000000
 #define MAX_UNIT_LINE_LEN 0x80000
 
 static char tmp[4096];
