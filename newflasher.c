@@ -1121,6 +1121,12 @@ static bool get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int t
 		return false;
 	}
 
+	if (ret_len > BUFF_MAX)
+	{
+		printf("Bug!!! ret_len: 0x%x > BUFF_MAX: 0x%x\n", ret_len, BUFF_MAX);
+		return false;
+	}
+
 	if (ret_len >= 4)
 	{
 
