@@ -2116,13 +2116,20 @@ repeat_here:
 /* track the current level in the xml tree */
 static int depth = 0;
 
-static char bootdelivery_xml[15][15][200];
+#define MAX_BOOTDELIVERY_CONFIGS 15
+#define MAX_BOOTDELIVERY_ENTRIES 15
+#define MAX_PARTITIONDELIVERY_FILES 10
+
+static char bootdelivery_xml[MAX_BOOTDELIVERY_CONFIGS][MAX_BOOTDELIVERY_ENTRIES][200];
 static char bootdelivery_version[100];
 static int td1 = 0;
 static int td2 = 0;
 static int td3 = 0;
 static int pd = 0;
-static char partitiondelivery_xml[10][200];
+static char partitiondelivery_xml[MAX_PARTITIONDELIVERY_FILES][200];
+static int td1_full = 0;
+static int td3_full = 0;
+static int pd_full = 0;
 
 /* {"CONFIGURATION", "ATTRIBUTES", "BOOT_CONFIG", "BOOT_IMAGES", "emmc", "s1", "sbl1", "tz", "..."}; */
 
@@ -2130,6 +2137,8 @@ static char partitiondelivery_xml[10][200];
 static void XMLCALL start_element(void *data, const char *element, const char **attribute)
 {
 	int i;
+	/* bootdelivery_xml is fixed size, don't write behind the last configuration */
+	int bd_free = (td1 < MAX_BOOTDELIVERY_CONFIGS);
 
 	/* for (i=0; i<depth; i++)
 		printf("    ");
@@ -2148,7 +2157,7 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 	}
 
 	if (depth == 1) {
-		if (memcmp(element, "CONFIGURATION", strlen(element)) == 0) {
+		if (memcmp(element, "CONFIGURATION", strlen(element)) == 0 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
 				if (memcmp(attribute[i], "NAME", strlen(attribute[i])) == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
@@ -2165,7 +2174,7 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 		if (memcmp(element, "BOOT_IMAGES", strlen(element)) == 0)
 			td3++;
 
-		if (memcmp(element, "ATTRIBUTES", strlen(element)) == 0) {
+		if (memcmp(element, "ATTRIBUTES", strlen(element)) == 0 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
 				if (memcmp(attribute[i], "VALUE", strlen(attribute[i])) == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
@@ -2174,7 +2183,7 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 			}
 		}
 
-		if (memcmp(element, "HWCONFIG", strlen(element)) == 0) {
+		if (memcmp(element, "HWCONFIG", strlen(element)) == 0 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
 				if (memcmp(attribute[i], "REVISION", strlen(attribute[i])) == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
@@ -2188,15 +2197,20 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 			for (i=0; attribute[i]; i+=2) {
 				if (memcmp(attribute[i], "PATH", strlen(attribute[i])) == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
-					snprintf(partitiondelivery_xml[pd], sizeof(partitiondelivery_xml[pd]), "%s", attribute[i+1]);
-					pd += 1;
+					if (pd < MAX_PARTITIONDELIVERY_FILES) {
+						snprintf(partitiondelivery_xml[pd], sizeof(partitiondelivery_xml[pd]), "%s", attribute[i+1]);
+						pd += 1;
+					} else if (!pd_full) {
+						pd_full = 1;
+						printf("Error: MAX_PARTITIONDELIVERY_FILES reached, skipping rest of partition files!\n");
+					}
 				}
 			}
 		}
 	}
 
 	if (depth == 3) {
-		if (memcmp(element, "FILE", strlen(element)) == 0 && td2) {
+		if (memcmp(element, "FILE", strlen(element)) == 0 && td2 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
 				if (memcmp(attribute[i], "PATH", strlen(attribute[i])) == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
@@ -2205,12 +2219,17 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 			}
 		}
 
-		if (memcmp(element, "FILE", strlen(element)) == 0 && td3) {
+		if (memcmp(element, "FILE", strlen(element)) == 0 && td3 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
 				if (memcmp(attribute[i], "PATH", strlen(attribute[i])) == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
-					snprintf(bootdelivery_xml[td1][3+td3], sizeof(bootdelivery_xml[td1][3+td3]), "%s", attribute[i+1]);
-					td3++;
+					if (3+td3 < MAX_BOOTDELIVERY_ENTRIES) {
+						snprintf(bootdelivery_xml[td1][3+td3], sizeof(bootdelivery_xml[td1][3+td3]), "%s", attribute[i+1]);
+						td3++;
+					} else if (!td3_full) {
+						td3_full = 1;
+						printf("Error: MAX_BOOTDELIVERY_ENTRIES reached, skipping rest of boot images!\n");
+					}
 				}
 			}
 		}
@@ -2224,8 +2243,14 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 /* decrement the current level of the tree */
 static void XMLCALL end_element(void *data, const char *element)
 {
-	if (memcmp(element, "CONFIGURATION", 13) == 0)
-		td1++;
+	if (memcmp(element, "CONFIGURATION", 13) == 0) {
+		if (td1 < MAX_BOOTDELIVERY_CONFIGS)
+			td1++;
+		else if (!td1_full) {
+			td1_full = 1;
+			printf("Error: MAX_BOOTDELIVERY_CONFIGS reached, skipping rest of configurations!\n");
+		}
+	}
 
 	if (memcmp(element, "BOOT_CONFIG", 11) == 0)
 		td2 = 0;
