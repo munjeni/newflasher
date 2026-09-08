@@ -2768,6 +2768,7 @@ int main(int argc, char *argv[])
 	int bootdelivery_found = 0;
 
 	bool flash_booth_slots = false;
+	bool dump_trimarea_only = false;
 
 	HANDLE dev = NULL;
 
@@ -2807,6 +2808,9 @@ int main(int argc, char *argv[])
 
 	memset(slot_count, 0x30, sizeof(slot_count));
 	memset(current_slot, 0x30, sizeof(current_slot));
+
+	if (argc > 1 && strcmp(argv[1], "Dump-trim-area") == 0)
+		dump_trimarea_only = true;
 
 /*========================================  extract GordonGate  ======================================*/
 #ifdef _WIN32
@@ -3116,7 +3120,7 @@ int main(int argc, char *argv[])
 
 /*======================================= commands from script =======================================*/
 
-	if (argc > 1)
+	if (argc > 1 && !dump_trimarea_only)
 	{
 		if (transfer_bulk_async(dev, EP_OUT, argv[1], strlen(argv[1]), USB_TIMEOUT, 1) < 1)
 		{
@@ -3250,11 +3254,14 @@ int main(int argc, char *argv[])
 
 /*==========================================  dump trim area  ========================================*/
 
-	printf("\nOptional step! Type 'y' and press ENTER if you want dump trim area, or type 'n' and press ENTER to skip.\n");
-	printf("Do in mind this doesn't dump drm key since sake authentifiction is need for that! But it is recommend to have dump in case hard brick!\n");
-	if (scanf(" %c", &ch)) { }
+	if (!dump_trimarea_only)
+	{
+		printf("\nOptional step! Type 'y' and press ENTER if you want dump trim area, or type 'n' and press ENTER to skip.\n");
+		printf("Do in mind this doesn't dump drm key since sake authentifiction is need for that! But it is recommend to have dump in case hard brick!\n");
+		if (scanf(" %c", &ch)) { }
+	}
 
-	if (ch == 'y' || ch == 'Y')
+	if (dump_trimarea_only || ch == 'y' || ch == 'Y')
 	{
 		for (i=1; i <= 2; ++i)
 		{
@@ -3484,6 +3491,9 @@ int main(int argc, char *argv[])
 		}
 
 		memset(tmp_reply, 0, BUFF_MAX);
+
+		if (dump_trimarea_only)
+			goto endflashing;
 
 		printf("\nTrim area dump done, continuing with flashing.\n");
 	}
