@@ -3484,7 +3484,12 @@ int main(int argc, char *argv[])
 		}
 
 		memset(tmp_reply, 0, BUFF_MAX);
-		goto endflashing;
+
+		printf("\nTrim area dump done, continuing with flashing.\n");
+	}
+	else
+	{
+		printf("\nNo trim area dump taken, continuing with flashing anyway. If this phone ever hard bricks there will be no trim area backup to restore from, and that is on you.\n");
 	}
 
 /*=========================================  DEVICE INFO  ============================================*/
