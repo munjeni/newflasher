@@ -2146,9 +2146,9 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 	printf("%s", element); */
 
 	if (depth == 0) {
-		if (memcmp(element, "BOOT_DELIVERY", strlen(element)) == 0) {
+		if (strcmp(element, "BOOT_DELIVERY") == 0) {
 			for (i=0; attribute[i]; i+=2) {
-				if (memcmp(attribute[i], "SPACE_ID", strlen(attribute[i])) == 0) {
+				if (strcmp(attribute[i], "SPACE_ID") == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
 					snprintf(bootdelivery_version, sizeof(bootdelivery_version), "%s", attribute[i+1]);
 				}
@@ -2157,9 +2157,9 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 	}
 
 	if (depth == 1) {
-		if (memcmp(element, "CONFIGURATION", strlen(element)) == 0 && bd_free) {
+		if (strcmp(element, "CONFIGURATION") == 0 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
-				if (memcmp(attribute[i], "NAME", strlen(attribute[i])) == 0) {
+				if (strcmp(attribute[i], "NAME") == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
 					snprintf(bootdelivery_xml[td1][0], sizeof(bootdelivery_xml[td1][0]), "%s", attribute[i+1]);
 				}
@@ -2168,24 +2168,24 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 	}
 
 	if (depth == 2) {
-		if (memcmp(element, "BOOT_CONFIG", strlen(element)) == 0)
+		if (strcmp(element, "BOOT_CONFIG") == 0)
 			td2++;
 
-		if (memcmp(element, "BOOT_IMAGES", strlen(element)) == 0)
+		if (strcmp(element, "BOOT_IMAGES") == 0)
 			td3++;
 
-		if (memcmp(element, "ATTRIBUTES", strlen(element)) == 0 && bd_free) {
+		if (strcmp(element, "ATTRIBUTES") == 0 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
-				if (memcmp(attribute[i], "VALUE", strlen(attribute[i])) == 0) {
+				if (strcmp(attribute[i], "VALUE") == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
 					snprintf(bootdelivery_xml[td1][1], sizeof(bootdelivery_xml[td1][1]), "%s", attribute[i+1]);
 				}
 			}
 		}
 
-		if (memcmp(element, "HWCONFIG", strlen(element)) == 0 && bd_free) {
+		if (strcmp(element, "HWCONFIG") == 0 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
-				if (memcmp(attribute[i], "REVISION", strlen(attribute[i])) == 0) {
+				if (strcmp(attribute[i], "REVISION") == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
 					snprintf(bootdelivery_xml[td1][2], sizeof(bootdelivery_xml[td1][2]), "%s", attribute[i+1]);
 				}
@@ -2193,9 +2193,9 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 		}
 
 		/* partition_delivery FILE is inside depth=2 so lets read FILE directly */
-		if (memcmp(element, "FILE", strlen(element)) == 0) {
+		if (strcmp(element, "FILE") == 0) {
 			for (i=0; attribute[i]; i+=2) {
-				if (memcmp(attribute[i], "PATH", strlen(attribute[i])) == 0) {
+				if (strcmp(attribute[i], "PATH") == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
 					if (pd < MAX_PARTITIONDELIVERY_FILES) {
 						snprintf(partitiondelivery_xml[pd], sizeof(partitiondelivery_xml[pd]), "%s", attribute[i+1]);
@@ -2210,18 +2210,18 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 	}
 
 	if (depth == 3) {
-		if (memcmp(element, "FILE", strlen(element)) == 0 && td2 && bd_free) {
+		if (strcmp(element, "FILE") == 0 && td2 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
-				if (memcmp(attribute[i], "PATH", strlen(attribute[i])) == 0) {
+				if (strcmp(attribute[i], "PATH") == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
 					snprintf(bootdelivery_xml[td1][3], sizeof(bootdelivery_xml[td1][3]), "%s", attribute[i+1]);
 				}
 			}
 		}
 
-		if (memcmp(element, "FILE", strlen(element)) == 0 && td3 && bd_free) {
+		if (strcmp(element, "FILE") == 0 && td3 && bd_free) {
 			for (i=0; attribute[i]; i+=2) {
-				if (memcmp(attribute[i], "PATH", strlen(attribute[i])) == 0) {
+				if (strcmp(attribute[i], "PATH") == 0) {
 					/* printf(" %s = '%s'", attribute[i], attribute[i+1]); */
 					if (3+td3 < MAX_BOOTDELIVERY_ENTRIES) {
 						snprintf(bootdelivery_xml[td1][3+td3], sizeof(bootdelivery_xml[td1][3+td3]), "%s", attribute[i+1]);
@@ -2243,7 +2243,7 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 /* decrement the current level of the tree */
 static void XMLCALL end_element(void *data, const char *element)
 {
-	if (memcmp(element, "CONFIGURATION", 13) == 0) {
+	if (strcmp(element, "CONFIGURATION") == 0) {
 		if (td1 < MAX_BOOTDELIVERY_CONFIGS)
 			td1++;
 		else if (!td1_full) {
@@ -2252,10 +2252,10 @@ static void XMLCALL end_element(void *data, const char *element)
 		}
 	}
 
-	if (memcmp(element, "BOOT_CONFIG", 11) == 0)
+	if (strcmp(element, "BOOT_CONFIG") == 0)
 		td2 = 0;
 
-	if (memcmp(element, "BOOT_IMAGES", 11) == 0)
+	if (strcmp(element, "BOOT_IMAGES") == 0)
 		td3 = 0;
 
 	depth--;
