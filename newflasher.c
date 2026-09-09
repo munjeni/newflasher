@@ -3067,7 +3067,7 @@ int main(int argc, char *argv[])
 	{
 		printf("\nupdate.xml not exist in current folder!\n");
 	}
-	else
+	else if (argc < 2)
 	{
 		printf("\nDo you want to keep userdata? Type 'y' and press ENTER to confirm, or type 'n' to erase userdata.\n");
 		if (scanf(" %c", &ch)) { }
