@@ -1,0 +1,1796 @@
+# Russian translation for newflasher.
+# This file is distributed under the same license as the newflasher package.
+# Wehrwolfmann <256216494+wehrwolfmann@users.noreply.github.com>, 2026.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: newflasher 60\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2026-09-09 19:57+0200\n"
+"PO-Revision-Date: 2026-09-09 19:55+0200\n"
+"Last-Translator: Wehrwolfmann "
+"<256216494+wehrwolfmann@users.noreply.github.com>\n"
+"Language-Team: Russian\n"
+"Language: ru\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && "
+"n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
+
+#: newflasher.c:310
+#, c-format
+msgid "Error: EINVAL!\n"
+msgstr "Ошибка: EINVAL!\n"
+
+#: newflasher.c:318
+#, c-format
+msgid "Error: MAX_UNIT_LINE_LEN reached!\n"
+msgstr "Ошибка: достигнут предел MAX_UNIT_LINE_LEN!\n"
+
+#: newflasher.c:340
+#, c-format
+msgid "Error: EOVERFLOW!\n"
+msgstr "Ошибка: EOVERFLOW!\n"
+
+#: newflasher.c:347
+#, c-format
+msgid "Error: ENOMEM for realloc!\n"
+msgstr "Ошибка: ENOMEM при realloc!\n"
+
+#: newflasher.c:426
+#, c-format
+msgid "FATAL ERROR: Unable to output error code.\n"
+msgstr "КРИТИЧЕСКАЯ ОШИБКА: не удалось вывести код ошибки.\n"
+
+#: newflasher.c:429
+#, c-format
+msgid "ERROR: %s\n"
+msgstr "ОШИБКА: %s\n"
+
+#: newflasher.c:565
+#, c-format
+msgid "Error, no /dev/bus/usb ! Please connect device first in flash mode!\n"
+msgstr ""
+"Ошибка: нет /dev/bus/usb! Сначала подключите устройство в режиме flash "
+"mode!\n"
+
+#: newflasher.c:587
+#, c-format
+msgid "cannot open %s for writing\n"
+msgstr "не удалось открыть %s на запись\n"
+
+#: newflasher.c:592
+#, c-format
+msgid "found device with vid:0x%04x pid:0x%04x.\n"
+msgstr "найдено устройство vid:0x%04x pid:0x%04x.\n"
+
+#: newflasher.c:602
+#, c-format
+msgid "ERROR: n = %d, errno = %d (%s)\n"
+msgstr "ОШИБКА: n = %d, errno = %d (%s)\n"
+
+#: newflasher.c:674
+#, c-format
+msgid "Device path: %s\n"
+msgstr "Путь устройства: %s\n"
+
+#: newflasher.c:677
+#, c-format
+msgid "Class Description: %s\n"
+msgstr "Описание класса: %s\n"
+
+#: newflasher.c:681
+#, c-format
+msgid ""
+"Device Instance Id: %s\n"
+"\n"
+msgstr ""
+"Идентификатор устройства: %s\n"
+"\n"
+
+#: newflasher.c:898 newflasher.c:981 newflasher.c:1087
+#, c-format
+msgid " - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n"
+msgstr " - Ошибка %s! Требовалось байт: 0x%lx, обработано: 0x%lx\n"
+
+#: newflasher.c:905 newflasher.c:1095
+#, c-format
+msgid " - Successfully read 0x%lx bytes from handle.\n"
+msgstr " - Успешно прочитано 0x%lx байт.\n"
+
+#: newflasher.c:910 newflasher.c:1101
+#, c-format
+msgid " - Successfully write 0x%lx bytes to handle.\n"
+msgstr " - Успешно записано 0x%lx байт.\n"
+
+#: newflasher.c:934
+#, c-format
+msgid "clear halt (in): %s\n"
+msgstr "сброс halt (in): %s\n"
+
+#: newflasher.c:938 newflasher.c:964
+#, c-format
+msgid "halt clear after: %d\n"
+msgstr "halt сброшен после: %d\n"
+
+#: newflasher.c:946
+#, c-format
+msgid "bulk transfer (in): %s\n"
+msgstr "bulk-передача (in): %s\n"
+
+#: newflasher.c:960
+#, c-format
+msgid "clear halt (out): %s\n"
+msgstr "сброс halt (out): %s\n"
+
+#: newflasher.c:972
+#, c-format
+msgid "bulk transfer (out): %s\n"
+msgstr "bulk-передача (out): %s\n"
+
+#: newflasher.c:1004
+#, c-format
+msgid " - ep_in is not 0x81!!!\n"
+msgstr " - ep_in не равен 0x81!!!\n"
+
+#: newflasher.c:1022
+#, c-format
+msgid " - (ep_in) ERROR: n = %d, errno = %d (%s)\n"
+msgstr " - (ep_in) ОШИБКА: n = %d, errno = %d (%s)\n"
+
+#: newflasher.c:1041
+#, c-format
+msgid " - ep_out is not 0x01!!!\n"
+msgstr " - ep_out не равен 0x01!!!\n"
+
+#: newflasher.c:1055
+#, c-format
+msgid " - (ep_out size=0)ERROR: n = %d, errno = %d (%s)\n"
+msgstr " - (ep_out size=0)ОШИБКА: n = %d, errno = %d (%s)\n"
+
+#: newflasher.c:1073
+#, c-format
+msgid " - (ep_out size=%d)ERROR: n = %d, errno = %d (%s)\n"
+msgstr " - (ep_out size=%d)ОШИБКА: n = %d, errno = %d (%s)\n"
+
+#: newflasher.c:1126
+#, c-format
+msgid "Bug!!! ret_len: 0x%x > BUFF_MAX: 0x%x\n"
+msgstr "Ошибка в программе!!! ret_len: 0x%x > BUFF_MAX: 0x%x\n"
+
+#: newflasher.c:1164
+#, c-format
+msgid " - Errornous DATA reply!\n"
+msgstr " - Некорректный ответ DATA!\n"
+
+#: newflasher.c:1359
+msgid "error reading stdin!\n"
+msgstr "ошибка чтения stdin!\n"
+
+#: newflasher.c:1361
+msgid "error writing stdout!\n"
+msgstr "ошибка записи в stdout!\n"
+
+#: newflasher.c:1364
+msgid "invalid compression level!\n"
+msgstr "недопустимый уровень сжатия!\n"
+
+#: newflasher.c:1367
+msgid "invalid or incomplete deflate data!\n"
+msgstr "повреждённые или неполные данные deflate!\n"
+
+#: newflasher.c:1370
+msgid "out of memory!\n"
+msgstr "не хватает памяти!\n"
+
+#: newflasher.c:1373
+msgid "zlib version mismatch!\n"
+msgstr "несовпадение версии zlib!\n"
+
+#: newflasher.c:1376
+msgid "ok.\n"
+msgstr "готово.\n"
+
+#: newflasher.c:1391
+#, c-format
+msgid " - Could not open %s!\n"
+msgstr " - Не удалось открыть %s!\n"
+
+#: newflasher.c:1395 newflasher.c:1453
+#, c-format
+msgid " - Could not open %s for write!\n"
+msgstr " - Не удалось открыть %s на запись!\n"
+
+#: newflasher.c:1400
+#, c-format
+msgid " - defflating...\n"
+msgstr " - сжимаем...\n"
+
+#: newflasher.c:1402
+#, c-format
+msgid " - defflate returned: %i\n"
+msgstr " - deflate вернул: %i\n"
+
+#: newflasher.c:1408 newflasher.c:1447
+#, c-format
+msgid " - setting up inflate...\n"
+msgstr " - готовим распаковку...\n"
+
+#: newflasher.c:1411
+#, c-format
+msgid " - Could not open %s for verification!\n"
+msgstr " - Не удалось открыть %s для проверки!\n"
+
+#: newflasher.c:1416
+#, c-format
+msgid " - Could not open for write temFcheck file for verification!\n"
+msgstr " - Не удалось открыть на запись файл temFcheck для проверки!\n"
+
+#: newflasher.c:1421 newflasher.c:1457
+#, c-format
+msgid " - infflating, please wait...\n"
+msgstr " - распаковываем, подождите...\n"
+
+#: newflasher.c:1423 newflasher.c:1459
+#, c-format
+msgid " - inflate returned: %i\n"
+msgstr " - inflate вернул: %i\n"
+
+#: newflasher.c:1436
+#, c-format
+msgid "  - gzip ok.\n"
+msgstr "  - gzip в порядке.\n"
+
+#: newflasher.c:1449
+#, c-format
+msgid " - Could not open %s for infflating!\n"
+msgstr " - Не удалось открыть %s для распаковки!\n"
+
+#: newflasher.c:1470
+#, c-format
+msgid " - gunziped ok.\n"
+msgstr " - распаковано.\n"
+
+#: newflasher.c:1543 newflasher.c:2349
+#, c-format
+msgid " - Unable to open %s!\n"
+msgstr " - Не удалось открыть %s!\n"
+
+#: newflasher.c:1620
+#, c-format
+msgid " - Skipping %s\n"
+msgstr " - Пропускаем %s\n"
+
+#: newflasher.c:1627
+#, c-format
+msgid " - Extracting from %s\n"
+msgstr " - Извлекаем из %s\n"
+
+#: newflasher.c:1635
+#, c-format
+msgid " - Short read on %s: expected 512, got %d\n"
+msgstr " - Недочитано из %s: ожидалось 512, получено %d\n"
+
+#: newflasher.c:1641
+#, c-format
+msgid " - End of %s\n"
+msgstr " - Конец %s\n"
+
+#: newflasher.c:1646
+#, c-format
+msgid " - Checksum failure\n"
+msgstr " - Не сошлась контрольная сумма\n"
+
+#: newflasher.c:1655
+#, c-format
+msgid " - Ignoring hardlink %s\n"
+msgstr " - Пропускаем жёсткую ссылку %s\n"
+
+#: newflasher.c:1658
+#, c-format
+msgid " - Ignoring symlink %s\n"
+msgstr " - Пропускаем символьную ссылку %s\n"
+
+#: newflasher.c:1661
+#, c-format
+msgid " - Ignoring character device %s\n"
+msgstr " - Пропускаем символьное устройство %s\n"
+
+#: newflasher.c:1664
+#, c-format
+msgid " - Ignoring block device %s\n"
+msgstr " - Пропускаем блочное устройство %s\n"
+
+#: newflasher.c:1667
+#, c-format
+msgid " - Ignoring dir %s\n"
+msgstr " - Пропускаем каталог %s\n"
+
+#: newflasher.c:1671
+#, c-format
+msgid " - Ignoring FIFO %s\n"
+msgstr " - Пропускаем FIFO %s\n"
+
+#: newflasher.c:1681
+msgid "Extracting signature"
+msgstr "Извлекаем подпись"
+
+#: newflasher.c:1681
+msgid "Extracting sparse chunk"
+msgstr "Извлекаем sparse-фрагмент"
+
+#: newflasher.c:1685
+#, c-format
+msgid " - Error creating %s\n"
+msgstr " - Ошибка создания %s\n"
+
+#: newflasher.c:1696
+#, c-format
+msgid " - Short read on %s: Expected 512, got %d\n"
+msgstr " - Недочитано из %s: ожидалось 512, получено %d\n"
+
+#: newflasher.c:1707
+#, c-format
+msgid " - Failed write\n"
+msgstr " - Не удалось записать\n"
+
+#: newflasher.c:1730
+#, c-format
+msgid " - Uploading signature %s\n"
+msgstr " - Загружаем подпись %s\n"
+
+#: newflasher.c:1733 newflasher.c:1873
+#, c-format
+msgid "      Error, size of the %s is 0!\n"
+msgstr "      Ошибка: размер %s равен 0!\n"
+
+#: newflasher.c:1742 newflasher.c:1839
+#, c-format
+msgid "      Error writing signature command!\n"
+msgstr "      Ошибка записи команды подписи!\n"
+
+#: newflasher.c:1747
+#, c-format
+msgid "      Error, no signature DATA reply!\n"
+msgstr "      Ошибка: нет ответа DATA на подпись!\n"
+
+#: newflasher.c:1755
+#, c-format
+msgid "      device from 2021 and up?\n"
+msgstr "      устройство 2021 года или новее?\n"
+
+#: newflasher.c:1761
+#, c-format
+msgid "      Error, signature DATA reply size: %zu less than expected: 12!\n"
+msgstr "      Ошибка: размер ответа DATA на подпись %zu меньше ожидаемых 12!\n"
+
+#: newflasher.c:1771 newflasher.c:1779
+#, c-format
+msgid ""
+"      Error, signature DATA reply string: %s is not equal to expected: "
+"DATA%s!\n"
+msgstr ""
+"      Ошибка: строка ответа DATA на подпись %s не совпадает с ожидаемой "
+"DATA%s!\n"
+
+#: newflasher.c:1785
+#, c-format
+msgid "      Error allocating buffer!\n"
+msgstr "      Ошибка выделения буфера!\n"
+
+#: newflasher.c:1791 newflasher.c:1901
+#, c-format
+msgid "      Error opening %s for read!\n"
+msgstr "      Ошибка открытия %s на чтение!\n"
+
+#: newflasher.c:1797
+#, c-format
+msgid "      Error storing 0x%x bytes to buffer!\n"
+msgstr "      Ошибка помещения 0x%x байт в буфер!\n"
+
+#: newflasher.c:1806
+#, c-format
+msgid "      Error writing signature!\n"
+msgstr "      Ошибка записи подписи!\n"
+
+#: newflasher.c:1814
+#, c-format
+msgid "      Error, no sinature OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY на подпись!\n"
+
+#: newflasher.c:1819
+#, c-format
+msgid "      Error, signature reply less than 4, got: %zu bytes!\n"
+msgstr "      Ошибка: ответ на подпись короче 4, получено: %zu байт!\n"
+
+#: newflasher.c:1824 newflasher.c:1856 newflasher.c:1968 newflasher.c:2045
+#: newflasher.c:2107 newflasher.c:2611 newflasher.c:2640
+#, c-format
+msgid "      OKAY.\n"
+msgstr "      OKAY.\n"
+
+#: newflasher.c:1828
+#, c-format
+msgid "      Error, didn't got signature OKAY reply! Got reply: %s\n"
+msgstr "      Ошибка: не получен ответ OKAY на подпись! Пришёл ответ: %s\n"
+
+#: newflasher.c:1845
+#, c-format
+msgid "      Error, no signature OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY на подпись!\n"
+
+#: newflasher.c:1851
+#, c-format
+msgid "      Error, signature OKAY reply, got reply: %s!\n"
+msgstr "      Ошибка в ответе OKAY на подпись, пришёл ответ: %s!\n"
+
+#: newflasher.c:1870
+#, c-format
+msgid " - Uploading sparse chunk %s\n"
+msgstr " - Загружаем sparse-фрагмент %s\n"
+
+#: newflasher.c:1881 newflasher.c:2561
+#, c-format
+msgid "      Error writing download command!\n"
+msgstr "      Ошибка записи команды download!\n"
+
+#: newflasher.c:1886 newflasher.c:2567
+#, c-format
+msgid "      Error, no download DATA reply!\n"
+msgstr "      Ошибка: нет ответа DATA на download!\n"
+
+#: newflasher.c:1891 newflasher.c:2573
+#, c-format
+msgid "      Error, download DATA reply size: %zu less than expected: 12!\n"
+msgstr ""
+"      Ошибка: размер ответа DATA на download %zu меньше ожидаемых 12!\n"
+
+#: newflasher.c:1896 newflasher.c:2579
+#, c-format
+msgid ""
+"      Error, download DATA reply string: %s is not equal to expected: "
+"DATA%s!\n"
+msgstr ""
+"      Ошибка: строка ответа DATA на download %s не совпадает с ожидаемой "
+"DATA%s!\n"
+
+#: newflasher.c:1911
+#, c-format
+msgid "         Error allocating buffer for chunk: %d!\n"
+msgstr "         Ошибка выделения буфера под фрагмент: %d!\n"
+
+#: newflasher.c:1922
+#, c-format
+msgid "         Error reading chunk: %d, got: 0x%zx but expected: 0x%x!\n"
+msgstr ""
+"         Ошибка чтения фрагмента: %d, получено: 0x%zx, ожидалось: 0x%x!\n"
+
+#: newflasher.c:1933
+#, c-format
+msgid "         Error reading chunk: %d, got: 0x%zx but expected: 0x200000!\n"
+msgstr ""
+"         Ошибка чтения фрагмента: %d, получено: 0x%zx, ожидалось: 0x200000!\n"
+
+#: newflasher.c:1941
+#, c-format
+msgid "         Error uploading chunk %d!\n"
+msgstr "         Ошибка загрузки фрагмента %d!\n"
+
+#: newflasher.c:1954
+#, c-format
+msgid "      Error, no download OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY на download!\n"
+
+#: newflasher.c:1959
+#, c-format
+msgid "      Error, download reply less than 4, got: %zu bytes!\n"
+msgstr "      Ошибка: ответ на download короче 4, получено: %zu байт!\n"
+
+#: newflasher.c:1964
+#, c-format
+msgid "      Error, didn't got download OKAY reply! Got reply: %s\n"
+msgstr "      Ошибка: не получен ответ OKAY на download! Пришёл ответ: %s\n"
+
+#: newflasher.c:1978 newflasher.c:3510 newflasher.c:3529 newflasher.c:3545
+#: newflasher.c:3561 newflasher.c:3577 newflasher.c:3593 newflasher.c:3609
+#: newflasher.c:3625 newflasher.c:3644 newflasher.c:3660 newflasher.c:3676
+#: newflasher.c:3692 newflasher.c:3708 newflasher.c:3724 newflasher.c:3740
+#: newflasher.c:3756 newflasher.c:3772 newflasher.c:3791 newflasher.c:3807
+#: newflasher.c:3823 newflasher.c:3839 newflasher.c:3930 newflasher.c:4137
+#: newflasher.c:5371 newflasher.c:5421
+#, c-format
+msgid " - Error writing command %s!\n"
+msgstr " - Ошибка записи команды %s!\n"
+
+#: newflasher.c:1983
+#, c-format
+msgid "      Error, no %s reply!\n"
+msgstr "      Ошибка: нет ответа на %s!\n"
+
+#: newflasher.c:1989
+#, c-format
+msgid "      Partition: %s have slot: %s\n"
+msgstr "      Раздел %s находится в slot: %s\n"
+
+#: newflasher.c:2026 newflasher.c:2088
+#, c-format
+msgid "      Error writing %s!\n"
+msgstr "      Ошибка записи %s!\n"
+
+#: newflasher.c:2031
+#, c-format
+msgid "      Error, no erase OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY на erase!\n"
+
+#: newflasher.c:2036
+#, c-format
+msgid "      Error, erase reply less than 4, got: %zu bytes!\n"
+msgstr "      Ошибка: ответ на erase короче 4, получено: %zu байт!\n"
+
+#: newflasher.c:2041
+#, c-format
+msgid "      Error, didn't got erase OKAY reply! Got reply: %s\n"
+msgstr "      Ошибка: не получен ответ OKAY на erase! Пришёл ответ: %s\n"
+
+#: newflasher.c:2093
+#, c-format
+msgid "      Error, no %s OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY на %s!\n"
+
+#: newflasher.c:2098
+#, c-format
+msgid "      Error, %s reply less than 4, got: %zu bytes!\n"
+msgstr "      Ошибка: ответ на %s короче 4, получено: %zu байт!\n"
+
+#: newflasher.c:2103
+#, c-format
+msgid "      Error, didn't got %s OKAY reply! Got reply: %s\n"
+msgstr "      Ошибка: не получен ответ OKAY на %s! Пришёл ответ: %s\n"
+
+#: newflasher.c:2205
+#, c-format
+msgid ""
+"Error: MAX_PARTITIONDELIVERY_FILES reached, skipping rest of partition "
+"files!\n"
+msgstr ""
+"Ошибка: достигнут предел MAX_PARTITIONDELIVERY_FILES, остальные файлы "
+"разделов пропущены!\n"
+
+#: newflasher.c:2231
+#, c-format
+msgid ""
+"Error: MAX_BOOTDELIVERY_ENTRIES reached, skipping rest of boot images!\n"
+msgstr ""
+"Ошибка: достигнут предел MAX_BOOTDELIVERY_ENTRIES, остальные загрузочные "
+"образы пропущены!\n"
+
+#: newflasher.c:2251
+#, c-format
+msgid ""
+"Error: MAX_BOOTDELIVERY_CONFIGS reached, skipping rest of configurations!\n"
+msgstr ""
+"Ошибка: достигнут предел MAX_BOOTDELIVERY_CONFIGS, остальные конфигурации "
+"пропущены!\n"
+
+#: newflasher.c:2283
+#, c-format
+msgid "Couldn't allocate memory for xml parser!\n"
+msgstr "Не удалось выделить память для разбора xml!\n"
+
+#: newflasher.c:2289
+#, c-format
+msgid "Failed to open %s file\n"
+msgstr "Не удалось открыть файл %s\n"
+
+#: newflasher.c:2340 newflasher.c:4239 newflasher.c:4344 newflasher.c:4535
+#: newflasher.c:4898
+#, c-format
+msgid "Processing %s\n"
+msgstr "Обрабатываем %s\n"
+
+#: newflasher.c:2344
+#, c-format
+msgid " - Error allocating unit_data!\n"
+msgstr " - Ошибка выделения памяти под unit_data!\n"
+
+#: newflasher.c:2367
+#, c-format
+msgid " - Partition: %u\n"
+msgstr " - Раздел: %u\n"
+
+#: newflasher.c:2387
+#, c-format
+msgid " - Unit: %X (%u)\n"
+msgstr " - Unit: %X (%u)\n"
+
+#: newflasher.c:2411 newflasher.c:2457
+#, c-format
+msgid " - Found specific unit which don't contain data.\n"
+msgstr " - Найден особый unit без данных.\n"
+
+#: newflasher.c:2418 newflasher.c:2464
+#, c-format
+msgid ""
+" - Error: corrupted unit! Skipping this unit!\n"
+"\n"
+msgstr ""
+" - Ошибка: unit повреждён! Пропускаем его!\n"
+"\n"
+
+#: newflasher.c:2428 newflasher.c:2474
+#, c-format
+msgid " - Unit size: 0x%x\n"
+msgstr " - Размер unit: 0x%x\n"
+
+#: newflasher.c:2541
+#, c-format
+msgid " - Skipping unit %X\n"
+msgstr " - Пропускаем unit %X\n"
+
+#: newflasher.c:2546
+#, c-format
+msgid " - Error allocating unit_temp!\n"
+msgstr " - Ошибка выделения памяти под unit_temp!\n"
+
+#: newflasher.c:2587
+#, c-format
+msgid "      Error writing unit data!\n"
+msgstr "      Ошибка записи данных unit!\n"
+
+#: newflasher.c:2594 newflasher.c:2623
+#, c-format
+msgid "      Error, no OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY!\n"
+
+#: newflasher.c:2600 newflasher.c:2629
+#, c-format
+msgid "      Error, reply less than 4, got: %zu bytes!\n"
+msgstr "      Ошибка: ответ короче 4, получено: %zu байт!\n"
+
+#: newflasher.c:2606 newflasher.c:2635
+#, c-format
+msgid "      Error, didn't got OKAY reply! Got reply: %s\n"
+msgstr "      Ошибка: не получен ответ OKAY! Пришёл ответ: %s\n"
+
+#: newflasher.c:2617
+#, c-format
+msgid "      Error writing command WriteTA!\n"
+msgstr "      Ошибка записи команды WriteTA!\n"
+
+#: newflasher.c:2685
+#, c-format
+msgid ""
+"\n"
+"Determining available free space by GetDiskFreeSpaceEx:\n"
+"\n"
+msgstr ""
+"\n"
+"Определяем свободное место через GetDiskFreeSpaceEx:\n"
+"\n"
+
+#: newflasher.c:2686 newflasher.c:2734
+#, c-format
+msgid "  Available space to caller    = %llu MB\n"
+msgstr "  Доступно вызывающему        = %llu МБ\n"
+
+#: newflasher.c:2687 newflasher.c:2707 newflasher.c:2736
+#, c-format
+msgid "  Total space on current drive = %llu MB\n"
+msgstr "  Всего на текущем диске      = %llu МБ\n"
+
+#: newflasher.c:2688 newflasher.c:2738
+#, c-format
+msgid "  Free space on drive          = %llu MB\n"
+msgstr "  Свободно на диске           = %llu МБ\n"
+
+#: newflasher.c:2705
+#, c-format
+msgid ""
+"\n"
+"Determining available free space by GetDiskFreeSpace:\n"
+"\n"
+msgstr ""
+"\n"
+"Определяем свободное место через GetDiskFreeSpace:\n"
+"\n"
+
+#: newflasher.c:2706
+#, c-format
+msgid "  Free space                   = %llu MB\n"
+msgstr "  Свободно                    = %llu МБ\n"
+
+#: newflasher.c:2713
+#, c-format
+msgid ""
+"\n"
+"Error: %lu:  unable to determine available free space for current drive!\n"
+msgstr ""
+"\n"
+"Ошибка %lu: не удалось определить свободное место на текущем диске!\n"
+
+#: newflasher.c:2728
+#, c-format
+msgid "  Error: unable to determine available free space for current drive!\n"
+msgstr "  Ошибка: не удалось определить свободное место на текущем диске!\n"
+
+#: newflasher.c:2733
+#, c-format
+msgid ""
+"\n"
+"Determining available free space:\n"
+"\n"
+msgstr ""
+"\n"
+"Определяем свободное место:\n"
+"\n"
+
+#: newflasher.c:2803
+#, c-format
+msgid "  Error! You do not have needed 10240 MB available free space on your\n"
+msgstr "  Ошибка! На диске нет требуемых 10240 МБ свободного места!\n"
+
+#: newflasher.c:2804
+#, c-format
+msgid "  disk drive! You have only %lu MB free.\n"
+msgstr "  Свободно всего %lu МБ.\n"
+
+#: newflasher.c:2819
+#, c-format
+msgid ""
+"\n"
+"Optional step! Type 'y' and press ENTER if you need GordonGate flash driver, "
+"or type 'n' to skip.\n"
+msgstr ""
+"\n"
+"Необязательный шаг! Введите 'y' и нажмите ENTER, если вам нужен драйвер "
+"GordonGate, либо 'n', чтобы пропустить.\n"
+
+#: newflasher.c:2820
+#, c-format
+msgid "This creates GordonGate driver installer in the same dir with %s!\n"
+msgstr ""
+"Установщик драйвера GordonGate будет создан в той же папке, что и %s!\n"
+
+#: newflasher.c:2826
+#, c-format
+msgid "Unable to create Sony_Mobile_Software_Update_Drivers_x64_Setup.msi!\n"
+msgstr ""
+"Не удалось создать Sony_Mobile_Software_Update_Drivers_x64_Setup.msi!\n"
+
+#: newflasher.c:2832
+#, c-format
+msgid "Sony_Mobile_Software_Update_Drivers_x64_Setup.msi created.\n"
+msgstr "Файл Sony_Mobile_Software_Update_Drivers_x64_Setup.msi создан.\n"
+
+#: newflasher.c:2842 newflasher.c:2895 newflasher.c:3050
+#, c-format
+msgid ""
+"\n"
+"No usb device with vid:0x%04x pid:0x%04x !\n"
+msgstr ""
+"\n"
+"Нет USB-устройства с vid:0x%04x pid:0x%04x!\n"
+
+#: newflasher.c:2887
+#, c-format
+msgid "libusb init error!\n"
+msgstr "ошибка инициализации libusb!\n"
+
+#: newflasher.c:2907
+#, c-format
+msgid ""
+"\n"
+"Device properties:\n"
+msgstr ""
+"\n"
+"Свойства устройства:\n"
+
+#: newflasher.c:2908
+#, c-format
+msgid "        bus number: %d\n"
+msgstr "              шина: %d\n"
+
+#: newflasher.c:2909
+#, c-format
+msgid "         port path: %d"
+msgstr "        путь порта: %d"
+
+#: newflasher.c:2914
+#, c-format
+msgid " (from root hub)\n"
+msgstr " (от корневого хаба)\n"
+
+#: newflasher.c:2920
+#, c-format
+msgid "             speed: %s\n"
+msgstr "          скорость: %s\n"
+
+#: newflasher.c:2922
+#, c-format
+msgid ""
+"\n"
+"Reading device descriptor:\n"
+msgstr ""
+"\n"
+"Читаем дескриптор устройства:\n"
+
+#: newflasher.c:2924
+#, c-format
+msgid "            length: %d\n"
+msgstr "             длина: %d\n"
+
+#: newflasher.c:2925
+#, c-format
+msgid "      device class: %d\n"
+msgstr "  класс устройства: %d\n"
+
+#: newflasher.c:2926
+#, c-format
+msgid "               S/N: %d\n"
+msgstr "               S/N: %d\n"
+
+#: newflasher.c:2927
+#, c-format
+msgid "           VID:PID: 0x%X:0x%X\n"
+msgstr "           VID:PID: 0x%X:0x%X\n"
+
+#: newflasher.c:2928
+#, c-format
+msgid "         bcdDevice: 0x%X\n"
+msgstr "         bcdDevice: 0x%X\n"
+
+#: newflasher.c:2929
+#, c-format
+msgid "   iMan:iProd:iSer: %d:%d:%d\n"
+msgstr "   iMan:iProd:iSer: %d:%d:%d\n"
+
+#: newflasher.c:2930
+#, c-format
+msgid "          nb confs: %d\n"
+msgstr "      конфигураций: %d\n"
+
+#: newflasher.c:2937
+#, c-format
+msgid ""
+"\n"
+"Reading configuration descriptors:\n"
+msgstr ""
+"\n"
+"Читаем дескрипторы конфигураций:\n"
+
+#: newflasher.c:2940
+#, c-format
+msgid "             nb interfaces: %d\n"
+msgstr "               интерфейсов: %d\n"
+
+#: newflasher.c:2947
+#, c-format
+msgid "              interface[%d]: id = %d\n"
+msgstr "              интерфейс[%d]: id = %d\n"
+
+#: newflasher.c:2953
+#, c-format
+msgid "interface[%d].altsetting[%d]: num endpoints = %d\n"
+msgstr "интерфейс[%d].altsetting[%d]: конечных точек = %d\n"
+
+#: newflasher.c:2956
+#, c-format
+msgid "   Class.SubClass.Protocol: 0x%X 0x%X 0x%X\n"
+msgstr "   Class.SubClass.Protocol: 0x%X 0x%X 0x%X\n"
+
+#: newflasher.c:2964
+#, c-format
+msgid "       endpoint[%d].address: 0x%02X\n"
+msgstr "   адрес конечной точки[%d]: 0x%02X\n"
+
+#: newflasher.c:2974
+#, c-format
+msgid "           max packet size: 0x%X\n"
+msgstr "       макс. размер пакета: 0x%X\n"
+
+#: newflasher.c:2975
+#, c-format
+msgid "          polling interval: 0x%X\n"
+msgstr "           интервал опроса: 0x%X\n"
+
+#: newflasher.c:2984
+#, c-format
+msgid ""
+"\n"
+"Set configuration:"
+msgstr ""
+"\n"
+"Установка конфигурации:"
+
+#: newflasher.c:2990 newflasher.c:3012 newflasher.c:3027
+#, c-format
+msgid " succed.\n"
+msgstr " успешно.\n"
+
+#: newflasher.c:2994
+#, c-format
+msgid " fail with error: %s\n"
+msgstr " неудачно, ошибка: %s\n"
+
+#: newflasher.c:2999
+#, c-format
+msgid ""
+"\n"
+"Claiming interface %d:"
+msgstr ""
+"\n"
+"Захват интерфейса %d:"
+
+#: newflasher.c:3005
+#, c-format
+msgid " failed.\n"
+msgstr " неудачно.\n"
+
+#: newflasher.c:3008
+#, c-format
+msgid "A kernel driver is active, trying to detach it:"
+msgstr "Активен драйвер ядра, пробуем отцепить его:"
+
+#: newflasher.c:3014
+#, c-format
+msgid "Claiming interface again:"
+msgstr "Повторный захват интерфейса:"
+
+#: newflasher.c:3021
+#, c-format
+msgid " failed with error: %s\n"
+msgstr " неудачно, ошибка: %s\n"
+
+#: newflasher.c:3031
+#, c-format
+msgid ""
+"\n"
+"Reading string descriptors:\n"
+msgstr ""
+"\n"
+"Читаем строковые дескрипторы:\n"
+
+#: newflasher.c:3038 newflasher.c:3043
+#, c-format
+msgid "   String (0x%02X): \"%s\"\n"
+msgstr "   Строка (0x%02X): \"%s\"\n"
+
+#: newflasher.c:3068
+#, c-format
+msgid ""
+"\n"
+"update.xml not exist in current folder!\n"
+msgstr ""
+"\n"
+"В текущей папке нет update.xml!\n"
+
+#: newflasher.c:3072
+#, c-format
+msgid ""
+"\n"
+"Do you want to keep userdata? Type 'y' and press ENTER to confirm, or type "
+"'n' to erase userdata.\n"
+msgstr ""
+"\n"
+"Сохранить раздел userdata? Введите 'y' и нажмите ENTER, чтобы сохранить, "
+"либо 'n', чтобы стереть userdata.\n"
+
+#: newflasher.c:3084
+#, c-format
+msgid ""
+"\n"
+"Reboot mode at the end of flashing:\n"
+"  type 'a' for reboot to android, type 'f' for reboot to fastboot, type 'd' "
+"for reboot to fastbootd, type 'r' for reboot to recovery, type 's' for "
+"reboot to same mode, type 'p' for poweroff, and press ENTER.\n"
+msgstr ""
+"\n"
+"Режим перезагрузки после прошивки:\n"
+"  введите 'a' — загрузка в android, 'f' — в fastboot, 'd' — в fastbootd, 'r' "
+"— в recovery, 's' — в тот же режим, 'p' — выключение, затем нажмите ENTER.\n"
+
+#: newflasher.c:3127 newflasher.c:5007 newflasher.c:5122
+#, c-format
+msgid "Error writing commad: %s\n"
+msgstr "Ошибка записи команды: %s\n"
+
+#: newflasher.c:3133
+#, c-format
+msgid "Writing command: %s\n"
+msgstr "Пишем команду: %s\n"
+
+#: newflasher.c:3137 newflasher.c:3282 newflasher.c:5015 newflasher.c:5130
+#, c-format
+msgid "Error, null reply\n"
+msgstr "Ошибка: пустой ответ\n"
+
+#: newflasher.c:3147 newflasher.c:3292 newflasher.c:5023 newflasher.c:5138
+#, c-format
+msgid "got fail reply: %s\n"
+msgstr "получен ответ FAIL: %s\n"
+
+#: newflasher.c:3158 newflasher.c:3304 newflasher.c:5034 newflasher.c:5149
+#, c-format
+msgid "Errornous DATA reply!\n"
+msgstr "Некорректный ответ DATA!\n"
+
+#: newflasher.c:3168 newflasher.c:3314 newflasher.c:5044 newflasher.c:5159
+#, c-format
+msgid "got null data_len!\n"
+msgstr "получена нулевая data_len!\n"
+
+#: newflasher.c:3172 newflasher.c:3318 newflasher.c:5048 newflasher.c:5163
+#, c-format
+msgid "Error retrieving seccond reply!\n"
+msgstr "Ошибка получения второго ответа!\n"
+
+#: newflasher.c:3181 newflasher.c:3225 newflasher.c:3327 newflasher.c:3378
+#: newflasher.c:5055 newflasher.c:5102 newflasher.c:5170 newflasher.c:5217
+#, c-format
+msgid "Error, no OKAY reply!\n"
+msgstr "Ошибка: нет ответа OKAY!\n"
+
+#: newflasher.c:3193 newflasher.c:3346 newflasher.c:5067 newflasher.c:5182
+#, c-format
+msgid "error allocating 0x%x bytes!\n"
+msgstr "ошибка выделения 0x%x байт!\n"
+
+#: newflasher.c:3200 newflasher.c:3353 newflasher.c:5074 newflasher.c:5189
+#, c-format
+msgid "Error retrieving data!\n"
+msgstr "Ошибка получения данных!\n"
+
+#: newflasher.c:3217 newflasher.c:3370 newflasher.c:5094 newflasher.c:5209
+#, c-format
+msgid "Error retrieving OKAY reply!\n"
+msgstr "Ошибка получения ответа OKAY!\n"
+
+#: newflasher.c:3236
+#, c-format
+msgid "dump.bin will not be created!\n"
+msgstr "Файл dump.bin не будет создан!\n"
+
+#: newflasher.c:3242
+#, c-format
+msgid "dump.bin created.\n"
+msgstr "Файл dump.bin создан.\n"
+
+#: newflasher.c:3259
+#, c-format
+msgid ""
+"\n"
+"Optional step! Type 'y' and press ENTER if you want dump trim area, or type "
+"'n' and press ENTER to skip.\n"
+msgstr ""
+"\n"
+"Необязательный шаг! Введите 'y' и нажмите ENTER, если хотите сделать дамп "
+"trim area, либо 'n' и ENTER, чтобы пропустить.\n"
+
+#: newflasher.c:3260
+#, c-format
+msgid ""
+"Do in mind this doesn't dump drm key since sake authentifiction is need for "
+"that! But it is recommend to have dump in case hard brick!\n"
+msgstr ""
+"Учтите: ключ DRM так не выгружается, для него нужна аутентификация sake! Но "
+"дамп стоит сделать на случай тяжёлого кирпича!\n"
+
+#: newflasher.c:3272
+#, c-format
+msgid "Error dumping trimarea partition %d !!\n"
+msgstr "Ошибка выгрузки раздела trim area %d!!\n"
+
+#: newflasher.c:3278
+#, c-format
+msgid "Dumping trimarea partition %d.\n"
+msgstr "Выгружаем раздел trim area %d.\n"
+
+#: newflasher.c:3339
+#, c-format
+msgid "Bug!!! DATA_LEN: 0x%x > BUFF_MAX: 0x%x\n"
+msgstr "Ошибка в программе!!! DATA_LEN: 0x%x > BUFF_MAX: 0x%x\n"
+
+#: newflasher.c:3399
+#, c-format
+msgid "Created ouput folder tadump.\n"
+msgstr "Создана выходная папка tadump.\n"
+
+#: newflasher.c:3403
+#, c-format
+msgid "FAILURE to create output folder tadump!\n"
+msgstr "НЕ УДАЛОСЬ создать выходную папку tadump!\n"
+
+#: newflasher.c:3412
+#, c-format
+msgid ""
+"FAILURE to create output folder tadump because there is file called "
+"tadump!!\n"
+"Remove or rename file tadump first!\n"
+msgstr ""
+"НЕ УДАЛОСЬ создать выходную папку tadump: есть файл с именем tadump!!\n"
+"Сначала удалите или переименуйте файл tadump!\n"
+
+#: newflasher.c:3422
+#, c-format
+msgid "Dumping trim area to tadump folder.\n"
+msgstr "Выгружаем trim area в папку tadump.\n"
+
+#: newflasher.c:3433
+#, c-format
+msgid "%s will not be created!\n"
+msgstr "Файл %s не будет создан!\n"
+
+#: newflasher.c:3482
+#, c-format
+msgid "%s created.\n"
+msgstr "Файл %s создан.\n"
+
+#: newflasher.c:3498
+#, c-format
+msgid ""
+"\n"
+"Trim area dump done, continuing with flashing.\n"
+msgstr ""
+"\n"
+"Дамп trim area сделан, продолжаем прошивку.\n"
+
+#: newflasher.c:3502
+#, c-format
+msgid ""
+"\n"
+"No trim area dump taken, continuing with flashing anyway. If this phone ever "
+"hard bricks there will be no trim area backup to restore from, and that is "
+"on you.\n"
+msgstr ""
+"\n"
+"Дамп trim area не сделан, но прошивка всё равно продолжается. Если этот "
+"телефон когда-нибудь станет тяжёлым кирпичом, восстанавливать trim area "
+"будет не из чего, и это уже ваша ответственность.\n"
+
+#: newflasher.c:3852 newflasher.c:4151
+#, c-format
+msgid " - Error, no DATA reply!\n"
+msgstr " - Ошибка: нет ответа DATA!\n"
+
+#: newflasher.c:3867
+#, c-format
+msgid "Error receiving root key hash!\n"
+msgstr "Ошибка получения root key hash!\n"
+
+#: newflasher.c:3895 newflasher.c:4213
+#, c-format
+msgid " - Error, no OKAY reply!\n"
+msgstr " - Ошибка: нет ответа OKAY!\n"
+
+#: newflasher.c:3906 newflasher.c:3917
+#, c-format
+msgid " - Error writing command %s, ignore this error!\n"
+msgstr " - Ошибка записи команды %s, эту ошибку можно не учитывать!\n"
+
+#: newflasher.c:3954
+#, c-format
+msgid "Product: %s\n"
+msgstr "Изделие: %s\n"
+
+#: newflasher.c:3955
+#, c-format
+msgid "Version: %s\n"
+msgstr "Версия: %s\n"
+
+#: newflasher.c:3956
+#, c-format
+msgid "Bootloader version: %s\n"
+msgstr "Версия bootloader: %s\n"
+
+#: newflasher.c:3957
+#, c-format
+msgid "Baseband version: %s\n"
+msgstr "Версия baseband: %s\n"
+
+#: newflasher.c:3958
+#, c-format
+msgid "Serialno: %s\n"
+msgstr "Серийный номер: %s\n"
+
+#: newflasher.c:3959
+#, c-format
+msgid "Secure: %s\n"
+msgstr "Режим secure: %s\n"
+
+#: newflasher.c:3960
+#, c-format
+msgid "Loader version: %s\n"
+msgstr "Версия loader: %s\n"
+
+#: newflasher.c:3961
+#, c-format
+msgid "Phone ID: %s\n"
+msgstr "ID телефона: %s\n"
+
+#: newflasher.c:3962
+#, c-format
+msgid "Device ID: %s\n"
+msgstr "ID устройства: %s\n"
+
+#: newflasher.c:3963
+#, c-format
+msgid "Platform ID: %s\n"
+msgstr "ID платформы: %s\n"
+
+#: newflasher.c:3964
+#, c-format
+msgid "Max download size: %u\n"
+msgstr "Макс. размер загрузки: %u\n"
+
+#: newflasher.c:3965
+#, c-format
+msgid "Sector size: %u\n"
+msgstr "Размер сектора: %u\n"
+
+#: newflasher.c:3966
+#, c-format
+msgid "Rooting status: %s\n"
+msgstr "Статус rooting: %s\n"
+
+#: newflasher.c:3967
+#, c-format
+msgid "Ufs info: %s\n"
+msgstr "Сведения UFS: %s\n"
+
+#: newflasher.c:3968
+#, c-format
+msgid "Emmc info: %s\n"
+msgstr "Сведения eMMC: %s\n"
+
+#: newflasher.c:3969
+#, c-format
+msgid "Default security: %s\n"
+msgstr "Штатная защита: %s\n"
+
+#: newflasher.c:3970
+#, c-format
+msgid "Keystore counter: %u\n"
+msgstr "Счётчик keystore: %u\n"
+
+#: newflasher.c:3971
+#, c-format
+msgid "Security state: %s\n"
+msgstr "Состояние защиты: %s\n"
+
+#: newflasher.c:3972
+#, c-format
+msgid "Sake root: %s\n"
+msgstr "Sake root: %s\n"
+
+#: newflasher.c:3973
+#, c-format
+msgid "S1 root: %s\n"
+msgstr "S1 root: %s\n"
+
+#: newflasher.c:3974
+#, c-format
+msgid "Root key hash: %s\n"
+msgstr "Root key hash: %s\n"
+
+#: newflasher.c:3975
+#, c-format
+msgid "Slot count: %s\n"
+msgstr "Количество slot: %s\n"
+
+#: newflasher.c:3976
+#, c-format
+msgid "Current slot: %s\n"
+msgstr "Текущий slot: %s\n"
+
+#: newflasher.c:3977
+#, c-format
+msgid "Battery level: %d%s\n"
+msgstr "Уровень заряда: %d%s\n"
+
+#: newflasher.c:3983
+#, c-format
+msgid ""
+"\n"
+"Your battery level is %d percent and you have risk for hard brick in case "
+"your battery get fully discharged durring flash session!\n"
+msgstr ""
+"\n"
+"Заряд батареи %d процентов. Если батарея разрядится полностью во время "
+"прошивки, есть риск получить тяжёлый кирпич!\n"
+
+#: newflasher.c:3984
+#, c-format
+msgid ""
+"Type 'y' and press ENTER if you understand the risk, or type 'n' to exit "
+"from flashing.\n"
+msgstr ""
+"Введите 'y' и нажмите ENTER, если вы понимаете риск, либо 'n', чтобы выйти "
+"без прошивки.\n"
+
+#: newflasher.c:4004
+#, c-format
+msgid "Error writing command 'go into flashmode'!\n"
+msgstr "Ошибка записи команды 'go into flashmode'!\n"
+
+#: newflasher.c:4011
+#, c-format
+msgid " - Error, no go_into_flash_mode DATA reply!\n"
+msgstr " - Ошибка: нет ответа DATA на go_into_flash_mode!\n"
+
+#: newflasher.c:4018
+#, c-format
+msgid ""
+" - Error, go_into_flash_mode DATA reply size: %zu less than expected: 12!\n"
+msgstr ""
+" - Ошибка: размер ответа DATA на go_into_flash_mode %zu меньше ожидаемых "
+"12!\n"
+
+#: newflasher.c:4025
+#, c-format
+msgid ""
+" - Error, go_into_flash_mode DATA reply string: %s is not equal to expected: "
+"DATA00000001!\n"
+msgstr ""
+" - Ошибка: строка ответа DATA на go_into_flash_mode %s не совпадает с "
+"ожидаемой DATA00000001!\n"
+
+#: newflasher.c:4032
+#, c-format
+msgid " - Error writing 'go into flashmode' value 1!\n"
+msgstr " - Ошибка записи значения 1 для 'go into flashmode'!\n"
+
+#: newflasher.c:4039
+#, c-format
+msgid "      Error, no 'go into flashmode' OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY на 'go into flashmode'!\n"
+
+#: newflasher.c:4046
+#, c-format
+msgid "      Error, 'go into flashmode' reply less than 4, got: %zu bytes!\n"
+msgstr ""
+"      Ошибка: ответ на 'go into flashmode' короче 4, получено: %zu байт!\n"
+
+#: newflasher.c:4053
+#, c-format
+msgid "      Error, didn't got 'go into flashmode' OKAY reply! Got reply: %s\n"
+msgstr ""
+"      Ошибка: не получен ответ OKAY на 'go into flashmode'! Пришёл ответ: "
+"%s\n"
+
+#: newflasher.c:4060
+#, c-format
+msgid "Error writing TA 'go into flashmode'!\n"
+msgstr "Ошибка записи TA 'go into flashmode'!\n"
+
+#: newflasher.c:4067
+#, c-format
+msgid "      Error, no TA write 'go into flashmode' OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY на запись TA 'go into flashmode'!\n"
+
+#: newflasher.c:4074
+#, c-format
+msgid ""
+"      Error, TA write 'go into flashmode' reply less than 4, got: %zu "
+"bytes!\n"
+msgstr ""
+"      Ошибка: ответ на запись TA 'go into flashmode' короче 4, получено: %zu "
+"байт!\n"
+
+#: newflasher.c:4081
+#, c-format
+msgid ""
+"      Error, didn't got TA write 'go into flashmode' OKAY reply! Got reply: "
+"%s\n"
+msgstr ""
+"      Ошибка: не получен ответ OKAY на запись TA 'go into flashmode'! Пришёл "
+"ответ: %s\n"
+
+#: newflasher.c:4086
+#, c-format
+msgid "Device is put now in flash mode.\n"
+msgstr "Устройство переведено в flash mode.\n"
+
+#: newflasher.c:4100
+#, c-format
+msgid "Repartitioning...\n"
+msgstr "Переразметка...\n"
+
+#: newflasher.c:4111
+#, c-format
+msgid ""
+"partition_delivery.xml not exist in partition folder or no partition "
+"folder.\n"
+msgstr ""
+"В папке partition нет partition_delivery.xml, либо самой папки partition "
+"нет.\n"
+
+#: newflasher.c:4117
+#, c-format
+msgid "Found partition_delivery.xml in partition folder.\n"
+msgstr "В папке partition найден partition_delivery.xml.\n"
+
+#: newflasher.c:4121
+#, c-format
+msgid "Error parsing partition_delivery.xml!\n"
+msgstr "Ошибка разбора partition_delivery.xml!\n"
+
+#: newflasher.c:4131
+#, c-format
+msgid "Determining %s size...\n"
+msgstr "Определяем размер %s...\n"
+
+#: newflasher.c:4164
+#, c-format
+msgid "Error receiving %s header!\n"
+msgstr "Ошибка получения заголовка %s!\n"
+
+#: newflasher.c:4193
+#, c-format
+msgid "%s size = %llu\n"
+msgstr "размер %s = %llu\n"
+
+#: newflasher.c:4254
+#, c-format
+msgid " - unable to open %s.\n"
+msgstr " - не удалось открыть %s.\n"
+
+#: newflasher.c:4281 newflasher.c:4305 newflasher.c:4393 newflasher.c:4417
+#: newflasher.c:4576 newflasher.c:4655 newflasher.c:4948 newflasher.c:4971
+#, c-format
+msgid " - Unable to open %s\n"
+msgstr " - Не удалось открыть %s\n"
+
+#: newflasher.c:4324 newflasher.c:4727 newflasher.c:4779
+#, c-format
+msgid "Skipping %s\n"
+msgstr "Пропускаем %s\n"
+
+#: newflasher.c:4352 newflasher.c:4543 newflasher.c:4907
+#, c-format
+msgid "Oops!!! Sinfile name empty!\n"
+msgstr "Опа!!! Пустое имя sin-файла!\n"
+
+#: newflasher.c:4359
+#, c-format
+msgid "Oops!! Found non partition sin file!\n"
+msgstr "Опа!! Найден sin-файл не от раздела!\n"
+
+#: newflasher.c:4360 newflasher.c:4915
+#, c-format
+msgid "Please read instructions carefully if you no want brick!\n"
+msgstr "Внимательно прочитайте инструкцию, если не хотите получить кирпич!\n"
+
+#: newflasher.c:4361
+#, c-format
+msgid "Skipping non partition %s file.\n"
+msgstr "Пропускаем файл %s, он не от раздела.\n"
+
+#: newflasher.c:4368 newflasher.c:4551 newflasher.c:4923
+#, c-format
+msgid " - unable to open %s!\n"
+msgstr " - не удалось открыть %s!\n"
+
+#: newflasher.c:4445
+#, c-format
+msgid "No .sin files in partition dir...\n"
+msgstr "В папке partition нет файлов .sin...\n"
+
+#: newflasher.c:4446
+#, c-format
+msgid ""
+"You must extract partition.zip into 'partition' folder if you want flash "
+"partition image!\n"
+msgstr ""
+"Чтобы прошить образ раздела, распакуйте partition.zip в папку 'partition'!\n"
+
+#: newflasher.c:4447
+#, c-format
+msgid ""
+"On 2018 and UP models you must move partition sin files to 'partition' "
+"folder if you need flash partition images!\n"
+msgstr ""
+"На моделях 2018 года и новее перенесите sin-файлы разделов в папку "
+"'partition', если нужно прошить образы разделов!\n"
+
+#: newflasher.c:4458
+#, c-format
+msgid "Processing .sin files...\n"
+msgstr "Обрабатываем файлы .sin...\n"
+
+#: newflasher.c:4471
+#, c-format
+msgid "Created ouput folder flash_session\n"
+msgstr "Создана выходная папка flash_session\n"
+
+#: newflasher.c:4476
+#, c-format
+msgid "FAILURE to create output folder flash_session!\n"
+msgstr "НЕ УДАЛОСЬ создать выходную папку flash_session!\n"
+
+#: newflasher.c:4484
+#, c-format
+msgid ""
+"FAILURE to create output folder flash_session because there is file called "
+"flash_session!!!\n"
+"Remove or rename file flash_session first!\n"
+msgstr ""
+"НЕ УДАЛОСЬ создать выходную папку flash_session: есть файл с именем "
+"flash_session!!!\n"
+"Сначала удалите или переименуйте файл flash_session!\n"
+
+#: newflasher.c:4493
+#, c-format
+msgid "Using existing folder flash_session\n"
+msgstr "Используем существующую папку flash_session\n"
+
+#: newflasher.c:4737
+#, c-format
+msgid "No .sin files in current dir.\n"
+msgstr "В текущей папке нет файлов .sin.\n"
+
+#: newflasher.c:4745
+#, c-format
+msgid "Processing .ta files...\n"
+msgstr "Обрабатываем файлы .ta...\n"
+
+#: newflasher.c:4805
+#, c-format
+msgid "No .ta files in current dir.\n"
+msgstr "В текущей папке нет файлов .ta.\n"
+
+#: newflasher.c:4812
+#, c-format
+msgid ""
+"Processing boot delivery...\n"
+"\n"
+msgstr ""
+"Обрабатываем boot delivery...\n"
+"\n"
+
+#: newflasher.c:4820
+#, c-format
+msgid "boot_delivery.xml not exist in boot folder or no boot folder.\n"
+msgstr "В папке boot нет boot_delivery.xml, либо самой папки boot нет.\n"
+
+#: newflasher.c:4825
+#, c-format
+msgid "Found boot_delivery.xml in boot folder.\n"
+msgstr "В папке boot найден boot_delivery.xml.\n"
+
+#: newflasher.c:4829
+#, c-format
+msgid "Error parsing boot_delivery.xml!\n"
+msgstr "Ошибка разбора boot_delivery.xml!\n"
+
+#: newflasher.c:4836
+#, c-format
+msgid " - Unable to determine boot delivery version, skipping bootdelivery.\n"
+msgstr ""
+" - Не удалось определить версию boot delivery, пропускаем bootdelivery.\n"
+
+#: newflasher.c:4841
+#, c-format
+msgid " - Boot delivery version: %s\n"
+msgstr " - Версия boot delivery: %s\n"
+
+#: newflasher.c:4842
+#, c-format
+msgid " - Verifying if boot delivery match with device...\n"
+msgstr " - Проверяем, подходит ли boot delivery к устройству...\n"
+
+#: newflasher.c:4852
+#, c-format
+msgid "      searching for: %s\n"
+msgstr "      ищем: %s\n"
+
+#: newflasher.c:4882
+#, c-format
+msgid "      Found bootdelivery match: %s\n"
+msgstr "      Найдено совпадение bootdelivery: %s\n"
+
+#: newflasher.c:4885
+#, c-format
+msgid "      TA file: %s\n"
+msgstr "      Файл TA: %s\n"
+
+#: newflasher.c:4896
+#, c-format
+msgid "      SIN file: %s\n"
+msgstr "      Файл SIN: %s\n"
+
+#: newflasher.c:4914
+#, c-format
+msgid "Oops!! Found non bootloader sin file!\n"
+msgstr "Опа!! Найден sin-файл не от bootloader!\n"
+
+#: newflasher.c:4916
+#, c-format
+msgid "Skipping non bootloader %s file.\n"
+msgstr "Пропускаем файл %s, он не от bootloader.\n"
+
+#: newflasher.c:4994
+#, c-format
+msgid "Didn't found bootdelivery that match your device!\n"
+msgstr "Не найден bootdelivery, подходящий вашему устройству!\n"
+
+#: newflasher.c:5080
+#, c-format
+msgid ""
+"\n"
+"=========== BOOTLOADER LOG =============\n"
+msgstr ""
+"\n"
+"=========== ЛОГ BOOTLOADER =============\n"
+
+#: newflasher.c:5195
+#, c-format
+msgid ""
+"\n"
+"=========== FIRMWARES HISTORY LOG =============\n"
+msgstr ""
+"\n"
+"=========== ЛОГ ИСТОРИИ ПРОШИВОК ==============\n"
+
+#: newflasher.c:5243
+#, c-format
+msgid "Error writing command '%s'!\n"
+msgstr "Ошибка записи команды '%s'!\n"
+
+#: newflasher.c:5250
+#, c-format
+msgid " - Error, no set_active:%s OKAY reply!\n"
+msgstr " - Ошибка: нет ответа OKAY на set_active:%s!\n"
+
+#: newflasher.c:5257
+#, c-format
+msgid "      Error, 'set_active:%s' reply less than 4, got: %zu bytes!\n"
+msgstr "      Ошибка: ответ на 'set_active:%s' короче 4, получено: %zu байт!\n"
+
+#: newflasher.c:5264
+#, c-format
+msgid "      Error, didn't got 'set_active:%s' OKAY reply! Got reply: %s\n"
+msgstr ""
+"      Ошибка: не получен ответ OKAY на 'set_active:%s'! Пришёл ответ: %s\n"
+
+#: newflasher.c:5269
+#, c-format
+msgid "Set slot '%s' active.\n"
+msgstr "Slot '%s' сделан активным.\n"
+
+#: newflasher.c:5278
+#, c-format
+msgid "Error writing command 'go out of flashmode'!\n"
+msgstr "Ошибка записи команды 'go out of flashmode'!\n"
+
+#: newflasher.c:5285
+#, c-format
+msgid " - Error, no go_outof_flash_mode DATA reply!\n"
+msgstr " - Ошибка: нет ответа DATA на go_outof_flash_mode!\n"
+
+#: newflasher.c:5292
+#, c-format
+msgid ""
+" - Error, go_outof_flash_mode DATA reply size: %zu less than expected: 12!\n"
+msgstr ""
+" - Ошибка: размер ответа DATA на go_outof_flash_mode %zu меньше ожидаемых "
+"12!\n"
+
+#: newflasher.c:5299
+#, c-format
+msgid ""
+" - Error, go_outof_flash_mode DATA reply string: %s is not equal to "
+"expected: DATA00000001!\n"
+msgstr ""
+" - Ошибка: строка ответа DATA на go_outof_flash_mode %s не совпадает с "
+"ожидаемой DATA00000001!\n"
+
+#: newflasher.c:5306
+#, c-format
+msgid " - Error writing 'go out of flashmode' value 0!\n"
+msgstr " - Ошибка записи значения 0 для 'go out of flashmode'!\n"
+
+#: newflasher.c:5313
+#, c-format
+msgid "      Error, no 'go out of flashmode' OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY на 'go out of flashmode'!\n"
+
+#: newflasher.c:5320
+#, c-format
+msgid "      Error, 'go out of flashmode' reply less than 4, got: %zu bytes!\n"
+msgstr ""
+"      Ошибка: ответ на 'go out of flashmode' короче 4, получено: %zu байт!\n"
+
+#: newflasher.c:5327
+#, c-format
+msgid ""
+"      Error, didn't got 'go out of flashmode' OKAY reply! Got reply: %s\n"
+msgstr ""
+"      Ошибка: не получен ответ OKAY на 'go out of flashmode'! Пришёл ответ: "
+"%s\n"
+
+#: newflasher.c:5334
+#, c-format
+msgid "Error writing TA 'go out of flashmode'!\n"
+msgstr "Ошибка записи TA 'go out of flashmode'!\n"
+
+#: newflasher.c:5341
+#, c-format
+msgid "      Error, no TA write 'go out of flashmode' OKAY reply!\n"
+msgstr "      Ошибка: нет ответа OKAY на запись TA 'go out of flashmode'!\n"
+
+#: newflasher.c:5348
+#, c-format
+msgid ""
+"      Error, TA write 'go out of flashmode' reply less than 4, got: %zu "
+"bytes!\n"
+msgstr ""
+"      Ошибка: ответ на запись TA 'go out of flashmode' короче 4, получено: "
+"%zu байт!\n"
+
+#: newflasher.c:5355
+#, c-format
+msgid ""
+"      Error, didn't got TA write 'go out of flashmode' OKAY reply! Got "
+"reply: %s\n"
+msgstr ""
+"      Ошибка: не получен ответ OKAY на запись TA 'go out of flashmode'! "
+"Пришёл ответ: %s\n"
+
+#: newflasher.c:5360
+#, c-format
+msgid "Device is put now out of flash mode.\n"
+msgstr "Устройство выведено из flash mode.\n"
+
+#: newflasher.c:5375
+#, c-format
+msgid "Sent command: Sync\n"
+msgstr "Отправлена команда: Sync\n"
+
+#: newflasher.c:5379
+#, c-format
+msgid " error, no sync response!\n"
+msgstr " ошибка: нет ответа на Sync!\n"
+
+#: newflasher.c:5425
+#, c-format
+msgid "Sent command: %s.\n"
+msgstr "Отправлена команда: %s.\n"
+
+#: newflasher.c:5429
+#, c-format
+msgid "Error, no %s response!\n"
+msgstr "Ошибка: нет ответа на %s!\n"
+
+#: newflasher.c:5441
+#, c-format
+msgid ""
+"\n"
+"End. You can disconnect your device when you close %s\n"
+msgstr ""
+"\n"
+"Готово. Устройство можно отключить после закрытия %s\n"
+
+#: newflasher.c:5446
+#, c-format
+msgid ""
+"\n"
+"Done.\n"
+msgstr ""
+"\n"
+"Готово.\n"
+
+#: newflasher.c:5455
+#, c-format
+msgid "Releasing interface %d.\n"
+msgstr "Освобождаем интерфейс %d.\n"
+
+#: newflasher.c:5461
+#, c-format
+msgid "Re-attaching kernel driver.\n"
+msgstr "Возвращаем драйвер ядра.\n"
+
+#: newflasher.c:5465
+#, c-format
+msgid "Closing device.\n"
+msgstr "Закрываем устройство.\n"
