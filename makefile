@@ -43,10 +43,31 @@ libs:
 	@test -d expat-2.2.9 && echo "" || tar xzf expat-2.2.9.tar.gz
 	@rm -rf expat-2.2.9.tar.gz
 
-newflasher: newflasher.c version.h
-	${CC} ${CFLAGS} $< -o $@ -lz -lexpat ${LIBS}
+# Optional, off by default: NLS=1 builds the native binary with gettext.
+# Cross/static targets (Windows, Android, arm) are untouched by this.
+NLS?=0
+ifeq ($(NLS),1)
+LOCALEDIR?=/usr/share/locale
+NLS_CFLAGS=-DENABLE_NLS -DLOCALEDIR=\"$(LOCALEDIR)\"
+LINGUAS=ru
+endif
 
-newflasher.exe: libs newflasher.c version.h
+newflasher: newflasher.c nls.h version.h
+	${CC} ${CFLAGS} ${NLS_CFLAGS} $< -o $@ -lz -lexpat ${LIBS}
+
+.PHONY: po
+po:
+	xgettext --keyword=_ --language=C --from-code=UTF-8 \
+		--package-name=newflasher --package-version=$(VERSION) \
+		-o po/newflasher.pot newflasher.c
+
+.PHONY: mo
+mo: $(patsubst %,po/%.mo,$(LINGUAS))
+
+po/%.mo: po/%.po
+	msgfmt -c -o $@ $<
+
+newflasher.exe: libs newflasher.c nls.h version.h
 	@cd zlib-1.3.1 && CC=${CCWIN} ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="${CCWIN} -fPIC" ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
 	@test -f include/GordonGate.h && echo "" || wget https://software.sonymobile.com/drivers/installers/latest/Sony_Mobile_Software_Update_Drivers_x64_Setup.msi -O GordonGate
@@ -57,25 +78,25 @@ newflasher.exe: libs newflasher.c version.h
 	${CCWIN} ${CROSS_CFLAGS} -static newflasher.c newflasher.res -o newflasher.exe -lsetupapi -lz -lexpat
 	${CCWINSTRIP} newflasher.exe
 
-newflasher.x64: libs newflasher.c version.h
+newflasher.x64: libs newflasher.c nls.h version.h
 	@cd zlib-1.3.1 && CC=gcc ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="gcc -fPIC" ./configure --enable-static --disable-shared && make clean && make
 	${CC} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.x64 -lz -lexpat
 	${STRIP} newflasher.x64
 
-newflasher.i386: libs newflasher.c version.h
+newflasher.i386: libs newflasher.c nls.h version.h
 	@cd zlib-1.3.1 && CC="gcc -m32" ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="gcc -m32 -fPIC" ./configure --enable-static --disable-shared && make clean && make
 	${CC} ${CROSS_CFLAGS} -m32 -static newflasher.c -o newflasher.i386 -lz -lexpat
 	${STRIP} newflasher.i386
 
-newflasher.arm32: libs newflasher.c version.h
+newflasher.arm32: libs newflasher.c nls.h version.h
 	@cd zlib-1.3.1 && CC=${ARMCC} ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="${ARMCC} -fPIC" ./configure --enable-static --disable-shared --host=arm-linux-gnueabi && make clean && make
 	${ARMCC} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.arm32 -lz -lexpat
 	${ARMSTRIP} newflasher.arm32
 
-newflasher.arm64: libs newflasher.c version.h
+newflasher.arm64: libs newflasher.c nls.h version.h
 	@cd zlib-1.3.1 && CC=${ARMCC64} ./configure --static && make clean && make
 	@cd expat-2.2.9 && CC="${ARMCC64} -fPIC" ./configure --enable-static --disable-shared --host=aarch64-linux-gnu && make clean && make
 	${ARMCC64} ${CROSS_CFLAGS} -static newflasher.c -o newflasher.arm64 -lz -lexpat
@@ -100,10 +121,17 @@ install: newflasher newflasher.1.gz
 	$(INSTALL) -o root -g root -m 755 -s newflasher $(DESTDIR)/usr/bin/
 	$(INSTALL) -o root -g root -d $(DESTDIR)/usr/share/man/man1
 	$(INSTALL) -o root -g root -m 644 newflasher.1.gz $(DESTDIR)/usr/share/man/man1
+ifeq ($(NLS),1)
+	$(MAKE) mo
+	for l in $(LINGUAS); do \
+		$(INSTALL) -o root -g root -d $(DESTDIR)$(LOCALEDIR)/$$l/LC_MESSAGES; \
+		$(INSTALL) -o root -g root -m 644 po/$$l.mo $(DESTDIR)$(LOCALEDIR)/$$l/LC_MESSAGES/newflasher.mo; \
+	done
+endif
 
 .PHONY: clean
 clean:
-	rm -rf *.gz *.o *.rc *.res obj libs zlib expat zlib-1.3.1 expat-2.2.9 include
+	rm -rf *.gz *.o *.rc *.res po/*.mo obj libs zlib expat zlib-1.3.1 expat-2.2.9 include
 
 .PHONY: distclean
 distclean:

@@ -98,7 +98,7 @@
 		#endif
 	#endif
 #endif
-
+#include "nls.h"
 #include <ctype.h>
 #include <sys/stat.h>
 #include <limits.h>
@@ -307,7 +307,7 @@ static ssize_t g_getline(char **lineptr, size_t *n, FILE *stream) {
 
 	if (lineptr == NULL || n == NULL || stream == NULL) {
 		errno = EINVAL;
-		printf("Error: EINVAL!\n");
+		printf(_("Error: EINVAL!\n"));
 		return -1;
 	}
 
@@ -315,7 +315,7 @@ static ssize_t g_getline(char **lineptr, size_t *n, FILE *stream) {
 		*n = MAX_UNIT_LINE_LEN;
 		if ((*lineptr = (char *)malloc(*n)) == NULL) {
 			errno = ENOMEM;
-			printf("Error: MAX_UNIT_LINE_LEN reached!\n");
+			printf(_("Error: MAX_UNIT_LINE_LEN reached!\n"));
 			return -1;
 		}
 	}
@@ -337,14 +337,14 @@ static ssize_t g_getline(char **lineptr, size_t *n, FILE *stream) {
 #else
 				errno = ERANGE; /* no EOVERFLOW defined */
 #endif
-			printf("Error: EOVERFLOW!\n");
+			printf(_("Error: EOVERFLOW!\n"));
 			return -1;
 		}
 		new_lineptr_len = *n * 2;
 
 		if ((new_lineptr = (char *)realloc(*lineptr, new_lineptr_len)) == NULL) {
 			errno = ENOMEM;
-			printf("Error: ENOMEM for realloc!\n");
+			printf(_("Error: ENOMEM for realloc!\n"));
 			return -1;
 		}
 		*lineptr = new_lineptr;
@@ -423,10 +423,10 @@ void DisplayError(LPTSTR lpszFunction)
 			dw,
 			(char *)lpMsgBuf)))
 	{
-		printf("FATAL ERROR: Unable to output error code.\n");
+		printf(_("FATAL ERROR: Unable to output error code.\n"));
 	}
 
-	printf("ERROR: %s\n", (LPCTSTR)lpDisplayBuf);
+	printf(_("ERROR: %s\n"), (LPCTSTR)lpDisplayBuf);
 
 	LocalFree(lpMsgBuf);
 	LocalFree(lpDisplayBuf);
@@ -562,7 +562,7 @@ struct usb_handle *get_flashmode(unsigned short VID, unsigned short PID)
 
 	busdir = opendir("/dev/bus/usb");
 	if (busdir == NULL) {
-		printf("Error, no /dev/bus/usb ! Please connect device first in flash mode!\n");
+		printf(_("Error, no /dev/bus/usb ! Please connect device first in flash mode!\n"));
 		return usb;
 	}
 
@@ -584,12 +584,12 @@ struct usb_handle *get_flashmode(unsigned short VID, unsigned short PID)
 			/*printf("devname: %s\n", devname);*/
 
 			if ((fd = open(devname, O_RDWR)) < 1) {
-				printf("cannot open %s for writing\n", devname);
+				printf(_("cannot open %s for writing\n"), devname);
 				continue;
 			}
 
 			if (get_vidpid(fd, VID, PID)) {
-				printf("found device with vid:0x%04x pid:0x%04x.\n", VID, PID);
+				printf(_("found device with vid:0x%04x pid:0x%04x.\n"), VID, PID);
 
 				usb = calloc(1, sizeof(struct usb_handle));
 
@@ -599,7 +599,7 @@ struct usb_handle *get_flashmode(unsigned short VID, unsigned short PID)
 
 				ifc = 0;
 				if ((n = ioctl(fd, USBDEVFS_CLAIMINTERFACE, &ifc)) != 0) {
-					printf("ERROR: n = %d, errno = %d (%s)\n",
+					printf(_("ERROR: n = %d, errno = %d (%s)\n"),
 						 n, errno, strerror(errno));
 					closedir(devdir);
 					closedir(busdir);
@@ -671,14 +671,14 @@ static char *open_dev(unsigned short VID, unsigned short PID)
 				if (strstr(DevIntfDetailData->DevicePath, vidpid) != NULL)
 				{
 					strncpy(devicePath, DevIntfDetailData->DevicePath, strlen(DevIntfDetailData->DevicePath));
-					printf("Device path: %s\n", devicePath);
+					printf(_("Device path: %s\n"), devicePath);
 					memset(szDescription, 0, MAX_PATH);
 					SetupDiGetClassDescription(&DevData.ClassGuid, szDescription, MAX_PATH, &dwSize);
-					printf("Class Description: %s\n", szDescription);
+					printf(_("Class Description: %s\n"), szDescription);
 
 					memset(szDescription, 0, MAX_PATH);
 					SetupDiGetDeviceInstanceId(hDevInfo, &DevData, szDescription, MAX_PATH, 0);
-					printf("Device Instance Id: %s\n\n", szDescription);
+					printf(_("Device Instance Id: %s\n\n"), szDescription);
 
 					ret = 0;
 				}
@@ -895,19 +895,19 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 
 	if (exact) {
 		if (nBytesRead != size) {
-			printf(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n", (ep == EP_IN) ? "read" : "write", size, nBytesRead);
+			printf(_(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n"), (ep == EP_IN) ? "read" : "write", size, nBytesRead);
 			display_buffer_hex_ascii("nBytes", bytes, nBytesRead);
 			return 0;
 		}
 	}
 #if 0
 	if (ep == EP_IN && nBytesRead) {
-		printf(" - Successfully read 0x%lx bytes from handle.\n", nBytesRead);
+		printf(_(" - Successfully read 0x%lx bytes from handle.\n"), nBytesRead);
 		display_buffer_hex_ascii("Raw input ", bytes, nBytesRead);
 	}
 
 	if (ep == EP_OUT && nBytesRead) {
-		printf(" - Successfully write 0x%lx bytes to handle.\n", nBytesRead);
+		printf(_(" - Successfully write 0x%lx bytes to handle.\n"), nBytesRead);
 		//display_buffer_hex_ascii("Raw output ", bytes, nBytesRead);
 	}
 #endif
@@ -931,11 +931,11 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 				int halt = libusb_clear_halt(dev, endpoint_in);
 				if (halt != LIBUSB_SUCCESS)
 				{
-					printf("clear halt (in): %s\n", libusb_error_name(halt));
+					printf(_("clear halt (in): %s\n"), libusb_error_name(halt));
 				}
 				else
 				{
-					printf("halt clear after: %d\n", try);
+					printf(_("halt clear after: %d\n"), try);
 				}
 			}
 			try++;
@@ -943,7 +943,7 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 
 		if (res != LIBUSB_SUCCESS)
 		{
-			printf("bulk transfer (in): %s\n", libusb_error_name(res));
+			printf(_("bulk transfer (in): %s\n"), libusb_error_name(res));
 			return 0;
 		}
 	}
@@ -957,11 +957,11 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 				int halt = libusb_clear_halt(dev, endpoint_out);
 				if (halt != LIBUSB_SUCCESS)
 				{
-					printf("clear halt (out): %s\n", libusb_error_name(halt));
+					printf(_("clear halt (out): %s\n"), libusb_error_name(halt));
 				}
 				else
 				{
-					printf("halt clear after: %d\n", try);
+					printf(_("halt clear after: %d\n"), try);
 				}
 			}
 			try++;
@@ -969,7 +969,7 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 
 		if (res != LIBUSB_SUCCESS)
 		{
-				printf("bulk transfer (out): %s\n", libusb_error_name(res));
+				printf(_("bulk transfer (out): %s\n"), libusb_error_name(res));
 				return 0;
 		}
 	}
@@ -978,7 +978,7 @@ static unsigned long transfer_bulk_async(HANDLE dev, int ep, char *bytes, unsign
 	{
 		if ((unsigned long)actual_length != size)
 		{
-			printf(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n", (ep == EP_IN) ? "read" : "write", size, (unsigned long)actual_length);
+			printf(_(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n"), (ep == EP_IN) ? "read" : "write", size, (unsigned long)actual_length);
 			display_buffer_hex_ascii("nBytes", bytes, actual_length);
 			return 0;
 		}
@@ -1001,7 +1001,7 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 	{
 		if (h->ep_in == 0)
 		{
-			printf(" - ep_in is not 0x81!!!\n");
+			printf(_(" - ep_in is not 0x81!!!\n"));
 			return 0;
 		}
 
@@ -1019,7 +1019,7 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 				n = ioctl(h->desc, USBDEVFS_BULK, &bulk);
 				if (n < 0)
 				{
-					printf(" - (ep_in) ERROR: n = %d, errno = %d (%s)\n",n, errno, strerror(errno));
+					printf(_(" - (ep_in) ERROR: n = %d, errno = %d (%s)\n"),n, errno, strerror(errno));
 					return 0;
 				}
 			}
@@ -1038,7 +1038,7 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 	{
 		if (h->ep_out == 0)
 		{
-			printf(" - ep_out is not 0x01!!!\n");
+			printf(_(" - ep_out is not 0x01!!!\n"));
 			return 0;
 		}
 
@@ -1052,7 +1052,7 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 			n = ioctl(h->desc, USBDEVFS_BULK, &bulk);
 			if (n != 0)
 			{
-				printf(" - (ep_out size=0)ERROR: n = %d, errno = %d (%s)\n", n, errno, strerror(errno));
+				printf(_(" - (ep_out size=0)ERROR: n = %d, errno = %d (%s)\n"), n, errno, strerror(errno));
 				return 0;
 			}
 			return 0;
@@ -1070,7 +1070,7 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 			n = ioctl(h->desc, USBDEVFS_BULK, &bulk);
 			if (n != xfer)
 			{
-				printf(" - (ep_out size=%d)ERROR: n = %d, errno = %d (%s)\n", xfer, n, errno, strerror(errno));
+				printf(_(" - (ep_out size=%d)ERROR: n = %d, errno = %d (%s)\n"), xfer, n, errno, strerror(errno));
 				return 0;
 			}
 
@@ -1084,7 +1084,7 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 	{
 		if (count != size_tot)
 		{
-			printf(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n", (ep == EP_IN) ? "read" : "write", size_tot, count);
+			printf(_(" - Error %s! Need nBytes: 0x%lx but done: 0x%lx\n"), (ep == EP_IN) ? "read" : "write", size_tot, count);
 			display_buffer_hex_ascii("nBytes", bytes, count);
 			return 0;
 		}
@@ -1092,13 +1092,13 @@ static unsigned long transfer_bulk_async(struct usb_handle *h, int ep, const voi
 #if 0
 	if (ep == EP_IN)
 	{
-		printf(" - Successfully read 0x%lx bytes from handle.\n", count);
+		printf(_(" - Successfully read 0x%lx bytes from handle.\n"), count);
 		display_buffer_hex_ascii("Raw input ", bytes, count);
 	}
 
 	if (ep == EP_OUT)
 	{
-		printf(" - Successfully write 0x%lx bytes to handle.\n", count);
+		printf(_(" - Successfully write 0x%lx bytes to handle.\n"), count);
 		/*display_buffer_hex_ascii("Raw output ", bytes, count);*/
 	}
 #endif
@@ -1123,7 +1123,7 @@ static bool get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int t
 
 	if (ret_len > BUFF_MAX)
 	{
-		printf("Bug!!! ret_len: 0x%x > BUFF_MAX: 0x%x\n", ret_len, BUFF_MAX);
+		printf(_("Bug!!! ret_len: 0x%x > BUFF_MAX: 0x%x\n"), ret_len, BUFF_MAX);
 		return false;
 	}
 
@@ -1161,7 +1161,7 @@ static bool get_reply(HANDLE dev, int ep, char *bytes, unsigned long size, int t
 				goto solve_xqbt41;
 			}
 
-			printf(" - Errornous DATA reply!\n");
+			printf(_(" - Errornous DATA reply!\n"));
 			display_buffer_hex_ascii("Replied with ", bytes, ret_len);
 			return false;
 		}
@@ -1356,24 +1356,24 @@ void zerr(int ret)
 	{
 		case Z_ERRNO:
 			if (ferror(stdin))
-				fputs("error reading stdin!\n", stderr);
+				fputs(_("error reading stdin!\n"), stderr);
 			if (ferror(stdout))
-				fputs("error writing stdout!\n", stderr);
+				fputs(_("error writing stdout!\n"), stderr);
 			break;
 		case Z_STREAM_ERROR:
-			fputs("invalid compression level!\n", stderr);
+			fputs(_("invalid compression level!\n"), stderr);
 			break;
 		case Z_DATA_ERROR:
-			fputs("invalid or incomplete deflate data!\n", stderr);
+			fputs(_("invalid or incomplete deflate data!\n"), stderr);
 			break;
 		case Z_MEM_ERROR:
-			fputs("out of memory!\n", stderr);
+			fputs(_("out of memory!\n"), stderr);
 			break;
 		case Z_VERSION_ERROR:
-			fputs("zlib version mismatch!\n", stderr);
+			fputs(_("zlib version mismatch!\n"), stderr);
 			break;
 		default:
-			fputs("ok.\n", stderr);
+			fputs(_("ok.\n"), stderr);
 			break;
 	}
 }
@@ -1388,39 +1388,39 @@ static int gziper(char *in, char *out)
 		FILE *back = NULL;
 
 		if ((source = fopen64(in, "rb")) == NULL) {
-			printf(" - Could not open %s!\n", in);
+			printf(_(" - Could not open %s!\n"), in);
 			return 1;
 		}
 		if ((zip = fopen64(out, "wb")) == NULL) {
-			printf(" - Could not open %s for write!\n", out);
+			printf(_(" - Could not open %s for write!\n"), out);
 			if (source) fclose(source);
 			return 1;
 		}
 
-		printf(" - defflating...\n");
+		printf(_(" - defflating...\n"));
 		ret = def(source, zip, Z_DEFAULT_COMPRESSION);
-		printf(" - defflate returned: %i\n", ret);
+		printf(_(" - defflate returned: %i\n"), ret);
 		if (source) fclose(source);
 		if (zip) fclose(zip);
 
 		if (ret == 0)
 		{
-			printf (" - setting up inflate...\n");
+			printf (_(" - setting up inflate...\n"));
 
 			if ((zipped = fopen64(out, "rb")) == NULL) {
-				printf(" - Could not open %s for verification!\n", out);
+				printf(_(" - Could not open %s for verification!\n"), out);
 				return 1;
 			}
 
 			if ((back = fopen64("tempFcheck", "wb")) == NULL) {
-				printf(" - Could not open for write temFcheck file for verification!\n");
+				printf(_(" - Could not open for write temFcheck file for verification!\n"));
 				if (zipped) fclose(zipped);
 				return 1;
 			}
 
-			printf (" - infflating, please wait...\n");
+			printf (_(" - infflating, please wait...\n"));
 			ret = inf(zipped, back);
-			printf(" - inflate returned: %i\n", ret);
+			printf(_(" - inflate returned: %i\n"), ret);
 			zerr(ret);
 		}
 
@@ -1433,7 +1433,7 @@ static int gziper(char *in, char *out)
 		}
 
 		remove_file_exist("tempFcheck");
-		printf("  - gzip ok.\n");
+		printf(_("  - gzip ok.\n"));
 		return 0;
 }
 #endif
@@ -1444,19 +1444,19 @@ static int gunziper(char *in, char *out)
 		FILE *zipped = NULL;
 		FILE *back = NULL;
 
-		printf (" - setting up inflate...\n");
+		printf (_(" - setting up inflate...\n"));
 		if ((zipped = fopen64(in, "rb")) == NULL) {
-			printf(" - Could not open %s for infflating!\n", in);
+			printf(_(" - Could not open %s for infflating!\n"), in);
 			return 1;
 		}
 		if ((back = fopen64(out, "wb")) == NULL) {
-			printf(" - Could not open %s for write!\n", out);
+			printf(_(" - Could not open %s for write!\n"), out);
 			if (zipped) fclose(zipped);
 			return 1;
 		}
-		printf (" - infflating, please wait...\n");
+		printf (_(" - infflating, please wait...\n"));
 		ret = inf(zipped, back);
-		printf(" - inflate returned: %i\n", ret);
+		printf(_(" - inflate returned: %i\n"), ret);
 		zerr(ret);
 
 		if (zipped) fclose(zipped);
@@ -1467,7 +1467,7 @@ static int gunziper(char *in, char *out)
 			return 1;
 		}
 
-		printf(" - gunziped ok.\n");
+		printf(_(" - gunziped ok.\n"));
 		return 0;
 }
 
@@ -1540,7 +1540,7 @@ static void check_in_updatexml(char *updatexml_file, char *searchfor)
 
 	if ((fp = fopen64(updatexml_file, "rb")) == NULL)
 	{
-		printf(" - Unable to open %s!\n", updatexml_file);
+		printf(_(" - Unable to open %s!\n"), updatexml_file);
 		return;
 	}
 
@@ -1617,14 +1617,14 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 
 	if (file_found_in_updatexml)
 	{
-		printf(" - Skipping %s\n", basenamee(filename));
+		printf(_(" - Skipping %s\n"), basenamee(filename));
 		file_found_in_updatexml = false;
 		return 1;
 	}
 
 	memset(buff, 0, sizeof(buff));
 
-	printf(" - Extracting from %s\n", basenamee(filename));
+	printf(_(" - Extracting from %s\n"), basenamee(filename));
 
 	for (;;)
 	{
@@ -1632,18 +1632,18 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 		bytes_read = fread(buff, 1, 512, a);
 
 		if (bytes_read != 512) {
-			printf(" - Short read on %s: expected 512, got %d\n", filename, (int)bytes_read);
+			printf(_(" - Short read on %s: expected 512, got %d\n"), filename, (int)bytes_read);
 			return 0;
 		}
 
 		if (is_end_of_archive(buff))
 		{
-			printf(" - End of %s\n", basenamee(filename));
+			printf(_(" - End of %s\n"), basenamee(filename));
 			return 1;
 		}
 
 		if (!verify_checksum(buff)) {
-			printf(" - Checksum failure\n");
+			printf(_(" - Checksum failure\n"));
 			return 0;
 		}
 
@@ -1652,23 +1652,23 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 		switch (buff[156])
 		{
 			case '1':
-				printf(" - Ignoring hardlink %s\n", buff);
+				printf(_(" - Ignoring hardlink %s\n"), buff);
 				break;
 			case '2':
-				printf(" - Ignoring symlink %s\n", buff);
+				printf(_(" - Ignoring symlink %s\n"), buff);
 				break;
 			case '3':
-				printf(" - Ignoring character device %s\n", buff);
+				printf(_(" - Ignoring character device %s\n"), buff);
 					break;
 			case '4':
-				printf(" - Ignoring block device %s\n", buff);
+				printf(_(" - Ignoring block device %s\n"), buff);
 				break;
 			case '5':
-				printf(" - Ignoring dir %s\n", buff);
+				printf(_(" - Ignoring dir %s\n"), buff);
 				filesize = 0;
 				break;
 			case '6':
-				printf(" - Ignoring FIFO %s\n", buff);
+				printf(_(" - Ignoring FIFO %s\n"), buff);
 				break;
 			default:
 				memset(tmpg, 0, sizeof(tmpg));
@@ -1678,11 +1678,11 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 #else
 				snprintf(tmpp, sizeof(tmpp), "./%s/%s", outfolder, buff);
 #endif
-				printf(" - %s %s\n", (i == 0) ? "Extracting signature" : "Extracting sparse chunk", buff);
+				printf(" - %s %s\n", (i == 0) ? _("Extracting signature") : _("Extracting sparse chunk"), buff);
 				i += 1;
 				f = create_file(tmpp);	//, parseoct(buff + 100, 8));
 				if (f == NULL) {
-					printf(" - Error creating %s\n", tmpp);
+					printf(_(" - Error creating %s\n"), tmpp);
 					return 0;
 				}
 				snprintf(flashfile, strlen(basenamee(tmpp))-3, "%s", basenamee(tmpp));
@@ -1693,7 +1693,7 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 		{
 			bytes_read = fread(buff, 1, 512, a);
 			if (bytes_read != 512) {
-				printf(" - Short read on %s: Expected 512, got %d\n", filename, (int)bytes_read);
+				printf(_(" - Short read on %s: Expected 512, got %d\n"), filename, (int)bytes_read);
 				return 0;
 			}
 
@@ -1704,7 +1704,7 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 			{
 				if (fwrite(buff, 1, bytes_read, f) != bytes_read)
 				{
-					printf(" - Failed write\n");
+					printf(_(" - Failed write\n"));
 					fclose(f);
 					f = NULL;
 				}
@@ -1727,10 +1727,10 @@ static int process_sins(HANDLE dev, FILE *a, char *filename, char *full_path, ch
 
 			fp_size = file_size(tmpp);
 
-			printf(" - Uploading signature %s\n", tmpp);
+			printf(_(" - Uploading signature %s\n"), tmpp);
 
 			if (!fp_size) {
-				printf("      Error, size of the %s is 0!\n", tmpp);
+				printf(_("      Error, size of the %s is 0!\n"), tmpp);
 				return 0;
 			}
 
@@ -1739,12 +1739,12 @@ repeat_here:
 			printf("      %s\n", command);
 
 			if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
-				printf("      Error writing signature command!\n");
+				printf(_("      Error writing signature command!\n"));
 				return 0;
 			}
 
 			if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-				printf("      Error, no signature DATA reply!\n");
+				printf(_("      Error, no signature DATA reply!\n"));
 				return 0;
 			}
 
@@ -1752,13 +1752,13 @@ repeat_here:
 			{
 				if (memcmp(tmp_reply, "FAIL", 4) == 0 && !is_2021_device)
 				{
-					printf("      device from 2021 and up?\n");
+					printf(_("      device from 2021 and up?\n"));
 					is_2021_device = true;
 					goto repeat_here;
 				}
 				else
 				{
-					printf("      Error, signature DATA reply size: %zu less than expected: 12!\n", strlen(tmp_reply));
+					printf(_("      Error, signature DATA reply size: %zu less than expected: 12!\n"), strlen(tmp_reply));
 					return 0;
 				}
 			}
@@ -1768,7 +1768,7 @@ repeat_here:
 			{
 				if (memcmp(tmp_reply+4, command+9, 8) != 0)
 				{
-					printf("      Error, signature DATA reply string: %s is not equal to expected: DATA%s!\n", tmp_reply, command+10);
+					printf(_("      Error, signature DATA reply string: %s is not equal to expected: DATA%s!\n"), tmp_reply, command+10);
 					return 0;
 				}
 			}
@@ -1776,25 +1776,25 @@ repeat_here:
 			{
 				if (memcmp(tmp_reply+4, command+10, 8) != 0)
 				{
-					printf("      Error, signature DATA reply string: %s is not equal to expected: DATA%s!\n", tmp_reply, command+10);
+					printf(_("      Error, signature DATA reply string: %s is not equal to expected: DATA%s!\n"), tmp_reply, command+10);
 					return 0;
 				}
 			}
 
 			if ((buffer = (char *)malloc(fp_size+1)) == NULL) {
-				printf("      Error allocating buffer!\n");
+				printf(_("      Error allocating buffer!\n"));
 				return 0;
 			}
 			buffer[fp_size] = '\0';
 
 			if ((fp = fopen64(tmpp, "rb")) == NULL) {
-				printf("      Error opening %s for read!\n", tmpp);
+				printf(_("      Error opening %s for read!\n"), tmpp);
 				if (buffer) free(buffer);
 				return 0;
 			}
 
 			if (fread(buffer, 1, fp_size, fp) < fp_size) {
-				printf("      Error storing 0x%x bytes to buffer!\n", fp_size);
+				printf(_("      Error storing 0x%x bytes to buffer!\n"), fp_size);
 				if (buffer) free(buffer);
 				fclose(fp);
 				return 0;
@@ -1803,7 +1803,7 @@ repeat_here:
 			fclose(fp);
 
 			if (transfer_bulk_async(dev, EP_OUT, buffer, fp_size, USB_TIMEOUT, 1) < 1) {
-				printf("      Error writing signature!\n");
+				printf(_("      Error writing signature!\n"));
 				if (buffer) free(buffer);
 				return 0;
 			}
@@ -1811,21 +1811,21 @@ repeat_here:
 			if (buffer) free(buffer);
 
 			if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-				printf("      Error, no sinature OKAY reply!\n");
+				printf(_("      Error, no sinature OKAY reply!\n"));
 				return 0;
 			}
 
 			if (strlen(tmp_reply) < 4) {
-				printf("      Error, signature reply less than 4, got: %zu bytes!\n", strlen(tmp_reply));
+				printf(_("      Error, signature reply less than 4, got: %zu bytes!\n"), strlen(tmp_reply));
 				return 0;
 			}
 
 			if (memcmp(tmp_reply, "OKAY", 4) == 0) {
-				printf("      OKAY.\n");
+				printf(_("      OKAY.\n"));
 			}
 			else
 			{
-				printf("      Error, didn't got signature OKAY reply! Got reply: %s\n", tmp_reply);
+				printf(_("      Error, didn't got signature OKAY reply! Got reply: %s\n"), tmp_reply);
 				return 0;
 			}
 
@@ -1836,24 +1836,24 @@ repeat_here:
 
 				if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1)
 				{
-					printf("      Error writing signature command!\n");
+					printf(_("      Error writing signature command!\n"));
 					return 0;
 				}
 
 				if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 				{
-					printf("      Error, no signature OKAY reply!\n");
+					printf(_("      Error, no signature OKAY reply!\n"));
 					return 0;
 				}
 
 				if (memcmp(tmp_reply, "OKAY", 4) != 0)
 				{
-					printf("      Error, signature OKAY reply, got reply: %s!\n", tmp_reply);
+					printf(_("      Error, signature OKAY reply, got reply: %s!\n"), tmp_reply);
 					return 0;
 				}
 				else
 				{
-					printf("      OKAY.\n");
+					printf(_("      OKAY.\n"));
 				}
 			}
 		}
@@ -1867,10 +1867,10 @@ repeat_here:
 
 			fp_size = file_size(tmpp);
 
-			printf(" - Uploading sparse chunk %s\n", tmpp);
+			printf(_(" - Uploading sparse chunk %s\n"), tmpp);
 
 			if (!fp_size) {
-				printf("      Error, size of the %s is 0!\n", tmpp);
+				printf(_("      Error, size of the %s is 0!\n"), tmpp);
 				return 0;
 			}
 
@@ -1878,27 +1878,27 @@ repeat_here:
 			printf("      %s\n", command);
 
 			if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
-				printf("      Error writing download command!\n");
+				printf(_("      Error writing download command!\n"));
 				return 0;
 			}
 
 			if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-				printf("      Error, no download DATA reply!\n");
+				printf(_("      Error, no download DATA reply!\n"));
 				return 0;
 			}
 
 			if (strlen(tmp_reply) != 12) {
-				printf("      Error, download DATA reply size: %zu less than expected: 12!\n", strlen(tmp_reply));
+				printf(_("      Error, download DATA reply size: %zu less than expected: 12!\n"), strlen(tmp_reply));
 				return 0;
 			}
 
 			if (memcmp(tmp_reply+4, command+9, 8) != 0) {
-				printf("      Error, download DATA reply string: %s is not equal to expected: DATA%s!\n", tmp_reply, command+9);
+				printf(_("      Error, download DATA reply string: %s is not equal to expected: DATA%s!\n"), tmp_reply, command+9);
 				return 0;
 			}
 
 			if ((fp = fopen64(tmpp, "rb")) == NULL) {
-				printf("      Error opening %s for read!\n", tmpp);
+				printf(_("      Error opening %s for read!\n"), tmpp);
 				return 0;
 			}
 
@@ -1908,7 +1908,7 @@ repeat_here:
 				/*printf("         Processing chunk %d: 0x%x bytes\n", g, (fp_size < 0x200000) ? fp_size : 0x200000);*/
 				if ((buffer = (char *)malloc(0x200001)) == NULL)
 				{
-					printf("         Error allocating buffer for chunk: %d!\n", g);
+					printf(_("         Error allocating buffer for chunk: %d!\n"), g);
 					fclose(fp);
 					return 0;
 				}
@@ -1919,7 +1919,7 @@ repeat_here:
 					fp_read = fread(buffer, 1, fp_size, fp);
 					if (fp_read < fp_size)
 					{
-						printf("         Error reading chunk: %d, got: 0x%zx but expected: 0x%x!\n", g, fp_read, fp_size);
+						printf(_("         Error reading chunk: %d, got: 0x%zx but expected: 0x%x!\n"), g, fp_read, fp_size);
 						fclose(fp);
 						if (buffer) free(buffer);
 						return 0;
@@ -1930,7 +1930,7 @@ repeat_here:
 					fp_read = fread(buffer, 1, 0x200000, fp);
 					if (fp_read < 0x200000)
 					{
-						printf("         Error reading chunk: %d, got: 0x%zx but expected: 0x200000!\n", g, fp_read);
+						printf(_("         Error reading chunk: %d, got: 0x%zx but expected: 0x200000!\n"), g, fp_read);
 						fclose(fp);
 						if (buffer) free(buffer);
 						return 0;
@@ -1938,7 +1938,7 @@ repeat_here:
 				}
 
 				if (transfer_bulk_async(dev, EP_OUT, buffer, fp_read, USB_TIMEOUT, 1) < 1) {
-					printf("         Error uploading chunk %d!\n", g);
+					printf(_("         Error uploading chunk %d!\n"), g);
 					fclose(fp);
 					if (buffer) free(buffer);
 					return 0;
@@ -1951,21 +1951,21 @@ repeat_here:
 			fclose(fp);
 
 			if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-				printf("      Error, no download OKAY reply!\n");
+				printf(_("      Error, no download OKAY reply!\n"));
 				return 0;
 			}
 
 			if (strlen(tmp_reply) < 4) {
-				printf("      Error, download reply less than 4, got: %zu bytes!\n", strlen(tmp_reply));
+				printf(_("      Error, download reply less than 4, got: %zu bytes!\n"), strlen(tmp_reply));
 				return 0;
 			}
 
 			if (memcmp(tmp_reply, "OKAY", 4) != 0) {
-				printf("      Error, didn't got download OKAY reply! Got reply: %s\n", tmp_reply);
+				printf(_("      Error, didn't got download OKAY reply! Got reply: %s\n"), tmp_reply);
 				return 0;
 			}
 
-			printf("      OKAY.\n");
+			printf(_("      OKAY.\n"));
 
 			if (i == 2)
 			{
@@ -1975,18 +1975,18 @@ repeat_here:
 					{
 						snprintf(command, sizeof(command), "getvar:has-slot:%s", flashfile);
 						if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
-							printf(" - Error writing command %s!\n", command);
+							printf(_(" - Error writing command %s!\n"), command);
 							return 0;
 						}
 
 						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-							printf("      Error, no %s reply!\n", command);
+							printf(_("      Error, no %s reply!\n"), command);
 							return 0;
 						}
 
 						if (memcmp(tmp_reply, "yes", 3) == 0)
 						{
-							printf("      Partition: %s have slot: %s\n", flashfile, tmp_reply);
+							printf(_("      Partition: %s have slot: %s\n"), flashfile, tmp_reply);
 							has_slot = true;
 						}
 
@@ -2023,26 +2023,26 @@ repeat_here:
 					printf("      %s\n", command);
 
 					if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
-						printf("      Error writing %s!\n", command);
+						printf(_("      Error writing %s!\n"), command);
 						return 0;
 					}
 
 					if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-						printf("      Error, no erase OKAY reply!\n");
+						printf(_("      Error, no erase OKAY reply!\n"));
 						return 0;
 					}
 
 					if (strlen(tmp_reply) < 4) {
-						printf("      Error, erase reply less than 4, got: %zu bytes!\n", strlen(tmp_reply));
+						printf(_("      Error, erase reply less than 4, got: %zu bytes!\n"), strlen(tmp_reply));
 						return 0;
 					}
 
 					if (memcmp(tmp_reply, "OKAY", 4) != 0) {
-						printf("      Error, didn't got erase OKAY reply! Got reply: %s\n", tmp_reply);
+						printf(_("      Error, didn't got erase OKAY reply! Got reply: %s\n"), tmp_reply);
 						return 0;
 					}
 
-					printf("      OKAY.\n");
+					printf(_("      OKAY.\n"));
 				}
 			}
 
@@ -2085,26 +2085,26 @@ repeat_here:
 			}
 
 			if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
-				printf("      Error writing %s!\n", command);
+				printf(_("      Error writing %s!\n"), command);
 				return 0;
 			}
 
 			if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-				printf("      Error, no %s OKAY reply!\n", endcommand);
+				printf(_("      Error, no %s OKAY reply!\n"), endcommand);
 				return 0;
 			}
 
 			if (strlen(tmp_reply) < 4) {
-				printf("      Error, %s reply less than 4, got: %zu bytes!\n", endcommand, strlen(tmp_reply));
+				printf(_("      Error, %s reply less than 4, got: %zu bytes!\n"), endcommand, strlen(tmp_reply));
 				return 0;
 			}
 
 			if (memcmp(tmp_reply, "OKAY", 4) != 0) {
-				printf("      Error, didn't got %s OKAY reply! Got reply: %s\n", endcommand, tmp_reply);
+				printf(_("      Error, didn't got %s OKAY reply! Got reply: %s\n"), endcommand, tmp_reply);
 				return 0;
 			}
 
-			printf("      OKAY.\n");
+			printf(_("      OKAY.\n"));
 		}
 
 		remove(tmpp);
@@ -2202,7 +2202,7 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 						pd += 1;
 					} else if (!pd_full) {
 						pd_full = 1;
-						printf("Error: MAX_PARTITIONDELIVERY_FILES reached, skipping rest of partition files!\n");
+						printf(_("Error: MAX_PARTITIONDELIVERY_FILES reached, skipping rest of partition files!\n"));
 					}
 				}
 			}
@@ -2228,7 +2228,7 @@ static void XMLCALL start_element(void *data, const char *element, const char **
 						td3++;
 					} else if (!td3_full) {
 						td3_full = 1;
-						printf("Error: MAX_BOOTDELIVERY_ENTRIES reached, skipping rest of boot images!\n");
+						printf(_("Error: MAX_BOOTDELIVERY_ENTRIES reached, skipping rest of boot images!\n"));
 					}
 				}
 			}
@@ -2248,7 +2248,7 @@ static void XMLCALL end_element(void *data, const char *element)
 			td1++;
 		else if (!td1_full) {
 			td1_full = 1;
-			printf("Error: MAX_BOOTDELIVERY_CONFIGS reached, skipping rest of configurations!\n");
+			printf(_("Error: MAX_BOOTDELIVERY_CONFIGS reached, skipping rest of configurations!\n"));
 		}
 	}
 
@@ -2280,13 +2280,13 @@ static int parse_xml(char *xml_file) {
 
 	XML_Parser parser = XML_ParserCreate(NULL);
 	if (!parser) {
-		printf("Couldn't allocate memory for xml parser!\n");
+		printf(_("Couldn't allocate memory for xml parser!\n"));
 		return 0;
 	}
 
 	fp = fopen64(xml_file, "rb");
 	if (fp == NULL) {
-		printf("Failed to open %s file\n", xml_file);
+		printf(_("Failed to open %s file\n"), xml_file);
 		return 0;
 	}
 
@@ -2337,16 +2337,16 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 	/* some devices have some units which exceeds sizeof uint16_t */
 	bool is_32bit = false;
 
-	printf("Processing %s\n", ta_file);
+	printf(_("Processing %s\n"), ta_file);
 
 	if ((unit_data = (char *)malloc(MAX_UNIT_LINE_LEN)) == NULL)
 	{
-		printf(" - Error allocating unit_data!\n");
+		printf(_(" - Error allocating unit_data!\n"));
 		return 0;
 	}
 
 	if ((fp = fopen64(ta_file, "rb")) == NULL) {
-		printf(" - Unable to open %s!\n", ta_file);
+		printf(_(" - Unable to open %s!\n"), ta_file);
 		return 0;
 	}
 
@@ -2364,7 +2364,7 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 				if (line[0] >= 0x30 && line[0] <= 0x39 && line[1] >= 0x30 && line[1] <= 0x39)
 				{
 					partition = atoi(line);
-					printf(" - Partition: %u\n", partition);
+					printf(_(" - Partition: %u\n"), partition);
 				}
 				break;
 
@@ -2384,7 +2384,7 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 						unit[8] = '\0';
 						to_uppercase(unit);
 						sscanf(unit, "%x", &unit_dec);
-						printf(" - Unit: %X (%u)\n", unit_dec, unit_dec);
+						printf(_(" - Unit: %X (%u)\n"), unit_dec, unit_dec);
 
 						/*
 						 * in case of 32 bit unit size!
@@ -2408,14 +2408,14 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 							{
 								if (strlen(line) == 16)
 								{
-									printf(" - Found specific unit which don't contain data.\n");
+									printf(_(" - Found specific unit which don't contain data.\n"));
 									the_rest = 0;
 									finished = 1;
 									unit_sz = 0;
 								}
 								else
 								{
-									printf(" - Error: corrupted unit! Skipping this unit!\n\n");
+									printf(_(" - Error: corrupted unit! Skipping this unit!\n\n"));
 									the_rest = 0;
 									break;
 								}
@@ -2425,7 +2425,7 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 								memcpy(unit_sz_tmp, line+8, 8);
 								unit_sz_tmp[8] = '\0';
 								sscanf(unit_sz_tmp, "%x", &unit_sz);
-								printf(" - Unit size: 0x%x\n", unit_sz);
+								printf(_(" - Unit size: 0x%x\n"), unit_sz);
 								memset(unit_data, '\0', MAX_UNIT_LINE_LEN);
 								i = strlen(line);
 								if (i)
@@ -2454,14 +2454,14 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 							{
 								if (strlen(line) == 12)
 								{
-									printf(" - Found specific unit which don't contain data.\n");
+									printf(_(" - Found specific unit which don't contain data.\n"));
 									the_rest = 0;
 									finished = 1;
 									unit_sz = 0;
 								}
 								else
 								{
-									printf(" - Error: corrupted unit! Skipping this unit!\n\n");
+									printf(_(" - Error: corrupted unit! Skipping this unit!\n\n"));
 									the_rest = 0;
 									break;
 								}
@@ -2471,7 +2471,7 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 								memcpy(unit_sz_tmp, line+8, 4);
 								unit_sz_tmp[4] = '\0';
 								sscanf(unit_sz_tmp, "%x", &unit_sz);
-								printf(" - Unit size: 0x%x\n", unit_sz);
+								printf(_(" - Unit size: 0x%x\n"), unit_sz);
 								memset(unit_data, '\0', MAX_UNIT_LINE_LEN);
 								i = strlen(line);
 								if (i)
@@ -2538,12 +2538,12 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 						    memcmp(unit, "000008A2", 8) == 0 || /* device name */
 						    memcmp(unit, "00001324", 8) == 0 || /* device id */
 						    memcmp(unit, "0001046B", 8) == 0) { /* drm key */
-							printf(" - Skipping unit %X\n", unit_dec);
+							printf(_(" - Skipping unit %X\n"), unit_dec);
 							continue;
 						}
 
 						if ((unit_total_temp = (char *)malloc(unit_sz+8)) == NULL) {
-							printf(" - Error allocating unit_temp!\n");
+							printf(_(" - Error allocating unit_temp!\n"));
 							ret = 0;
 							goto finish_proced_ta;
 						}
@@ -2558,25 +2558,25 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 						printf("      %s\n", command);
 
 						if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
-							printf("      Error writing download command!\n");
+							printf(_("      Error writing download command!\n"));
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
 						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-							printf("      Error, no download DATA reply!\n");
+							printf(_("      Error, no download DATA reply!\n"));
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
 						if (strlen(tmp_reply) != 12) {
-							printf("      Error, download DATA reply size: %zu less than expected: 12!\n", strlen(tmp_reply));
+							printf(_("      Error, download DATA reply size: %zu less than expected: 12!\n"), strlen(tmp_reply));
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
 						if (memcmp(tmp_reply+4, command+9, 8) != 0) {
-							printf("      Error, download DATA reply string: %s is not equal to expected: DATA%s!\n", tmp_reply, command+9);
+							printf(_("      Error, download DATA reply string: %s is not equal to expected: DATA%s!\n"), tmp_reply, command+9);
 							ret = 0;
 							goto finish_proced_ta;
 						}
@@ -2584,60 +2584,60 @@ static int proced_ta_file(char *ta_file, HANDLE dev)
 						if (unit_sz > 0)
 						{
 							if (transfer_bulk_async(dev, EP_OUT, unit_data, unit_sz, USB_TIMEOUT, 1) < 1) {
-								printf("      Error writing unit data!\n");
+								printf(_("      Error writing unit data!\n"));
 								ret = 0;
 								goto finish_proced_ta;
 							}
 						}
 
 						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-							printf("      Error, no OKAY reply!\n");
+							printf(_("      Error, no OKAY reply!\n"));
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
 						if (strlen(tmp_reply) < 4) {
-							printf("      Error, reply less than 4, got: %zu bytes!\n", strlen(tmp_reply));
+							printf(_("      Error, reply less than 4, got: %zu bytes!\n"), strlen(tmp_reply));
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
 						if (memcmp(tmp_reply, "OKAY", 4) != 0) {
-							printf("      Error, didn't got OKAY reply! Got reply: %s\n", tmp_reply);
+							printf(_("      Error, didn't got OKAY reply! Got reply: %s\n"), tmp_reply);
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
-						printf("      OKAY.\n");
+						printf(_("      OKAY.\n"));
 
 						snprintf(command, sizeof(command), "Write-TA:%u:%u", partition, unit_dec);
 						printf("      %s\n", command);
 
 						if (transfer_bulk_async(dev, EP_OUT, command, strlen(command), USB_TIMEOUT, 1) < 1) {
-							printf("      Error writing command WriteTA!\n");
+							printf(_("      Error writing command WriteTA!\n"));
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
 						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0)) {
-							printf("      Error, no OKAY reply!\n");
+							printf(_("      Error, no OKAY reply!\n"));
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
 						if (strlen(tmp_reply) < 4) {
-							printf("      Error, reply less than 4, got: %zu bytes!\n", strlen(tmp_reply));
+							printf(_("      Error, reply less than 4, got: %zu bytes!\n"), strlen(tmp_reply));
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
 						if (memcmp(tmp_reply, "OKAY", 4) != 0) {
-							printf("      Error, didn't got OKAY reply! Got reply: %s\n", tmp_reply);
+							printf(_("      Error, didn't got OKAY reply! Got reply: %s\n"), tmp_reply);
 							ret = 0;
 							goto finish_proced_ta;
 						}
 
-						printf("      OKAY.\n");
+						printf(_("      OKAY.\n"));
 
 						if (unit_total_temp)
 							free(unit_total_temp);
@@ -2682,10 +2682,10 @@ static unsigned long get_free_space(char *pszDrive)
 				 (PULARGE_INTEGER)&i64FreeBytes);
 		if (fResult)
 		{
-			printf ("\nDetermining available free space by GetDiskFreeSpaceEx:\n\n");
-			printf ("  Available space to caller    = %llu MB\n", i64FreeBytesToCaller / (1024 * 1024));
-			printf ("  Total space on current drive = %llu MB\n", i64TotalBytes / (1024 * 1024));
-			printf ("  Free space on drive          = %llu MB\n", i64FreeBytes / (1024 * 1024));
+			printf (_("\nDetermining available free space by GetDiskFreeSpaceEx:\n\n"));
+			printf (_("  Available space to caller    = %llu MB\n"), i64FreeBytesToCaller / (1024 * 1024));
+			printf (_("  Total space on current drive = %llu MB\n"), i64TotalBytes / (1024 * 1024));
+			printf (_("  Free space on drive          = %llu MB\n"), i64FreeBytes / (1024 * 1024));
 		}
 	}
 	else
@@ -2702,15 +2702,15 @@ static unsigned long get_free_space(char *pszDrive)
 			i64TotalBytes = (unsigned long long)(dwTotalClusters * dwSectPerClust * dwBytesPerSect);
 			i64FreeBytes = (unsigned long long)(dwFreeClusters * dwSectPerClust * dwBytesPerSect);
 
-			printf ("\nDetermining available free space by GetDiskFreeSpace:\n\n");
-			printf ("  Free space                   = %llu MB\n", i64FreeBytes / (1024 * 1024));
-			printf ("  Total space on current drive = %llu MB\n", i64TotalBytes / (1024 * 1024));
+			printf (_("\nDetermining available free space by GetDiskFreeSpace:\n\n"));
+			printf (_("  Free space                   = %llu MB\n"), i64FreeBytes / (1024 * 1024));
+			printf (_("  Total space on current drive = %llu MB\n"), i64TotalBytes / (1024 * 1024));
 		}
 	}
 
 	if (!fResult)
 	{
-		printf ("\nError: %lu:  unable to determine available free space for current drive!\n", GetLastError());
+		printf (_("\nError: %lu:  unable to determine available free space for current drive!\n"), GetLastError());
 		return 0;
 	}
 
@@ -2725,17 +2725,17 @@ static unsigned long get_free_space(char *fnPath)
 
 	if ((statvfs(fnPath, &fiData)) < 0)
 	{
-		printf("  Error: unable to determine available free space for current drive!\n");
+		printf(_("  Error: unable to determine available free space for current drive!\n"));
 		return 0;
 	}
 	else
 	{
-		printf ("\nDetermining available free space:\n\n");
-		printf ("  Available space to caller    = %llu MB\n",
+		printf (_("\nDetermining available free space:\n\n"));
+		printf (_("  Available space to caller    = %llu MB\n"),
 			 (unsigned long long)((fiData.f_bsize * fiData.f_bavail) / 1024 / 1024));
-		printf ("  Total space on current drive = %llu MB\n",
+		printf (_("  Total space on current drive = %llu MB\n"),
 			 (unsigned long long)((fiData.f_bsize * fiData.f_blocks) / 1024 / 1024));
-		printf ("  Free space on drive          = %llu MB\n",
+		printf (_("  Free space on drive          = %llu MB\n"),
 			 (unsigned long long)((fiData.f_bsize * fiData.f_bfree) / 1024 / 1024));
 	}
 
@@ -2791,7 +2791,7 @@ int main(int argc, char *argv[])
 		goto pauza;
 	}
 #endif
-
+	NLS_INIT();
 	printf("--------------------------------------------------------\n");
 	printf("            %s v%d by Munjeni @ 2017/2025           \n", progname, VERSION);
 	printf("--------------------------------------------------------\n");
@@ -2800,8 +2800,8 @@ int main(int argc, char *argv[])
 
 	if (available_mb < 10240)
 	{
-		printf("  Error! You do not have needed 10240 MB available free space on your\n");
-		printf("  disk drive! You have only %lu MB free.\n", available_mb);
+		printf(_("  Error! You do not have needed 10240 MB available free space on your\n"));
+		printf(_("  disk drive! You have only %lu MB free.\n"), available_mb);
 		ret = 1;
 		goto pauza;
 	}
@@ -2816,20 +2816,20 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
 	if (argc < 2)
 	{
-		printf("\nOptional step! Type 'y' and press ENTER if you need GordonGate flash driver, or type 'n' to skip.\n");
-		printf("This creates GordonGate driver installer in the same dir with %s!\n", progname);
+		printf(_("\nOptional step! Type 'y' and press ENTER if you need GordonGate flash driver, or type 'n' to skip.\n"));
+		printf(_("This creates GordonGate driver installer in the same dir with %s!\n"), progname);
 		if (scanf(" %c", &ch)) { }
 		if (ch == 'y' || ch == 'Y')
 		{
 			FILE *gg = fopen("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi", "wb");
 			if (gg == NULL) {
-				printf("Unable to create Sony_Mobile_Software_Update_Drivers_x64_Setup.msi!\n");
+				printf(_("Unable to create Sony_Mobile_Software_Update_Drivers_x64_Setup.msi!\n"));
 				ret = 1;
 				goto pauza;
 			}
 			fwrite(GordonGate, 1, GordonGate_len, gg);
 			fclose(gg);
-			printf("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi created.\n");
+			printf(_("Sony_Mobile_Software_Update_Drivers_x64_Setup.msi created.\n"));
 			goto pauza;
 		}
 	}
@@ -2839,7 +2839,7 @@ int main(int argc, char *argv[])
 #ifdef _WIN32
 	device = open_dev(VID, PID);
 	if (device[0] == '\0') {
-		printf("\nNo usb device with vid:0x%04x pid:0x%04x !\n", VID, PID);
+		printf(_("\nNo usb device with vid:0x%04x pid:0x%04x !\n"), VID, PID);
 		ret = 1;
 		goto pauza;
 	}
@@ -2884,7 +2884,7 @@ int main(int argc, char *argv[])
 
 	if (libusb_init(NULL))
 	{
-		printf("libusb init error!\n");
+		printf(_("libusb init error!\n"));
 		ret = 1;
 		goto pauza;
 	}
@@ -2892,7 +2892,7 @@ int main(int argc, char *argv[])
 	dev = libusb_open_device_with_vid_pid(NULL, VID, PID);
 	if (dev == NULL)
 	{
-		printf("\nNo usb device with vid:0x%04x pid:0x%04x !\n", VID, PID);
+		printf(_("\nNo usb device with vid:0x%04x pid:0x%04x !\n"), VID, PID);
 		ret = 1;
 		libusb_exit(NULL);
 		goto pauza;
@@ -2904,56 +2904,56 @@ int main(int argc, char *argv[])
 	ret = libusb_get_port_numbers(device, port_path, sizeof(port_path));
 	if (ret > 0)
 	{
-		printf("\nDevice properties:\n");
-		printf("        bus number: %d\n", bus);
-		printf("         port path: %d", port_path[0]);
+		printf(_("\nDevice properties:\n"));
+		printf(_("        bus number: %d\n"), bus);
+		printf(_("         port path: %d"), port_path[0]);
 
 		for (i=1; i<ret; i++) {
 			printf("->%d", port_path[i]);
 		}
-		printf(" (from root hub)\n");
+		printf(_(" (from root hub)\n"));
 	}
 
 	ret = libusb_get_device_speed(device);
 	if ((ret < 0) || (ret > 4))
 		ret = 0;
-	printf("             speed: %s\n", speed_name[ret]);
+	printf(_("             speed: %s\n"), speed_name[ret]);
 
-	printf("\nReading device descriptor:\n");
+	printf(_("\nReading device descriptor:\n"));
 	libusb_get_device_descriptor(device, &dev_desc);
-	printf("            length: %d\n", dev_desc.bLength);
-	printf("      device class: %d\n", dev_desc.bDeviceClass);
-	printf("               S/N: %d\n", dev_desc.iSerialNumber);
-	printf("           VID:PID: 0x%X:0x%X\n", dev_desc.idVendor, dev_desc.idProduct);
-	printf("         bcdDevice: 0x%X\n", dev_desc.bcdDevice);
-	printf("   iMan:iProd:iSer: %d:%d:%d\n", dev_desc.iManufacturer, dev_desc.iProduct, dev_desc.iSerialNumber);
-	printf("          nb confs: %d\n", dev_desc.bNumConfigurations);
+	printf(_("            length: %d\n"), dev_desc.bLength);
+	printf(_("      device class: %d\n"), dev_desc.bDeviceClass);
+	printf(_("               S/N: %d\n"), dev_desc.iSerialNumber);
+	printf(_("           VID:PID: 0x%X:0x%X\n"), dev_desc.idVendor, dev_desc.idProduct);
+	printf(_("         bcdDevice: 0x%X\n"), dev_desc.bcdDevice);
+	printf(_("   iMan:iProd:iSer: %d:%d:%d\n"), dev_desc.iManufacturer, dev_desc.iProduct, dev_desc.iSerialNumber);
+	printf(_("          nb confs: %d\n"), dev_desc.bNumConfigurations);
 
 	/* Copy the string descriptors for easier parsing */
 	string_index[0] = dev_desc.iManufacturer;
 	string_index[1] = dev_desc.iProduct;
 	string_index[2] = dev_desc.iSerialNumber;
 
-	printf("\nReading configuration descriptors:\n");
+	printf(_("\nReading configuration descriptors:\n"));
 	libusb_get_config_descriptor(device, 0, &conf_desc);
 	nb_ifaces = conf_desc->bNumInterfaces;
-	printf("             nb interfaces: %d\n", nb_ifaces);
+	printf(_("             nb interfaces: %d\n"), nb_ifaces);
 
 	if (nb_ifaces > 0)
 		first_iface = conf_desc->usb_interface[0].altsetting[0].bInterfaceNumber;
 
 	for (i=0; i < nb_ifaces; ++i)
 	{
-		printf("              interface[%d]: id = %d\n",
+		printf(_("              interface[%d]: id = %d\n"),
 					i,
 					conf_desc->usb_interface[i].altsetting[0].bInterfaceNumber);
 
 		for (j=0; j < conf_desc->usb_interface[i].num_altsetting; ++j)
 		{
-			printf("interface[%d].altsetting[%d]: num endpoints = %d\n",
+			printf(_("interface[%d].altsetting[%d]: num endpoints = %d\n"),
 				i, j, conf_desc->usb_interface[i].altsetting[j].bNumEndpoints);
 
-			printf("   Class.SubClass.Protocol: 0x%X 0x%X 0x%X\n",
+			printf(_("   Class.SubClass.Protocol: 0x%X 0x%X 0x%X\n"),
 				conf_desc->usb_interface[i].altsetting[j].bInterfaceClass,
 				conf_desc->usb_interface[i].altsetting[j].bInterfaceSubClass,
 				conf_desc->usb_interface[i].altsetting[j].bInterfaceProtocol);
@@ -2961,7 +2961,7 @@ int main(int argc, char *argv[])
 			for (k=0; k < conf_desc->usb_interface[i].altsetting[j].bNumEndpoints; ++k)
 			{
 				endpoint = &conf_desc->usb_interface[i].altsetting[j].endpoint[k];
-				printf("       endpoint[%d].address: 0x%02X\n", k, endpoint->bEndpointAddress);
+				printf(_("       endpoint[%d].address: 0x%02X\n"), k, endpoint->bEndpointAddress);
 
 				if (conf_desc->usb_interface[i].altsetting[j].bNumEndpoints == 2)
 				{
@@ -2971,8 +2971,8 @@ int main(int argc, char *argv[])
 					if (k == 0)
 						endpoint_in = endpoint->bEndpointAddress;
 				}
-				printf("           max packet size: 0x%X\n", endpoint->wMaxPacketSize);
-				printf("          polling interval: 0x%X\n", endpoint->bInterval);
+				printf(_("           max packet size: 0x%X\n"), endpoint->wMaxPacketSize);
+				printf(_("          polling interval: 0x%X\n"), endpoint->bInterval);
 			}
 		}
 	}
@@ -2981,73 +2981,73 @@ int main(int argc, char *argv[])
 
 	for (iface=0; iface < nb_ifaces; ++iface)
 	{
-		printf("\nSet configuration:");
+		printf(_("\nSet configuration:"));
 
 		ret = libusb_set_configuration(dev, 1);
 
 		if (ret == LIBUSB_SUCCESS)
 		{
-			printf(" succed.\n");
+			printf(_(" succed.\n"));
 		}
 		else
 		{
-			printf(" fail with error: %s\n", libusb_error_name(ret));
+			printf(_(" fail with error: %s\n"), libusb_error_name(ret));
 			ret = 1;
 			goto release;
 		}
 
-		printf("\nClaiming interface %d:", iface);
+		printf(_("\nClaiming interface %d:"), iface);
 		ret = libusb_claim_interface(dev, iface);
 
 
 		if ((ret != LIBUSB_SUCCESS) && libusb_has_capability(LIBUSB_CAP_SUPPORTS_DETACH_KERNEL_DRIVER) && (libusb_kernel_driver_active(dev, iface) > 0))
 		{
-			printf(" failed.\n");
+			printf(_(" failed.\n"));
 
 			/* Try to detach the kernel driver */
-			printf("A kernel driver is active, trying to detach it:");
+			printf(_("A kernel driver is active, trying to detach it:"));
 			ret = libusb_detach_kernel_driver(dev, iface);
 			if (ret == LIBUSB_SUCCESS)
 			{
-				printf(" succed.\n");
+				printf(_(" succed.\n"));
 				iface_detached = iface;
-				printf("Claiming interface again:");
+				printf(_("Claiming interface again:"));
 				ret = libusb_claim_interface(dev, iface);
 			}
 		}
 
 		if (ret != LIBUSB_SUCCESS)
 		{
-			printf(" failed with error: %s\n", libusb_error_name(ret));
+			printf(_(" failed with error: %s\n"), libusb_error_name(ret));
 			ret = 1;
 			goto release;
 		}
 		else
 		{
-			printf(" succed.\n");
+			printf(_(" succed.\n"));
 		}
 	}
 
-	printf("\nReading string descriptors:\n");
+	printf(_("\nReading string descriptors:\n"));
 	for (i=0; i<3; ++i)
 	{
 		if (string_index[i] == 0)
 			continue;
 
 		if (libusb_get_string_descriptor_ascii(dev, string_index[i], (unsigned char*)string, 128) >= 0)
-			printf("   String (0x%02X): \"%s\"\n", string_index[i], string);
+			printf(_("   String (0x%02X): \"%s\"\n"), string_index[i], string);
 	}
 
 	/* Read the OS String Descriptor */
 	if (libusb_get_string_descriptor_ascii(dev, 0xEE, (unsigned char*)string, 128) >= 0)
-		printf("   String (0x%02X): \"%s\"\n", 0xEE, string);
+		printf(_("   String (0x%02X): \"%s\"\n"), 0xEE, string);
 	printf("\n");
 
 #else
 	dev = get_flashmode(VID, PID);
 
 	if (dev == NULL) {
-		printf("\nNo usb device with vid:0x%04x pid:0x%04x !\n", VID, PID);
+		printf(_("\nNo usb device with vid:0x%04x pid:0x%04x !\n"), VID, PID);
 		ret = 1;
 		goto pauza;
 	}
@@ -3065,11 +3065,11 @@ int main(int argc, char *argv[])
 
 	if (stat(sinfil, &filestat) < 0)
 	{
-		printf("\nupdate.xml not exist in current folder!\n");
+		printf(_("\nupdate.xml not exist in current folder!\n"));
 	}
 	else
 	{
-		printf("\nDo you want to keep userdata? Type 'y' and press ENTER to confirm, or type 'n' to erase userdata.\n");
+		printf(_("\nDo you want to keep userdata? Type 'y' and press ENTER to confirm, or type 'n' to erase userdata.\n"));
 		if (scanf(" %c", &ch)) { }
 		if (ch == 'y' || ch == 'Y')
 		{
@@ -3081,7 +3081,7 @@ int main(int argc, char *argv[])
 
 	if (argc < 2)
 	{
-		printf("\nReboot mode at the end of flashing:\n  type 'a' for reboot to android, type 'f' for reboot to fastboot, type 'd' for reboot to fastbootd, type 'r' for reboot to recovery, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n");
+		printf(_("\nReboot mode at the end of flashing:\n  type 'a' for reboot to android, type 'f' for reboot to fastboot, type 'd' for reboot to fastbootd, type 'r' for reboot to recovery, type 's' for reboot to same mode, type 'p' for poweroff, and press ENTER.\n"));
 		if (scanf(" %c", &ch)) { }
 		switch(ch)
 		{
@@ -3124,17 +3124,17 @@ int main(int argc, char *argv[])
 	{
 		if (transfer_bulk_async(dev, EP_OUT, argv[1], strlen(argv[1]), USB_TIMEOUT, 1) < 1)
 		{
-			printf("Error writing commad: %s\n", argv[1]);
+			printf(_("Error writing commad: %s\n"), argv[1]);
 			ret = 1;
 			goto endflashing;
 		}
 		else
 		{
-			printf("Writing command: %s\n", argv[1]);
+			printf(_("Writing command: %s\n"), argv[1]);
 
 			if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 			{
-				printf("Error, null reply\n");
+				printf(_("Error, null reply\n"));
 				ret = 1;
 				goto endflashing;
 			}
@@ -3144,7 +3144,7 @@ int main(int argc, char *argv[])
 
 				if (memcmp(tmp_reply, "FAIL", 4) == 0)
 				{
-					printf("got fail reply: %s\n", tmp_reply);
+					printf(_("got fail reply: %s\n"), tmp_reply);
 					ret = 1;
 					goto endflashing;
 				}
@@ -3155,7 +3155,7 @@ int main(int argc, char *argv[])
 						unsigned int data_len = 0;
 
 						if (get_reply_len != 12) {
-							printf("Errornous DATA reply!\n");
+							printf(_("Errornous DATA reply!\n"));
 							display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
 							ret = 1;
 							goto endflashing;
@@ -3165,11 +3165,11 @@ int main(int argc, char *argv[])
 
 						if (!data_len)
 						{
-							printf("got null data_len!\n");
+							printf(_("got null data_len!\n"));
 
 							if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 							{
-								printf("Error retrieving seccond reply!\n");
+								printf(_("Error retrieving seccond reply!\n"));
 								ret = 1;
 								goto endflashing;
 							}
@@ -3178,7 +3178,7 @@ int main(int argc, char *argv[])
 
 							if (strstr(tmp_reply, "OKAY") == NULL)
 							{
-								printf("Error, no OKAY reply!\n");
+								printf(_("Error, no OKAY reply!\n"));
 								display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
 								ret = 1;
 								goto endflashing;
@@ -3190,14 +3190,14 @@ int main(int argc, char *argv[])
 
 							if ((data_buf = (char *)malloc(data_len)) == NULL)
 							{
-								printf("error allocating 0x%x bytes!\n", data_len);
+								printf(_("error allocating 0x%x bytes!\n"), data_len);
 								ret = 1;
 								goto endflashing;
 							}
 
 							if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
 							{
-								printf("Error retrieving data!\n");
+								printf(_("Error retrieving data!\n"));
 								free(data_buf);
 								ret = 1;
 								goto endflashing;
@@ -3214,7 +3214,7 @@ int main(int argc, char *argv[])
 							{
 								if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
 								{
-									printf("Error retrieving OKAY reply!\n");
+									printf(_("Error retrieving OKAY reply!\n"));
 									free(data_buf);
 									ret = 1;
 									goto endflashing;
@@ -3222,7 +3222,7 @@ int main(int argc, char *argv[])
 
 								if (strstr(tmp_reply, "OKAY") == NULL)
 								{
-									printf("Error, no OKAY reply!\n");
+									printf(_("Error, no OKAY reply!\n"));
 									free(data_buf);
 									ret = 1;
 									goto endflashing;
@@ -3233,13 +3233,13 @@ int main(int argc, char *argv[])
 							display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
 							if ((dumpme = fopen64("dump.bin", "wb")) == NULL)
 							{
-								printf("dump.bin will not be created!\n");
+								printf(_("dump.bin will not be created!\n"));
 							}
 							else
 							{
 								fwrite(data_buf, 1, data_len, dumpme);
 								fclose(dumpme);
-								printf("dump.bin created.\n");
+								printf(_("dump.bin created.\n"));
 							}
 
 							free(data_buf);
@@ -3256,8 +3256,8 @@ int main(int argc, char *argv[])
 
 	if (!dump_trimarea_only)
 	{
-		printf("\nOptional step! Type 'y' and press ENTER if you want dump trim area, or type 'n' and press ENTER to skip.\n");
-		printf("Do in mind this doesn't dump drm key since sake authentifiction is need for that! But it is recommend to have dump in case hard brick!\n");
+		printf(_("\nOptional step! Type 'y' and press ENTER if you want dump trim area, or type 'n' and press ENTER to skip.\n"));
+		printf(_("Do in mind this doesn't dump drm key since sake authentifiction is need for that! But it is recommend to have dump in case hard brick!\n"));
 		if (scanf(" %c", &ch)) { }
 	}
 
@@ -3269,17 +3269,17 @@ int main(int argc, char *argv[])
 
 			if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 			{
-				printf("Error dumping trimarea partition %d !!\n", i);
+				printf(_("Error dumping trimarea partition %d !!\n"), i);
 				ret = 1;
 				goto endflashing;
 			}
 			else
 			{
-				printf("Dumping trimarea partition %d.\n", i);
+				printf(_("Dumping trimarea partition %d.\n"), i);
 
 				if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 				{
-					printf("Error, null reply\n");
+					printf(_("Error, null reply\n"));
 					ret = 1;
 					goto endflashing;
 				}
@@ -3289,7 +3289,7 @@ int main(int argc, char *argv[])
 
 					if (memcmp(tmp_reply, "FAIL", 4) == 0)
 					{
-						printf("got fail reply: %s\n", tmp_reply);
+						printf(_("got fail reply: %s\n"), tmp_reply);
 						ret = 1;
 						goto endflashing;
 					}
@@ -3301,7 +3301,7 @@ int main(int argc, char *argv[])
 
 							if (get_reply_len != 12)
 							{
-								printf("Errornous DATA reply!\n");
+								printf(_("Errornous DATA reply!\n"));
 								display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
 								ret = 1;
 								goto endflashing;
@@ -3311,11 +3311,11 @@ int main(int argc, char *argv[])
 
 							if (!data_len)
 							{
-								printf("got null data_len!\n");
+								printf(_("got null data_len!\n"));
 
 								if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 								{
-									printf("Error retrieving seccond reply!\n");
+									printf(_("Error retrieving seccond reply!\n"));
 									ret = 1;
 									goto endflashing;
 								}
@@ -3324,7 +3324,7 @@ int main(int argc, char *argv[])
 
 								if (strstr(tmp_reply, "OKAY") == NULL)
 								{
-									printf("Error, no OKAY reply!\n");
+									printf(_("Error, no OKAY reply!\n"));
 									display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
 									ret = 1;
 									goto endflashing;
@@ -3336,21 +3336,21 @@ int main(int argc, char *argv[])
 
 								if (data_len > BUFF_MAX)
 								{
-									printf("Bug!!! DATA_LEN: 0x%x > BUFF_MAX: 0x%x\n", data_len, BUFF_MAX);
+									printf(_("Bug!!! DATA_LEN: 0x%x > BUFF_MAX: 0x%x\n"), data_len, BUFF_MAX);
 									ret = 1;
 									goto endflashing;
 								}
 
 								if ((data_buf = (char *)malloc(data_len)) == NULL)
 								{
-									printf("error allocating 0x%x bytes!\n", data_len);
+									printf(_("error allocating 0x%x bytes!\n"), data_len);
 									ret = 1;
 									goto endflashing;
 								}
 
 								if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
 								{
-									printf("Error retrieving data!\n");
+									printf(_("Error retrieving data!\n"));
 									free(data_buf);
 									ret = 1;
 									goto endflashing;
@@ -3367,7 +3367,7 @@ int main(int argc, char *argv[])
 								{
 									if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
 									{
-										printf("Error retrieving OKAY reply!\n");
+										printf(_("Error retrieving OKAY reply!\n"));
 										free(data_buf);
 										ret = 1;
 										goto endflashing;
@@ -3375,7 +3375,7 @@ int main(int argc, char *argv[])
 
 									if (strstr(tmp_reply, "OKAY") == NULL)
 									{
-										printf("Error, no OKAY reply!\n");
+										printf(_("Error, no OKAY reply!\n"));
 										free(data_buf);
 										ret = 1;
 										goto endflashing;
@@ -3396,11 +3396,11 @@ int main(int argc, char *argv[])
 #endif
 										if (fld_cbck == 0)
 										{
-											printf("Created ouput folder tadump.\n");
+											printf(_("Created ouput folder tadump.\n"));
 										}
 										else
 										{
-											printf("FAILURE to create output folder tadump!\n");
+											printf(_("FAILURE to create output folder tadump!\n"));
 											free(data_buf);
 											ret = 1;
 											goto endflashing;
@@ -3409,8 +3409,8 @@ int main(int argc, char *argv[])
 
 									if (ENOTDIR == errno)
 									{
-										printf("FAILURE to create output folder tadump because there is file called tadump!!\n"
-											"Remove or rename file tadump first!\n");
+										printf(_("FAILURE to create output folder tadump because there is file called tadump!!\n"
+											"Remove or rename file tadump first!\n"));
 										free(data_buf);
 										ret = 1;
 										goto endflashing;
@@ -3419,7 +3419,7 @@ int main(int argc, char *argv[])
 								}
 								else
 								{
-									printf("Dumping trim area to tadump folder.\n");
+									printf(_("Dumping trim area to tadump folder.\n"));
 								}
 #ifdef _WIN32
 								snprintf(tmp, sizeof(tmp), "%s\\tadump\\tadump_%d.ta", working_path, i);
@@ -3430,7 +3430,7 @@ int main(int argc, char *argv[])
 
 								if ((dumpme = fopen64(tmp, "wb")) == NULL)
 								{
-									printf("%s will not be created!\n", tmp);
+									printf(_("%s will not be created!\n"), tmp);
 								}
 								else
 								{
@@ -3479,7 +3479,7 @@ int main(int argc, char *argv[])
 									}
 
 									fclose(dumpme);
-									printf("%s created.\n", tmp);
+									printf(_("%s created.\n"), tmp);
 								}
 
 								free(data_buf);
@@ -3495,11 +3495,11 @@ int main(int argc, char *argv[])
 		if (dump_trimarea_only)
 			goto endflashing;
 
-		printf("\nTrim area dump done, continuing with flashing.\n");
+		printf(_("\nTrim area dump done, continuing with flashing.\n"));
 	}
 	else
 	{
-		printf("\nNo trim area dump taken, continuing with flashing anyway. If this phone ever hard bricks there will be no trim area backup to restore from, and that is on you.\n");
+		printf(_("\nNo trim area dump taken, continuing with flashing anyway. If this phone ever hard bricks there will be no trim area backup to restore from, and that is on you.\n"));
 	}
 
 /*=========================================  DEVICE INFO  ============================================*/
@@ -3507,7 +3507,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:max-download-size");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3526,7 +3526,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:product");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3542,7 +3542,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:version");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3558,7 +3558,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:version-bootloader");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3574,7 +3574,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:version-baseband");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3590,7 +3590,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:serialno");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3606,7 +3606,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:secure");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3622,7 +3622,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Sector-size");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3641,7 +3641,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Loader-version");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3657,7 +3657,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Phone-id");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3673,7 +3673,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Device-id");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3689,7 +3689,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Platform-id");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3705,7 +3705,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Rooting-status");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3721,7 +3721,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Ufs-info");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3737,7 +3737,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Emmc-info");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3753,7 +3753,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Default-security");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3769,7 +3769,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Keystore-counter");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3788,7 +3788,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Security-state");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3804,7 +3804,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:S1-root");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3820,7 +3820,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Sake-root");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3836,7 +3836,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "Get-root-key-hash");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3849,7 +3849,7 @@ int main(int argc, char *argv[])
 
 	if (memcmp(tmp_reply, "DATA", 4) != 0)
 	{
-		printf(" - Error, no DATA reply!\n");
+		printf(_(" - Error, no DATA reply!\n"));
 		ret = 1;
 		goto endflashing;
 	}
@@ -3864,7 +3864,7 @@ int main(int argc, char *argv[])
 
 	if (get_reply_len <= 0)
 	{
-		printf("Error receiving root key hash!\n");
+		printf(_("Error receiving root key hash!\n"));
 		ret = 1;
 		goto endflashing;
 	}
@@ -3892,7 +3892,7 @@ int main(int argc, char *argv[])
 
 		if (memcmp(tmp_reply, "OKAY", 4) != 0)
 		{
-			printf(" - Error, no OKAY reply!\n");
+			printf(_(" - Error, no OKAY reply!\n"));
 			ret = 1;
 			goto endflashing;
 		}
@@ -3903,7 +3903,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:slot-count");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s, ignore this error!\n", tmp);
+		printf(_(" - Error writing command %s, ignore this error!\n"), tmp);
 	}
 	else
 	{
@@ -3914,7 +3914,7 @@ int main(int argc, char *argv[])
 			snprintf(tmp, sizeof(tmp), "getvar:current-slot");
 			if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 			{
-				printf(" - Error writing command %s, ignore this error!\n", tmp);
+				printf(_(" - Error writing command %s, ignore this error!\n"), tmp);
 			}
 			else
 			{
@@ -3927,7 +3927,7 @@ int main(int argc, char *argv[])
 	snprintf(tmp, sizeof(tmp), "getvar:Battery");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing command %s!\n", tmp);
+		printf(_(" - Error writing command %s!\n"), tmp);
 		ret = 1;
 		goto endflashing;
 	}
@@ -3951,37 +3951,37 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	printf("Product: %s\n", product);
-	printf("Version: %s\n", version);
-	printf("Bootloader version: %s\n", version_bootloader);
-	printf("Baseband version: %s\n", version_baseband);
-	printf("Serialno: %s\n", serialno);
-	printf("Secure: %s\n", secure);
-	printf("Loader version: %s\n", loader_version);
-	printf("Phone ID: %s\n", phone_id);
-	printf("Device ID: %s\n", device_id);
-	printf("Platform ID: %s\n", platform_id);
-	printf("Max download size: %u\n", max_download_size);
-	printf("Sector size: %u\n", sector_size);
-	printf("Rooting status: %s\n", rooting_status);
-	printf("Ufs info: %s\n", ufs_info);
-	printf("Emmc info: %s\n", emmc_info);
-	printf("Default security: %s\n", default_security);
-	printf("Keystore counter: %u\n", keystore_counter);
-	printf("Security state: %s\n", security_state);
-	printf("Sake root: %s\n", sake_root);
-	printf("S1 root: %s\n", s1_root);
-	printf("Root key hash: %s\n", get_root_key_hash);
-	printf("Slot count: %s\n", slot_count);
-	printf("Current slot: %s\n", current_slot);
-	printf("Battery level: %d%s\n", battery_level, (battery_level == 0) ? " unsupported command" : "");
+	printf(_("Product: %s\n"), product);
+	printf(_("Version: %s\n"), version);
+	printf(_("Bootloader version: %s\n"), version_bootloader);
+	printf(_("Baseband version: %s\n"), version_baseband);
+	printf(_("Serialno: %s\n"), serialno);
+	printf(_("Secure: %s\n"), secure);
+	printf(_("Loader version: %s\n"), loader_version);
+	printf(_("Phone ID: %s\n"), phone_id);
+	printf(_("Device ID: %s\n"), device_id);
+	printf(_("Platform ID: %s\n"), platform_id);
+	printf(_("Max download size: %u\n"), max_download_size);
+	printf(_("Sector size: %u\n"), sector_size);
+	printf(_("Rooting status: %s\n"), rooting_status);
+	printf(_("Ufs info: %s\n"), ufs_info);
+	printf(_("Emmc info: %s\n"), emmc_info);
+	printf(_("Default security: %s\n"), default_security);
+	printf(_("Keystore counter: %u\n"), keystore_counter);
+	printf(_("Security state: %s\n"), security_state);
+	printf(_("Sake root: %s\n"), sake_root);
+	printf(_("S1 root: %s\n"), s1_root);
+	printf(_("Root key hash: %s\n"), get_root_key_hash);
+	printf(_("Slot count: %s\n"), slot_count);
+	printf(_("Current slot: %s\n"), current_slot);
+	printf(_("Battery level: %d%s\n"), battery_level, (battery_level == 0) ? " unsupported command" : "");
 
 	if (battery_level > 0)
 	{
 		if (battery_level < 15)
 		{
-			printf("\nYour battery level is %d percent and you have risk for hard brick in case your battery get fully discharged durring flash session!\n", battery_level);
-			printf("Type 'y' and press ENTER if you understand the risk, or type 'n' to exit from flashing.\n");
+			printf(_("\nYour battery level is %d percent and you have risk for hard brick in case your battery get fully discharged durring flash session!\n"), battery_level);
+			printf(_("Type 'y' and press ENTER if you understand the risk, or type 'n' to exit from flashing.\n"));
 			if (scanf(" %c", &ch)) { }
 			if (ch == 'n' || ch == 'N')
 			{
@@ -4001,89 +4001,89 @@ int main(int argc, char *argv[])
 	printf("\n");
 
 	if (transfer_bulk_async(dev, EP_OUT, "download:00000001", 17, USB_TIMEOUT, 1) < 1) {
-		printf("Error writing command 'go into flashmode'!\n");
+		printf(_("Error writing command 'go into flashmode'!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 	{
-		printf(" - Error, no go_into_flash_mode DATA reply!\n");
+		printf(_(" - Error, no go_into_flash_mode DATA reply!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (strlen(tmp_reply) != 12)
 	{
-		printf(" - Error, go_into_flash_mode DATA reply size: %zu less than expected: 12!\n", strlen(tmp_reply));
+		printf(_(" - Error, go_into_flash_mode DATA reply size: %zu less than expected: 12!\n"), strlen(tmp_reply));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (memcmp(tmp_reply+4, "00000001", 8) != 0)
 	{
-		printf(" - Error, go_into_flash_mode DATA reply string: %s is not equal to expected: DATA00000001!\n", tmp_reply);
+		printf(_(" - Error, go_into_flash_mode DATA reply string: %s is not equal to expected: DATA00000001!\n"), tmp_reply);
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (transfer_bulk_async(dev, EP_OUT, "\x01", 1, USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing 'go into flashmode' value 1!\n");
+		printf(_(" - Error writing 'go into flashmode' value 1!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 	{
-		printf("      Error, no 'go into flashmode' OKAY reply!\n");
+		printf(_("      Error, no 'go into flashmode' OKAY reply!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (strlen(tmp_reply) < 4)
 	{
-		printf("      Error, 'go into flashmode' reply less than 4, got: %zu bytes!\n", strlen(tmp_reply));
+		printf(_("      Error, 'go into flashmode' reply less than 4, got: %zu bytes!\n"), strlen(tmp_reply));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (memcmp(tmp_reply, "OKAY", 4) != 0)
 	{
-		printf("      Error, didn't got 'go into flashmode' OKAY reply! Got reply: %s\n", tmp_reply);
+		printf(_("      Error, didn't got 'go into flashmode' OKAY reply! Got reply: %s\n"), tmp_reply);
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (transfer_bulk_async(dev, EP_OUT, "Write-TA:2:10100", 16, USB_TIMEOUT, 1) < 1)
 	{
-		printf("Error writing TA 'go into flashmode'!\n");
+		printf(_("Error writing TA 'go into flashmode'!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 	{
-		printf("      Error, no TA write 'go into flashmode' OKAY reply!\n");
+		printf(_("      Error, no TA write 'go into flashmode' OKAY reply!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (strlen(tmp_reply) < 4)
 	{
-		printf("      Error, TA write 'go into flashmode' reply less than 4, got: %zu bytes!\n", strlen(tmp_reply));
+		printf(_("      Error, TA write 'go into flashmode' reply less than 4, got: %zu bytes!\n"), strlen(tmp_reply));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (memcmp(tmp_reply, "OKAY", 4) != 0)
 	{
-		printf("      Error, didn't got TA write 'go into flashmode' OKAY reply! Got reply: %s\n", tmp_reply);
+		printf(_("      Error, didn't got TA write 'go into flashmode' OKAY reply! Got reply: %s\n"), tmp_reply);
 		ret = 1;
 		goto endflashing;
 	}
 
-	printf("Device is put now in flash mode.\n");
+	printf(_("Device is put now in flash mode.\n"));
 
 /*=======================================  process partition  ========================================*/
 
@@ -4097,7 +4097,7 @@ int main(int argc, char *argv[])
 
 	if ((dir = opendir(tmp)) != NULL)
 	{
-		printf("Repartitioning...\n");
+		printf(_("Repartitioning...\n"));
 
 		/* search for partition_delivery.xml */
 #ifdef _WIN32
@@ -4108,17 +4108,17 @@ int main(int argc, char *argv[])
 
 		if (stat(sinfil, &filestat) < 0)
 		{
-			printf("partition_delivery.xml not exist in partition folder or no partition folder.\n");
+			printf(_("partition_delivery.xml not exist in partition folder or no partition folder.\n"));
 		}
 		else
 		{
 			unsigned long long lun0_sz = 0;
 
-			printf("Found partition_delivery.xml in partition folder.\n");
+			printf(_("Found partition_delivery.xml in partition folder.\n"));
 
 			if (!parse_xml(sinfil))
 			{
-				printf("Error parsing partition_delivery.xml!\n");
+				printf(_("Error parsing partition_delivery.xml!\n"));
 				ret = 1;
 				goto getoutofflashing;
 			}
@@ -4128,13 +4128,13 @@ int main(int argc, char *argv[])
 				have_ufs = true;
 			}
 
-			printf("Determining %s size...\n", have_ufs ? "LUN0" : "EMMC part 0");
+			printf(_("Determining %s size...\n"), have_ufs ? "LUN0" : "EMMC part 0");
 
 			snprintf(tmp, sizeof(tmp), "%s", have_ufs ? "Get-ufs-info" : "Get-emmc-info");
 
 			if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 			{
-				printf(" - Error writing command %s!\n", tmp);
+				printf(_(" - Error writing command %s!\n"), tmp);
 				ret = 1;
 				goto getoutofflashing;
 			}
@@ -4148,7 +4148,7 @@ int main(int argc, char *argv[])
 
 				if (memcmp(tmp_reply, "DATA", 4) != 0)
 				{
-					printf(" - Error, no DATA reply!\n");
+					printf(_(" - Error, no DATA reply!\n"));
 					ret = 1;
 					goto getoutofflashing;
 				}
@@ -4161,7 +4161,7 @@ int main(int argc, char *argv[])
 
 				if (get_reply_len <= 0)
 				{
-					printf("Error receiving %s header!\n", have_ufs ? "UFS" : "EMMC");
+					printf(_("Error receiving %s header!\n"), have_ufs ? "UFS" : "EMMC");
 					ret = 1;
 					goto getoutofflashing;
 				}
@@ -4190,7 +4190,7 @@ int main(int argc, char *argv[])
 						lun0_sz /= 1024;
 					}
 
-					printf("%s size = %llu\n", have_ufs ? "LUN0" : "EMMC part 0", lun0_sz);
+					printf(_("%s size = %llu\n"), have_ufs ? "LUN0" : "EMMC part 0", lun0_sz);
 				}
 
 				// sometimes OKAY reply is inside data buffer
@@ -4210,7 +4210,7 @@ int main(int argc, char *argv[])
 
 					if (memcmp(tmp_reply, "OKAY", 4) != 0)
 					{
-						printf(" - Error, no OKAY reply!\n");
+						printf(_(" - Error, no OKAY reply!\n"));
 						ret = 1;
 						goto getoutofflashing;
 					}
@@ -4236,7 +4236,7 @@ int main(int argc, char *argv[])
 					snprintf(lun0, sizeof(lun0), "%llu", lun0_sz);
 
 					printf("\n");
-					printf("Processing %s\n", partitiondelivery_xml[i]);
+					printf(_("Processing %s\n"), partitiondelivery_xml[i]);
 #ifdef _WIN32
 					snprintf(sinfil, sizeof(sinfil), "%s\\partition\\%s", working_path, partitiondelivery_xml[i]);
 #else
@@ -4251,7 +4251,7 @@ int main(int argc, char *argv[])
 						fi = fopen64(sinfil, "rb");
 						if (fi == NULL)
 						{
-							printf(" - unable to open %s.\n", sinfil);
+							printf(_(" - unable to open %s.\n"), sinfil);
 							sin_found = 0;
 						}
 						else
@@ -4278,7 +4278,7 @@ int main(int argc, char *argv[])
 								a = fopen64(fld, "rb");
 								if (a == NULL)
 								{
-									printf(" - Unable to open %s\n", fld);
+									printf(_(" - Unable to open %s\n"), fld);
 								}
 								else
 								{
@@ -4302,7 +4302,7 @@ int main(int argc, char *argv[])
 								a = fopen64(sinfil, "rb");
 								if (a == NULL)
 								{
-									printf(" - Unable to open %s\n", sinfil);
+									printf(_(" - Unable to open %s\n"), sinfil);
 								}
 								else
 								{
@@ -4321,7 +4321,7 @@ int main(int argc, char *argv[])
 					}
 					else
 					{
-						printf("Skipping %s\n", partitiondelivery_xml[i]);
+						printf(_("Skipping %s\n"), partitiondelivery_xml[i]);
 					}
 				}
 			}
@@ -4341,7 +4341,7 @@ int main(int argc, char *argv[])
 							{
 								sin_found = 1;
 								printf("\n");
-								printf("Processing %s\n", ep->d_name);
+								printf(_("Processing %s\n"), ep->d_name);
 #ifdef _WIN32
 								snprintf(sinfil, sizeof(sinfil), "%s\\partition\\%s", working_path, ep->d_name);
 #else
@@ -4349,23 +4349,23 @@ int main(int argc, char *argv[])
 #endif
 								if (!strlen(sinfil))
 								{
-									printf("Oops!!! Sinfile name empty!\n");
+									printf(_("Oops!!! Sinfile name empty!\n"));
 									ret = 1;
 									goto getoutofflashing;
 								}
 
 								if (strstr(sinfil, "artition") == NULL)
 								{
-									printf("Oops!! Found non partition sin file!\n");
-									printf("Please read instructions carefully if you no want brick!\n");
-									printf("Skipping non partition %s file.\n", sinfil);
+									printf(_("Oops!! Found non partition sin file!\n"));
+									printf(_("Please read instructions carefully if you no want brick!\n"));
+									printf(_("Skipping non partition %s file.\n"), sinfil);
 									sin_found = 0;
 								}
 								else
 								{
 									fi = fopen64(sinfil, "rb");
 									if (fi == NULL) {
-										printf(" - unable to open %s!\n", sinfil);
+										printf(_(" - unable to open %s!\n"), sinfil);
 										ret = 1;
 										goto getoutofflashing;
 									}
@@ -4390,7 +4390,7 @@ int main(int argc, char *argv[])
 										a = fopen64(fld, "rb");
 										if (a == NULL)
 										{
-											printf(" - Unable to open %s\n", fld);
+											printf(_(" - Unable to open %s\n"), fld);
 										}
 										else
 										{
@@ -4414,7 +4414,7 @@ int main(int argc, char *argv[])
 										a = fopen64(sinfil, "rb");
 										if (a == NULL)
 										{
-											printf(" - Unable to open %s\n", sinfil);
+											printf(_(" - Unable to open %s\n"), sinfil);
 										}
 										else
 										{
@@ -4442,9 +4442,9 @@ int main(int argc, char *argv[])
 
 	if (!sin_found)
 	{
-		printf("No .sin files in partition dir...\n");
-		printf("You must extract partition.zip into 'partition' folder if you want flash partition image!\n");
-		printf("On 2018 and UP models you must move partition sin files to 'partition' folder if you need flash partition images!\n");
+		printf(_("No .sin files in partition dir...\n"));
+		printf(_("You must extract partition.zip into 'partition' folder if you want flash partition image!\n"));
+		printf(_("On 2018 and UP models you must move partition sin files to 'partition' folder if you need flash partition images!\n"));
 	}
 	else
 	{
@@ -4455,7 +4455,7 @@ int main(int argc, char *argv[])
 
 	printf("\n");
 	sin_found = 0;
-	printf("Processing .sin files...\n");
+	printf(_("Processing .sin files...\n"));
 	snprintf(fld, sizeof(fld), "flash_session/");
 	if (0 != access(fld, F_OK))
 	{
@@ -4468,12 +4468,12 @@ int main(int argc, char *argv[])
 #endif
 			if (fld_cbck == 0)
 			{
-				printf("Created ouput folder flash_session\n");
+				printf(_("Created ouput folder flash_session\n"));
 				flash_session_created = true;
 			}
 			else
 			{
-				printf("FAILURE to create output folder flash_session!\n");
+				printf(_("FAILURE to create output folder flash_session!\n"));
 				ret = 1;
 				goto getoutofflashing;
 			}
@@ -4481,8 +4481,8 @@ int main(int argc, char *argv[])
 
 		if (ENOTDIR == errno)
 		{
-			printf("FAILURE to create output folder flash_session because there is file called flash_session!!!\n"
-				"Remove or rename file flash_session first!\n");
+			printf(_("FAILURE to create output folder flash_session because there is file called flash_session!!!\n"
+				"Remove or rename file flash_session first!\n"));
 			ret = 1;
 			goto getoutofflashing;
 		}
@@ -4490,7 +4490,7 @@ int main(int argc, char *argv[])
 	}
 	else
 	{
-		printf("Using existing folder flash_session\n");
+		printf(_("Using existing folder flash_session\n"));
 		flash_session_created = true;
 	}
 
@@ -4532,7 +4532,7 @@ int main(int argc, char *argv[])
 
 							sin_found = 1;
 							printf("\n");
-							printf("Processing %s\n", ep->d_name);
+							printf(_("Processing %s\n"), ep->d_name);
 #ifdef _WIN32
 							snprintf(sinfil, sizeof(sinfil), "%s\\%s", working_path, ep->d_name);
 #else
@@ -4540,7 +4540,7 @@ int main(int argc, char *argv[])
 #endif
 							if (!strlen(sinfil))
 							{
-								printf("Oops!!! Sinfile name empty!\n");
+								printf(_("Oops!!! Sinfile name empty!\n"));
 								ret = 1;
 								goto getoutofflashing;
 							}
@@ -4548,7 +4548,7 @@ int main(int argc, char *argv[])
 							fi = fopen64(sinfil, "rb");
 							if (fi == NULL)
 							{
-								printf(" - unable to open %s!\n", sinfil);
+								printf(_(" - unable to open %s!\n"), sinfil);
 								ret = 1;
 								goto getoutofflashing;
 							}
@@ -4573,7 +4573,7 @@ int main(int argc, char *argv[])
 								a = fopen64(fld, "rb");
 								if (a == NULL)
 								{
-									printf(" - Unable to open %s\n", fld);
+									printf(_(" - Unable to open %s\n"), fld);
 								}
 								else
 								{
@@ -4652,7 +4652,7 @@ int main(int argc, char *argv[])
 								a = fopen64(sinfil, "rb");
 								if (a == NULL)
 								{
-									printf(" - Unable to open %s\n", sinfil);
+									printf(_(" - Unable to open %s\n"), sinfil);
 								}
 								else
 								{
@@ -4724,7 +4724,7 @@ int main(int argc, char *argv[])
 							}
 skip_this:
 							if (file_is_skip)
-								printf("Skipping %s\n", ep->d_name);
+								printf(_("Skipping %s\n"), ep->d_name);
 						}
 					}
 				}
@@ -4734,7 +4734,7 @@ skip_this:
 	}
 
 	if (!sin_found)
-		printf("No .sin files in current dir.\n");
+		printf(_("No .sin files in current dir.\n"));
 	else
 		something_flashed = 1;
 
@@ -4742,7 +4742,7 @@ skip_this:
 
 	printf("\n");
 	sin_found = 0;
-	printf("Processing .ta files...\n");
+	printf(_("Processing .ta files...\n"));
 	if ((dir = opendir(working_path)) != NULL)
 	{
 		while ((ep = readdir(dir)) != NULL)
@@ -4776,7 +4776,7 @@ skip_this:
 
 							if (file_found_in_updatexml)
 							{
-								printf("Skipping %s\n", ep->d_name);
+								printf(_("Skipping %s\n"), ep->d_name);
 								sin_found = 0;
 								file_found_in_updatexml = false;
 								printf("\n");
@@ -4802,14 +4802,14 @@ skip_this:
 	}
 
 	if (!sin_found)
-		printf("No .ta files in current dir.\n");
+		printf(_("No .ta files in current dir.\n"));
 	else
 		something_flashed = 1;
 
 /*========================================  boot delivery  ===========================================*/
 
 	printf("\n");
-	printf("Processing boot delivery...\n\n");
+	printf(_("Processing boot delivery...\n\n"));
 #ifdef _WIN32
 	snprintf(sinfil, sizeof(sinfil), "%s\\boot\\boot_delivery.xml", working_path);
 #else
@@ -4817,29 +4817,29 @@ skip_this:
 #endif
 	if (stat(sinfil, &filestat) < 0)
 	{
-		printf("boot_delivery.xml not exist in boot folder or no boot folder.\n");
+		printf(_("boot_delivery.xml not exist in boot folder or no boot folder.\n"));
 		ret = 1;
 		goto getoutofflashing;
 	}
 	else
-		printf("Found boot_delivery.xml in boot folder.\n");
+		printf(_("Found boot_delivery.xml in boot folder.\n"));
 
 	if (!parse_xml(sinfil))
 	{
-		printf("Error parsing boot_delivery.xml!\n");
+		printf(_("Error parsing boot_delivery.xml!\n"));
 		ret = 1;
 		goto getoutofflashing;
 	}
 
 	if (!strlen(bootdelivery_version))
 	{
-		printf(" - Unable to determine boot delivery version, skipping bootdelivery.\n");
+		printf(_(" - Unable to determine boot delivery version, skipping bootdelivery.\n"));
 		ret = 1;
 		goto getoutofflashing;
 	}
 
-	printf(" - Boot delivery version: %s\n", bootdelivery_version);
-	printf(" - Verifying if boot delivery match with device...\n");
+	printf(_(" - Boot delivery version: %s\n"), bootdelivery_version);
+	printf(_(" - Verifying if boot delivery match with device...\n"));
 
 	if (strstr(default_security, "OFF") != NULL)
 		snprintf(searchfor, sizeof(searchfor), "DEFAULT_SECURITY=\"OFF\"");
@@ -4849,7 +4849,7 @@ skip_this:
 		snprintf(searchfor, sizeof(searchfor), "PLATFORM_ID=\"%s\";PLF_ROOT_HASH=\"%s\"", platform_id, get_root_key_hash);
 	}
 
-	printf("      searching for: %s\n", searchfor);
+	printf(_("      searching for: %s\n"), searchfor);
 
 	for(i=0; i<td1; ++i)
 	{
@@ -4879,10 +4879,10 @@ skip_this:
 
 				if (bootdelivery_found && strstr(bootdelivery_xml[i][1], searchfor) != NULL)
 				{
-					if (j == 2) printf("      Found bootdelivery match: %s\n", bootdelivery_xml[i][0]);
+					if (j == 2) printf(_("      Found bootdelivery match: %s\n"), bootdelivery_xml[i][0]);
 					if (j == 3)
 					{
-						printf("      TA file: %s\n", bootdelivery_xml[i][j]);
+						printf(_("      TA file: %s\n"), bootdelivery_xml[i][j]);
 						snprintf(tmp, sizeof(tmp), "./boot/%s", bootdelivery_xml[i][j]);
 						printf("\n");
 						if (!proced_ta_file(tmp, dev))
@@ -4893,9 +4893,9 @@ skip_this:
 					}
 					if (j == 4)
 					{
-						printf("      SIN file: %s\n", bootdelivery_xml[i][j]);
+						printf(_("      SIN file: %s\n"), bootdelivery_xml[i][j]);
 						printf("\n");
-						printf("Processing %s\n", bootdelivery_xml[i][j]);
+						printf(_("Processing %s\n"), bootdelivery_xml[i][j]);
 #ifdef _WIN32
 						snprintf(sinfil, sizeof(sinfil), "%s\\boot\\%s", working_path, bootdelivery_xml[i][j]);
 #else
@@ -4904,23 +4904,23 @@ skip_this:
 
 						if (!strlen(sinfil))
 						{
-							printf("Oops!!! Sinfile name empty!\n");
+							printf(_("Oops!!! Sinfile name empty!\n"));
 							ret = 1;
 							goto getoutofflashing;
 						}
 
 						if (strstr(sinfil, "bootloader") == NULL)
 						{
-							printf("Oops!! Found non bootloader sin file!\n");
-							printf("Please read instructions carefully if you no want brick!\n");
-							printf("Skipping non bootloader %s file.\n", sinfil);
+							printf(_("Oops!! Found non bootloader sin file!\n"));
+							printf(_("Please read instructions carefully if you no want brick!\n"));
+							printf(_("Skipping non bootloader %s file.\n"), sinfil);
 						}
 						else
 						{
 							fi = fopen64(sinfil, "rb");
 							if (fi == NULL)
 							{
-								printf(" - unable to open %s!\n", sinfil);
+								printf(_(" - unable to open %s!\n"), sinfil);
 								ret = 1;
 								goto getoutofflashing;
 							}
@@ -4945,7 +4945,7 @@ skip_this:
 								a = fopen64(fld, "rb");
 								if (a == NULL)
 								{
-									printf(" - Unable to open %s\n", fld);
+									printf(_(" - Unable to open %s\n"), fld);
 								}
 								else
 								{
@@ -4968,7 +4968,7 @@ skip_this:
 								a = fopen64(sinfil, "rb");
 								if (a == NULL)
 								{
-									printf(" - Unable to open %s\n", sinfil);
+									printf(_(" - Unable to open %s\n"), sinfil);
 								}
 								else
 								{
@@ -4991,7 +4991,7 @@ skip_this:
 	}
 
 	if (!bootdelivery_found)
-		printf("Didn't found bootdelivery that match your device!\n");
+		printf(_("Didn't found bootdelivery that match your device!\n"));
 	else
 		something_flashed = 1;
 
@@ -5004,7 +5004,7 @@ getoutofflashing:
 	snprintf(tmp, sizeof(tmp), "Getlog");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf("Error writing commad: %s\n", tmp);
+		printf(_("Error writing commad: %s\n"), tmp);
 		ret = 1;
 		goto slot_setup;
 	}
@@ -5012,7 +5012,7 @@ getoutofflashing:
 	{
 		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
-			printf("Error, null reply\n");
+			printf(_("Error, null reply\n"));
 			ret = 1;
 			goto slot_setup;
 		}
@@ -5020,7 +5020,7 @@ getoutofflashing:
 		{
 			if (memcmp(tmp_reply, "FAIL", 4) == 0)
 			{
-				printf("got fail reply: %s\n", tmp_reply);
+				printf(_("got fail reply: %s\n"), tmp_reply);
 				ret = 1;
 				goto slot_setup;
 			}
@@ -5031,7 +5031,7 @@ getoutofflashing:
 					unsigned int data_len = 0;
 
 					if (get_reply_len != 12) {
-						printf("Errornous DATA reply!\n");
+						printf(_("Errornous DATA reply!\n"));
 						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
 						ret = 1;
 						goto slot_setup;
@@ -5041,18 +5041,18 @@ getoutofflashing:
 
 					if (!data_len)
 					{
-						printf("got null data_len!\n");
+						printf(_("got null data_len!\n"));
 
 						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 						{
-							printf("Error retrieving seccond reply!\n");
+							printf(_("Error retrieving seccond reply!\n"));
 							ret = 1;
 							goto slot_setup;
 						}
 
 						if (strstr(tmp_reply, "OKAY") == NULL)
 						{
-							printf("Error, no OKAY reply!\n");
+							printf(_("Error, no OKAY reply!\n"));
 							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
 							ret = 1;
 							goto slot_setup;
@@ -5064,20 +5064,20 @@ getoutofflashing:
 
 						if ((data_buf = (char *)malloc(data_len)) == NULL)
 						{
-							printf("error allocating 0x%x bytes!\n", data_len);
+							printf(_("error allocating 0x%x bytes!\n"), data_len);
 							ret = 1;
 							goto slot_setup;
 						}
 
 						if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
 						{
-							printf("Error retrieving data!\n");
+							printf(_("Error retrieving data!\n"));
 							free(data_buf);
 							ret = 1;
 							goto slot_setup;
 						}
 
-						printf("\n=========== BOOTLOADER LOG =============\n");
+						printf(_("\n=========== BOOTLOADER LOG =============\n"));
 						printf("%s\n", data_buf);
 						printf("=================================================\n");
 
@@ -5091,7 +5091,7 @@ getoutofflashing:
 						{
 							if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
 							{
-								printf("Error retrieving OKAY reply!\n");
+								printf(_("Error retrieving OKAY reply!\n"));
 								free(data_buf);
 								ret = 1;
 								goto slot_setup;
@@ -5099,7 +5099,7 @@ getoutofflashing:
 
 							if (strstr(tmp_reply, "OKAY") == NULL)
 							{
-								printf("Error, no OKAY reply!\n");
+								printf(_("Error, no OKAY reply!\n"));
 								free(data_buf);
 								ret = 1;
 								goto slot_setup;
@@ -5119,7 +5119,7 @@ getoutofflashing:
 	snprintf(tmp, sizeof(tmp), "Read-TA:2:2475");
 	if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 	{
-		printf("Error writing commad: %s\n", tmp);
+		printf(_("Error writing commad: %s\n"), tmp);
 		ret = 1;
 		goto slot_setup;
 	}
@@ -5127,7 +5127,7 @@ getoutofflashing:
 	{
 		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
-			printf("Error, null reply\n");
+			printf(_("Error, null reply\n"));
 			ret = 1;
 			goto slot_setup;
 		}
@@ -5135,7 +5135,7 @@ getoutofflashing:
 		{
 			if (memcmp(tmp_reply, "FAIL", 4) == 0)
 			{
-				printf("got fail reply: %s\n", tmp_reply);
+				printf(_("got fail reply: %s\n"), tmp_reply);
 				ret = 1;
 				goto slot_setup;
 			}
@@ -5146,7 +5146,7 @@ getoutofflashing:
 					unsigned int data_len = 0;
 
 					if (get_reply_len != 12) {
-						printf("Errornous DATA reply!\n");
+						printf(_("Errornous DATA reply!\n"));
 						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
 						ret = 1;
 						goto slot_setup;
@@ -5156,18 +5156,18 @@ getoutofflashing:
 
 					if (!data_len)
 					{
-						printf("got null data_len!\n");
+						printf(_("got null data_len!\n"));
 
 						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 						{
-							printf("Error retrieving seccond reply!\n");
+							printf(_("Error retrieving seccond reply!\n"));
 							ret = 1;
 							goto slot_setup;
 						}
 
 						if (strstr(tmp_reply, "OKAY") == NULL)
 						{
-							printf("Error, no OKAY reply!\n");
+							printf(_("Error, no OKAY reply!\n"));
 							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
 							ret = 1;
 							goto slot_setup;
@@ -5179,20 +5179,20 @@ getoutofflashing:
 
 						if ((data_buf = (char *)malloc(data_len)) == NULL)
 						{
-							printf("error allocating 0x%x bytes!\n", data_len);
+							printf(_("error allocating 0x%x bytes!\n"), data_len);
 							ret = 1;
 							goto slot_setup;
 						}
 
 						if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
 						{
-							printf("Error retrieving data!\n");
+							printf(_("Error retrieving data!\n"));
 							free(data_buf);
 							ret = 1;
 							goto slot_setup;
 						}
 
-						printf("\n=========== FIRMWARES HISTORY LOG =============\n");
+						printf(_("\n=========== FIRMWARES HISTORY LOG =============\n"));
 						printf("%s\n", data_buf);
 						printf("=================================================\n");
 
@@ -5206,7 +5206,7 @@ getoutofflashing:
 						{
 							if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
 							{
-								printf("Error retrieving OKAY reply!\n");
+								printf(_("Error retrieving OKAY reply!\n"));
 								free(data_buf);
 								ret = 1;
 								goto slot_setup;
@@ -5214,7 +5214,7 @@ getoutofflashing:
 
 							if (strstr(tmp_reply, "OKAY") == NULL)
 							{
-								printf("Error, no OKAY reply!\n");
+								printf(_("Error, no OKAY reply!\n"));
 								free(data_buf);
 								ret = 1;
 								goto slot_setup;
@@ -5240,33 +5240,33 @@ slot_setup:
 
 		if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 		{
-				printf("Error writing command '%s'!\n", tmp);
+				printf(_("Error writing command '%s'!\n"), tmp);
 				ret = 1;
 				goto endflashing;
 		}
 
 		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
-			printf(" - Error, no set_active:%s OKAY reply!\n", current_slot);
+			printf(_(" - Error, no set_active:%s OKAY reply!\n"), current_slot);
 			ret = 1;
 			goto endflashing;
 		}
 
 		if (strlen(tmp_reply) < 4)
 		{
-			printf("      Error, 'set_active:%s' reply less than 4, got: %zu bytes!\n", current_slot, strlen(tmp_reply));
+			printf(_("      Error, 'set_active:%s' reply less than 4, got: %zu bytes!\n"), current_slot, strlen(tmp_reply));
 			ret = 1;
 			goto endflashing;
 		}
 
 		if (memcmp(tmp_reply, "OKAY", 4) != 0)
 		{
-			printf("      Error, didn't got 'set_active:%s' OKAY reply! Got reply: %s\n", current_slot, tmp_reply);
+			printf(_("      Error, didn't got 'set_active:%s' OKAY reply! Got reply: %s\n"), current_slot, tmp_reply);
 			ret = 1;
 			goto endflashing;
 		}
 
-		printf("Set slot '%s' active.\n", current_slot);
+		printf(_("Set slot '%s' active.\n"), current_slot);
 	}
 
 /*=====================================  get out of flash mode  ======================================*/
@@ -5275,89 +5275,89 @@ slot_setup:
 
 	if (transfer_bulk_async(dev, EP_OUT, "download:00000001", 17, USB_TIMEOUT, 1) < 1)
 	{
-		printf("Error writing command 'go out of flashmode'!\n");
+		printf(_("Error writing command 'go out of flashmode'!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 	{
-		printf(" - Error, no go_outof_flash_mode DATA reply!\n");
+		printf(_(" - Error, no go_outof_flash_mode DATA reply!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (strlen(tmp_reply) != 12)
 	{
-		printf(" - Error, go_outof_flash_mode DATA reply size: %zu less than expected: 12!\n", strlen(tmp_reply));
+		printf(_(" - Error, go_outof_flash_mode DATA reply size: %zu less than expected: 12!\n"), strlen(tmp_reply));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (memcmp(tmp_reply+4, "00000001", 8) != 0)
 	{
-		printf(" - Error, go_outof_flash_mode DATA reply string: %s is not equal to expected: DATA00000001!\n", tmp_reply);
+		printf(_(" - Error, go_outof_flash_mode DATA reply string: %s is not equal to expected: DATA00000001!\n"), tmp_reply);
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (transfer_bulk_async(dev, EP_OUT, "\x00", 1, USB_TIMEOUT, 1) < 1)
 	{
-		printf(" - Error writing 'go out of flashmode' value 0!\n");
+		printf(_(" - Error writing 'go out of flashmode' value 0!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 	{
-		printf("      Error, no 'go out of flashmode' OKAY reply!\n");
+		printf(_("      Error, no 'go out of flashmode' OKAY reply!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (strlen(tmp_reply) < 4)
 	{
-		printf("      Error, 'go out of flashmode' reply less than 4, got: %zu bytes!\n", strlen(tmp_reply));
+		printf(_("      Error, 'go out of flashmode' reply less than 4, got: %zu bytes!\n"), strlen(tmp_reply));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (memcmp(tmp_reply, "OKAY", 4) != 0)
 	{
-		printf("      Error, didn't got 'go out of flashmode' OKAY reply! Got reply: %s\n", tmp_reply);
+		printf(_("      Error, didn't got 'go out of flashmode' OKAY reply! Got reply: %s\n"), tmp_reply);
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (transfer_bulk_async(dev, EP_OUT, "Write-TA:2:10100", 16, USB_TIMEOUT, 1) < 1)
 	{
-		printf("Error writing TA 'go out of flashmode'!\n");
+		printf(_("Error writing TA 'go out of flashmode'!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 	{
-		printf("      Error, no TA write 'go out of flashmode' OKAY reply!\n");
+		printf(_("      Error, no TA write 'go out of flashmode' OKAY reply!\n"));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (strlen(tmp_reply) < 4)
 	{
-		printf("      Error, TA write 'go out of flashmode' reply less than 4, got: %zu bytes!\n", strlen(tmp_reply));
+		printf(_("      Error, TA write 'go out of flashmode' reply less than 4, got: %zu bytes!\n"), strlen(tmp_reply));
 		ret = 1;
 		goto endflashing;
 	}
 
 	if (memcmp(tmp_reply, "OKAY", 4) != 0)
 	{
-		printf("      Error, didn't got TA write 'go out of flashmode' OKAY reply! Got reply: %s\n", tmp_reply);
+		printf(_("      Error, didn't got TA write 'go out of flashmode' OKAY reply! Got reply: %s\n"), tmp_reply);
 		ret = 1;
 		goto endflashing;
 	}
 
-	printf("Device is put now out of flash mode.\n");
+	printf(_("Device is put now out of flash mode.\n"));
 
 /*============================================  finish  ==============================================*/
 
@@ -5368,15 +5368,15 @@ endflashing:
 		snprintf(tmp, sizeof(tmp), "Sync");
 		if (transfer_bulk_async(dev, EP_OUT, tmp, strlen(tmp), USB_TIMEOUT, 1) < 1)
 		{
-			printf(" - Error writing command %s!\n", tmp);
+			printf(_(" - Error writing command %s!\n"), tmp);
 			ret = 1;
 			goto release;
 		}
-		printf("Sent command: Sync\n");
+		printf(_("Sent command: Sync\n"));
 #if 1
 		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
-			printf(" error, no sync response!\n");
+			printf(_(" error, no sync response!\n"));
 			ret = 1;
 			goto release;
 		}
@@ -5418,15 +5418,15 @@ endflashing:
 retry:
 		if (transfer_bulk_async(dev, EP_OUT, reboot_string, strlen(reboot_string), USB_TIMEOUT, 1) < 1)
 		{
-			printf(" - Error writing command %s!\n", reboot_string);
+			printf(_(" - Error writing command %s!\n"), reboot_string);
 			ret = 1;
 			goto release;
 		}
-		printf("Sent command: %s.\n", reboot_string);
+		printf(_("Sent command: %s.\n"), reboot_string);
 
 		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 		{
-			printf("Error, no %s response!\n", reboot_string);
+			printf(_("Error, no %s response!\n"), reboot_string);
 			ret = 1;
 			goto release;
 		}
@@ -5438,12 +5438,12 @@ retry:
 #endif
 		if (reboot_mode == 0)
 		{
-			printf("\nEnd. You can disconnect your device when you close %s\n", progname);
+			printf(_("\nEnd. You can disconnect your device when you close %s\n"), progname);
 		}
 		else
 		{
 			//display_buffer_hex_ascii("reboot mode response", tmp_reply, get_reply_len);
-			printf("\nDone.\n");
+			printf(_("\nDone.\n"));
 		}
 	}
 
@@ -5452,17 +5452,17 @@ release:
 #ifdef __APPLE__
 	for (iface=0; iface < nb_ifaces; ++iface)
 	{
-		printf("Releasing interface %d.\n", iface);
+		printf(_("Releasing interface %d.\n"), iface);
 		libusb_release_interface(dev, iface);
 	}
 
 	if (iface_detached >= 0)
 	{
-		printf("Re-attaching kernel driver.\n");
+		printf(_("Re-attaching kernel driver.\n"));
 		libusb_attach_kernel_driver(dev, iface_detached);
 	}
 #endif
-	printf("Closing device.\n");
+	printf(_("Closing device.\n"));
 	CloseHandle(dev);
 	SetupDiDestroyDeviceInfoList(hDevInfo);
 
