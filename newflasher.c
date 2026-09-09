@@ -2793,7 +2793,7 @@ int main(int argc, char *argv[])
 #endif
 
 	printf("--------------------------------------------------------\n");
-	printf("            %s v%d by Munjeni @ 2017/2025           \n", progname, VERSION);
+	printf("            %s v%d by Munjeni @ 2017/2026           \n", progname, VERSION);
 	printf("--------------------------------------------------------\n");
 
 	available_mb = get_free_space(working_path);
@@ -3438,7 +3438,7 @@ int main(int argc, char *argv[])
 									unsigned int y;
 									unsigned int unitt_sz;
 
-									fprintf(dumpme, "//created with %s v%d by Munjeni @ 2017/2023\n", progname, VERSION);
+									fprintf(dumpme, "//created with %s v%d by Munjeni @ 2017/2026\n", progname, VERSION);
 
 									if (i == 1)
 										fprintf(dumpme, "//trim partition\n01\n\n");
