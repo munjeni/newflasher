@@ -7,7 +7,7 @@
 // gcc -Wall -O3 -march=native -pipe -I/usr/include/libxml2 sony.c -o sony -lcurl -lxml2
 // example link: https://app.swup.update.sony.net/ess-distribution/public/api/device-service/match/v2?CDFId=28655496&HwSetupKey=Default&HWVariantId=da644012-4449-4f89-882f-c98f62374fba&ModelObjectId=0e88c3ac-d8ae-4f0d-afcd-0b2546cd5e45&ProductObjectId=27bace69-b013-48e0-8626-a960117ee75a&SecurityStateType=COMMERCIAL&SonyProductCode=43041651
 // what I miss to impelement this fw downloader fully inside newflasher? I miss global main api url where booth CDFId and SonyProductCode is listed for all device models, I need the that full list api url!
-// I'm unsure if CDFId and SonyProductCode can be retrieved from the device trought trim area or trought gflash mode? If yes than that way we can safely implement right fw to download directly from newflasher with option to decide which fw to download, thats my plat for our new newflasher feature.
+// I'm unsure if CDFId and SonyProductCode can be retrieved from the device trought trim area or trought flash mode? If yes than that way we can safely implement right fw to download directly from newflasher with option to decide which fw to download but with zero chance to decide to download fw for wrong model. That's my plan for our new newflasher feature.
 //
 #include <stdio.h>
 #include <stdlib.h>
