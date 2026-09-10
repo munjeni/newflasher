@@ -3311,7 +3311,7 @@ int main(int argc, char *argv[])
 
 							if (!data_len)
 							{
-								printf("Device returned no data for trimarea partition %d!\n", i);
+								printf("Trimarea partition %d has zero length, nothing to dump.\n", i);
 
 								if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 								{
