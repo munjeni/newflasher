@@ -5,6 +5,7 @@
 //
 //
 // gcc -Wall -O3 -march=native -pipe -I/usr/include/libxml2 sony.c -o sony -lcurl -lxml2
+// example link: https://app.swup.update.sony.net/ess-distribution/public/api/device-service/match/v2?CDFId=28655496&HwSetupKey=Default&HWVariantId=da644012-4449-4f89-882f-c98f62374fba&ModelObjectId=0e88c3ac-d8ae-4f0d-afcd-0b2546cd5e45&ProductObjectId=27bace69-b013-48e0-8626-a960117ee75a&SecurityStateType=COMMERCIAL&SonyProductCode=43041651
 //
 //
 #include <stdio.h>
