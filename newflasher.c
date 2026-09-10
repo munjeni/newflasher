@@ -3311,7 +3311,7 @@ int main(int argc, char *argv[])
 
 							if (!data_len)
 							{
-								printf("Device returned no data for trimarea partition %d! Dump is incomplete, retry it after replugging the phone into flashmode.\n", i);
+								printf("Device returned no data for trimarea partition %d!\n", i);
 
 								if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
 								{
