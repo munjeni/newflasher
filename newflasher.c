@@ -2743,6 +2743,315 @@ static unsigned long get_free_space(char *fnPath)
 }
 #endif
 
+/*=========================================  Customisation INFO  ============================================*/
+
+char *read_cda_nr(HANDLE dev)
+{
+	if (transfer_bulk_async(dev, EP_OUT, "Read-TA:2:2010", 14, USB_TIMEOUT, 1) < 1)
+	{
+		printf("Error writing commad: Read-TA:2:2010\n");
+		goto endflashing;
+	}
+	else
+	{
+		//printf("Writing command: Read-TA:2:2010\n");
+
+		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+		{
+			printf("Error, null reply\n");
+			goto endflashing;
+		}
+		else
+		{
+			//display_buffer_hex_ascii("got first reply", tmp_reply, get_reply_len);
+
+			if (memcmp(tmp_reply, "FAIL", 4) == 0)
+			{
+				printf("got fail reply: %s\n", tmp_reply);
+				goto endflashing;
+			}
+			else
+			{
+				if (memcmp(tmp_reply, "DATA", 4) == 0)
+				{
+					unsigned int data_len = 0;
+
+					if (get_reply_len != 12) 
+					{
+						printf("Errornous DATA reply!\n");
+						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+						goto endflashing;
+					}
+
+					sscanf(tmp_reply+4, "%08x", &data_len);
+
+					if (!data_len)
+					{
+						printf("got null data_len!\n");
+
+						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+						{
+							printf("Error retrieving seccond reply!\n");
+							goto endflashing;
+						}
+
+						display_buffer_hex_ascii("got last reply", tmp_reply, get_reply_len);
+
+						if (strstr(tmp_reply, "OKAY") == NULL)
+						{
+							printf("Error, no OKAY reply!\n");
+							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
+							goto endflashing;
+						}
+					}
+					else
+					{
+						char *data_buf = NULL;
+
+						if ((data_buf = (char *)malloc(data_len)) == NULL)
+						{
+							printf("error allocating 0x%x bytes!\n", data_len);
+							goto endflashing;
+						}
+
+						if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
+						{
+							printf("Error retrieving data!\n");
+							free(data_buf);
+							goto endflashing;
+						}
+
+						//display_buffer_hex_ascii("data_buf", data_buf, data_len);
+
+						// sometimes OKAY reply is inside data buffer
+						if (data_len >= 4 && data_buf[data_len - 4] == 'O' && data_buf[data_len - 3] == 'K' && data_buf[data_len - 2] == 'A' && data_buf[data_len - 1] == 'Y')
+						{
+							data_len -= 4;
+						}
+						else
+						{
+							if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
+							{
+								printf("Error retrieving OKAY reply!\n");
+								free(data_buf);
+								goto endflashing;
+							}
+
+							if (strstr(tmp_reply, "OKAY") == NULL)
+							{
+								printf("Error, no OKAY reply!\n");
+								free(data_buf);
+								goto endflashing;
+							}
+						}
+
+						//display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+
+						char *cda_rezultat = (char *)malloc(32);
+						if (cda_rezultat == NULL)
+						{
+							printf("Error allocating memory for CDA result!\n");
+							free(data_buf);
+							goto endflashing;
+						}
+						memset(cda_rezultat, 0, 32);
+
+						int cda_nadjen_uspesno = 0;
+
+						if (data_buf != NULL && data_len >= 8)
+						{
+							unsigned int i;
+							char *cda_nr_start = NULL;
+							unsigned int preostalo_bajtova = 0;
+
+							for (i = 0; i <= data_len - 8; i++)
+							{
+								if (data_buf[i]   == 'C' && data_buf[i+1] == 'D' && 
+									data_buf[i+2] == 'A' && data_buf[i+3] == '_' && 
+									data_buf[i+4] == 'N' && data_buf[i+5] == 'R' && 
+									data_buf[i+6] == '=' && data_buf[i+7] == '"') 
+								{
+									cda_nr_start = (char *)&data_buf[i + 8]; 
+									preostalo_bajtova = data_len - (i + 8);
+									break; 
+								}
+							}
+
+							if (cda_nr_start != NULL)
+							{
+								unsigned int brojac = 0;
+								int nadjen_kraj = 0;
+
+								if (preostalo_bajtova > 0)
+								{
+									while (brojac < preostalo_bajtova && brojac < 31)
+									{
+										if (cda_nr_start[brojac] == '"')
+										{
+											nadjen_kraj = 1;
+											break;
+										}
+										cda_rezultat[brojac] = cda_nr_start[brojac];
+										brojac++;
+									}
+									cda_rezultat[brojac] = '\0';
+								}
+
+								if (nadjen_kraj)
+								{
+									cda_nadjen_uspesno = 1;
+									//printf("CDA_NR: %s\n", cda_rezultat);
+								}
+								else
+								{
+									printf("Error: string too long!\n");
+								}
+							}
+							else
+							{
+								//printf("Error: no CDA_NR inside unit!\n");
+							}
+						}
+						else
+						{
+							//printf("Error: wrong or to small buff!\n");
+						}
+
+						free(data_buf);
+
+						if (!cda_nadjen_uspesno)
+						{
+							free(cda_rezultat);
+							return NULL;
+						}
+
+						return cda_rezultat;
+					}
+				}
+			}
+		}
+	}
+
+endflashing:
+	return NULL;
+}
+
+char *read_spc(HANDLE dev)
+{
+	if (transfer_bulk_async(dev, EP_OUT, "Read-TA:2:2170", 14, USB_TIMEOUT, 1) < 1)
+	{
+		printf("Error writing commad: Read-TA:2:2170\n");
+		goto endflashing;
+	}
+	else
+	{
+		//printf("Writing command: Read-TA:2:2170\n");
+
+		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+		{
+			printf("Error, null reply\n");
+			goto endflashing;
+		}
+		else
+		{
+			//display_buffer_hex_ascii("got first reply", tmp_reply, get_reply_len);
+
+			if (memcmp(tmp_reply, "FAIL", 4) == 0)
+			{
+				//printf("got fail reply: %s\n", tmp_reply);
+				goto endflashing;
+			}
+			else
+			{
+				if (memcmp(tmp_reply, "DATA", 4) == 0)
+				{
+					unsigned int data_len = 0;
+
+					if (get_reply_len != 12) 
+					{
+						printf("Errornous DATA reply!\n");
+						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+						goto endflashing;
+					}
+
+					sscanf(tmp_reply+4, "%08x", &data_len);
+
+					if (!data_len)
+					{
+						printf("got null data_len!\n");
+
+						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
+						{
+							printf("Error retrieving seccond reply!\n");
+							goto endflashing;
+						}
+
+						display_buffer_hex_ascii("got last reply", tmp_reply, get_reply_len);
+
+						if (strstr(tmp_reply, "OKAY") == NULL)
+						{
+							printf("Error, no OKAY reply!\n");
+							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
+							goto endflashing;
+						}
+					}
+					else
+					{
+						char *data_buf = NULL;
+
+						if ((data_buf = (char *)malloc(data_len)) == NULL)
+						{
+							printf("error allocating 0x%x bytes!\n", data_len);
+							goto endflashing;
+						}
+
+						if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
+						{
+							printf("Error retrieving data!\n");
+							free(data_buf);
+							goto endflashing;
+						}
+
+						//display_buffer_hex_ascii("data_buf", data_buf, data_len);
+
+						// sometimes OKAY reply is inside data buffer
+						if (data_len >= 4 && data_buf[data_len - 4] == 'O' && data_buf[data_len - 3] == 'K' && data_buf[data_len - 2] == 'A' && data_buf[data_len - 1] == 'Y')
+						{
+							data_len -= 4;
+						}
+						else
+						{
+							if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
+							{
+								printf("Error retrieving OKAY reply!\n");
+								free(data_buf);
+								goto endflashing;
+							}
+
+							if (strstr(tmp_reply, "OKAY") == NULL)
+							{
+								printf("Error, no OKAY reply!\n");
+								free(data_buf);
+								goto endflashing;
+							}
+						}
+
+						//display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
+
+						static char spc_rezultat[32];
+						memcpy(spc_rezultat, data_buf, data_len);
+						free(data_buf);
+						return spc_rezultat;
+					}
+				}
+			}
+		}
+	}
+
+endflashing:
+	return "";
+}
+
 /*========================================================================================*/
 
 int main(int argc, char *argv[])
@@ -3502,336 +3811,6 @@ int main(int argc, char *argv[])
 		printf("\nNo trim area dump taken, continuing with flashing anyway. If this phone ever hard bricks there will be no trim area backup to restore from, and that is on you.\n");
 	}
 
-/*=========================================  Customisation INFO  ============================================*/
-
-char *read_cda_nr(void)
-{
-	if (transfer_bulk_async(dev, EP_OUT, "Read-TA:2:2010", 14, USB_TIMEOUT, 1) < 1)
-	{
-		printf("Error writing commad: Read-TA:2:2010\n");
-		ret = 1;
-		goto endflashing;
-	}
-	else
-	{
-		//printf("Writing command: Read-TA:2:2010\n");
-
-		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
-		{
-			printf("Error, null reply\n");
-			ret = 1;
-			goto endflashing;
-		}
-		else
-		{
-			//display_buffer_hex_ascii("got first reply", tmp_reply, get_reply_len);
-
-			if (memcmp(tmp_reply, "FAIL", 4) == 0)
-			{
-				printf("got fail reply: %s\n", tmp_reply);
-				ret = 1;
-				goto endflashing;
-			}
-			else
-			{
-				if (memcmp(tmp_reply, "DATA", 4) == 0)
-				{
-					unsigned int data_len = 0;
-
-					if (get_reply_len != 12) 
-					{
-						printf("Errornous DATA reply!\n");
-						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
-						ret = 1;
-						goto endflashing;
-					}
-
-					sscanf(tmp_reply+4, "%08x", &data_len);
-
-					if (!data_len)
-					{
-						printf("got null data_len!\n");
-
-						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
-						{
-							printf("Error retrieving seccond reply!\n");
-							ret = 1;
-							goto endflashing;
-						}
-
-						display_buffer_hex_ascii("got last reply", tmp_reply, get_reply_len);
-
-						if (strstr(tmp_reply, "OKAY") == NULL)
-						{
-							printf("Error, no OKAY reply!\n");
-							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
-							ret = 1;
-							goto endflashing;
-						}
-					}
-					else
-					{
-						char *data_buf = NULL;
-
-						if ((data_buf = (char *)malloc(data_len)) == NULL)
-						{
-							printf("error allocating 0x%x bytes!\n", data_len);
-							ret = 1;
-							goto endflashing;
-						}
-
-						if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
-						{
-							printf("Error retrieving data!\n");
-							free(data_buf);
-							ret = 1;
-							goto endflashing;
-						}
-
-						//display_buffer_hex_ascii("data_buf", data_buf, data_len);
-
-						// sometimes OKAY reply is inside data buffer
-						if (data_len >= 4 && data_buf[data_len - 4] == 'O' && data_buf[data_len - 3] == 'K' && data_buf[data_len - 2] == 'A' && data_buf[data_len - 1] == 'Y')
-						{
-							data_len -= 4;
-						}
-						else
-						{
-							if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
-							{
-								printf("Error retrieving OKAY reply!\n");
-								free(data_buf);
-								ret = 1;
-								goto endflashing;
-							}
-
-							if (strstr(tmp_reply, "OKAY") == NULL)
-							{
-								printf("Error, no OKAY reply!\n");
-								free(data_buf);
-								ret = 1;
-								goto endflashing;
-							}
-						}
-
-						//display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
-
-						char *cda_rezultat = (char *)malloc(32);
-						if (cda_rezultat == NULL)
-						{
-							printf("Error allocating memory for CDA result!\n");
-							free(data_buf);
-							ret = 1;
-							goto endflashing;
-						}
-						memset(cda_rezultat, 0, 32);
-
-						int cda_nadjen_uspesno = 0;
-
-						if (data_buf != NULL && data_len >= 8)
-						{
-							unsigned int i;
-							char *cda_nr_start = NULL;
-							unsigned int preostalo_bajtova = 0;
-
-							for (i = 0; i <= data_len - 8; i++)
-							{
-								if (data_buf[i]   == 'C' && data_buf[i+1] == 'D' && 
-									data_buf[i+2] == 'A' && data_buf[i+3] == '_' && 
-									data_buf[i+4] == 'N' && data_buf[i+5] == 'R' && 
-									data_buf[i+6] == '=' && data_buf[i+7] == '"') 
-								{
-									cda_nr_start = (char *)&data_buf[i + 8]; 
-									preostalo_bajtova = data_len - (i + 8);
-									break; 
-								}
-							}
-
-							if (cda_nr_start != NULL)
-							{
-								unsigned int brojac = 0;
-								int nadjen_kraj = 0;
-
-								if (preostalo_bajtova > 0)
-								{
-									while (brojac < preostalo_bajtova && brojac < 31)
-									{
-										if (cda_nr_start[brojac] == '"')
-										{
-											nadjen_kraj = 1;
-											break;
-										}
-										cda_rezultat[brojac] = cda_nr_start[brojac];
-										brojac++;
-									}
-									cda_rezultat[brojac] = '\0';
-								}
-
-								if (nadjen_kraj)
-								{
-									cda_nadjen_uspesno = 1;
-									//printf("CDA_NR: %s\n", cda_rezultat);
-								}
-								else
-								{
-									printf("Error: string too long!\n");
-								}
-							}
-							else
-							{
-								//printf("Error: no CDA_NR inside unit!\n");
-							}
-						}
-						else
-						{
-							//printf("Error: wrong or to small buff!\n");
-						}
-
-						free(data_buf);
-
-						if (!cda_nadjen_uspesno)
-						{
-							free(cda_rezultat);
-							return NULL;
-						}
-
-						return cda_rezultat;
-					}
-				}
-			}
-		}
-	}
-
-endflashing:
-	return NULL;
-}
-
-char *read_spc(void)
-{
-	if (transfer_bulk_async(dev, EP_OUT, "Read-TA:2:2170", 14, USB_TIMEOUT, 1) < 1)
-	{
-		printf("Error writing commad: Read-TA:2:2170\n");
-		ret = 1;
-		goto endflashing;
-	}
-	else
-	{
-		//printf("Writing command: Read-TA:2:2170\n");
-
-		if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
-		{
-			printf("Error, null reply\n");
-			ret = 1;
-			goto endflashing;
-		}
-		else
-		{
-			//display_buffer_hex_ascii("got first reply", tmp_reply, get_reply_len);
-
-			if (memcmp(tmp_reply, "FAIL", 4) == 0)
-			{
-				//printf("got fail reply: %s\n", tmp_reply);
-				ret = 1;
-				goto endflashing;
-			}
-			else
-			{
-				if (memcmp(tmp_reply, "DATA", 4) == 0)
-				{
-					unsigned int data_len = 0;
-
-					if (get_reply_len != 12) 
-					{
-						printf("Errornous DATA reply!\n");
-						display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
-						ret = 1;
-						goto endflashing;
-					}
-
-					sscanf(tmp_reply+4, "%08x", &data_len);
-
-					if (!data_len)
-					{
-						printf("got null data_len!\n");
-
-						if (!get_reply(dev, EP_IN, tmp, sizeof(tmp), USB_TIMEOUT, 0))
-						{
-							printf("Error retrieving seccond reply!\n");
-							ret = 1;
-							goto endflashing;
-						}
-
-						display_buffer_hex_ascii("got last reply", tmp_reply, get_reply_len);
-
-						if (strstr(tmp_reply, "OKAY") == NULL)
-						{
-							printf("Error, no OKAY reply!\n");
-							display_buffer_hex_ascii("got reply", tmp_reply, get_reply_len);
-							ret = 1;
-							goto endflashing;
-						}
-					}
-					else
-					{
-						char *data_buf = NULL;
-
-						if ((data_buf = (char *)malloc(data_len)) == NULL)
-						{
-							printf("error allocating 0x%x bytes!\n", data_len);
-							ret = 1;
-							goto endflashing;
-						}
-
-						if (!get_reply(dev, EP_IN, data_buf, data_len, USB_TIMEOUT, 1))
-						{
-							printf("Error retrieving data!\n");
-							free(data_buf);
-							ret = 1;
-							goto endflashing;
-						}
-
-						//display_buffer_hex_ascii("data_buf", data_buf, data_len);
-
-						// sometimes OKAY reply is inside data buffer
-						if (data_len >= 4 && data_buf[data_len - 4] == 'O' && data_buf[data_len - 3] == 'K' && data_buf[data_len - 2] == 'A' && data_buf[data_len - 1] == 'Y')
-						{
-							data_len -= 4;
-						}
-						else
-						{
-							if (!get_reply(dev, EP_IN, tmp, 5, USB_TIMEOUT, 0))
-							{
-								printf("Error retrieving OKAY reply!\n");
-								free(data_buf);
-								ret = 1;
-								goto endflashing;
-							}
-
-							if (strstr(tmp_reply, "OKAY") == NULL)
-							{
-								printf("Error, no OKAY reply!\n");
-								free(data_buf);
-								ret = 1;
-								goto endflashing;
-							}
-						}
-
-						//display_buffer_hex_ascii("replied", tmp_reply, get_reply_len);
-
-						static char spc_rezultat[32];
-						memcpy(spc_rezultat, data_buf, data_len);
-						free(data_buf);
-						return spc_rezultat;
-					}
-				}
-			}
-		}
-	}
-
-endflashing:
-	return "";
-}
-
 /*=========================================  DEVICE INFO  ============================================*/
 
 	snprintf(tmp, sizeof(tmp), "getvar:max-download-size");
@@ -4305,8 +4284,8 @@ endflashing:
 	printf("Slot count: %s\n", slot_count);
 	printf("Current slot: %s\n", current_slot);
 	printf("Battery level: %d%s\n", battery_level, (battery_level == 0) ? " unsupported command" : "");
-	printf("CDFId: %s\n", read_cda_nr());
-	printf("SPC: %s\n", read_spc());
+	printf("CDFId: %s\n", read_cda_nr(dev));
+	printf("SPC: %s\n", read_spc(dev));
 
 	if (battery_level > 0)
 	{
