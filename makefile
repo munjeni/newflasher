@@ -42,6 +42,18 @@ libs:
 	@test -d expat-2.2.9 && echo "" || wget https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.gz
 	@test -d expat-2.2.9 && echo "" || tar xzf expat-2.2.9.tar.gz
 	@rm -rf expat-2.2.9.tar.gz
+	@test -d openssl-4.0.2 && echo "" || wget https://github.com/openssl/openssl/releases/download/openssl-4.0.2/openssl-4.0.2.tar.gz
+	@test -d openssl-4.0.2 && echo "" || tar xzf openssl-4.0.2.tar.gz
+	@rm -rf openssl-4.0.2.tar.gz
+	@test -d curl-8.22.0 && echo "" || wget https://curl.se/download/curl-8.22.0.tar.gz
+	@test -d curl-8.22.0 && echo "" || tar xzf curl-8.22.0.tar.gz
+	@rm -rf curl-8.22.0.tar.gz
+	@test -d libxml2-2.15.4 && echo "" || wget https://download.gnome.org/sources/libxml2/2.15/libxml2-2.15.4.tar.xz
+	@test -d libxml2-2.15.4 && echo "" || tar xf libxml2-2.15.4.tar.xz
+	@rm -rf libxml2-2.15.4.tar.xz
+	@test -d libiconv-1.19 && echo "" || wget https://ftp.gnu.org/gnu/libiconv/libiconv-1.19.tar.gz
+	@test -d libiconv-1.19 && echo "" || tar xzf libiconv-1.19.tar.gz
+	@rm -rf libiconv-1.19.tar.gz
 
 newflasher: newflasher.c version.h
 	${CC} ${CFLAGS} $< -o $@ -lz -lexpat ${LIBS}
@@ -56,6 +68,19 @@ newflasher.exe: libs newflasher.c version.h
 	${WINDRES} newflasher.rc -O coff -o newflasher.res
 	${CCWIN} ${CROSS_CFLAGS} -static newflasher.c newflasher.res -o newflasher.exe -lsetupapi -lz -lexpat
 	${CCWINSTRIP} newflasher.exe
+
+downloader.exe: libs downloader.c version.h
+	@cd openssl-4.0.2 && CC=${CCWIN} WINDRES=${WINDRES} ./Configure mingw no-shared no-dso no-tests && make clean && make
+	@R=$$(pwd) && cd curl-8.22.0 && export CPATH="$$R/openssl-4.0.2/include" && export LIBRARY_PATH="$$R/openssl-4.0.2" && CC=${CCWIN} WINDRES=${WINDRES} CFLAGS="-D_WIN32_WINNT=0x0601 -DWINVER=0x0601" CPPFLAGS="-D_WIN32_WINNT=0x0601 -DWINVER=0x0601" LDFLAGS="-L$$R/openssl-4.0.2 -lws2_32 -lgdi32 -lcrypt32 -lbcrypt" LIBS="-lws2_32 -lgdi32 -lcrypt32 -lbcrypt" ./configure --enable-static --disable-shared --with-openssl=$$R/openssl-4.0.2 --without-libpsl --without-libssh2 --without-libssh --disable-ldap --host=i686-w64-mingw32 && make clean && make
+	@cd libiconv-1.19 && CC=${CCWIN} ./configure --enable-static --disable-shared --host=i686-w64-mingw32 && make clean && make
+	@cd libxml2-2.15.4 && CC=${CCWIN} ./configure --enable-static --disable-shared --without-iconv --without-modules --host=i686-w64-mingw32 && make clean && make
+	sed "s/@VERSION@/$(VERSION)/" newflasher.rc.in >downloader.rc
+	@sed -i "s/Xperia Command Line Flasher/Xperia FW Downloader/" downloader.rc
+	@sed -i "s/newflasher/downloader/" downloader.rc
+	@sed -i "s/downloader.ico/newflasher.ico/" downloader.rc
+	${WINDRES} downloader.rc -O coff -o downloader.res
+	${CCWIN} ${CROSS_CFLAGS} -static -DCURL_STATICLIB -DLIBXML_STATIC -DXML_STATIC -Iopenssl-4.0.2/include -Icurl-8.22.0/include -Ilibxml2-2.15.4/include -Ilibiconv-1.19/include -Lopenssl-4.0.2 -Lcurl-8.22.0/lib/.libs -Llibxml2-2.15.4/.libs -Llibiconv-1.19/lib/.libs downloader.c downloader.res -o downloader.exe -lsetupapi -lcurl -lxml2 -lssl -lcrypto -liconv -lbcrypt -lcrypt32 -liphlpapi -lws2_32 -lgdi32
+	${CCWINSTRIP} downloader.exe
 
 newflasher.x64: libs newflasher.c version.h
 	@cd zlib-1.3.2 && CC=gcc ./configure --static && make clean && make
@@ -103,10 +128,10 @@ install: newflasher newflasher.1.gz
 
 .PHONY: clean
 clean:
-	rm -rf *.gz *.o *.rc *.res obj libs zlib expat zlib-1.3.2 expat-2.2.9 include
+	rm -rf *.gz *.o *.rc *.res obj libs zlib expat zlib-1.3.2 expat-2.2.9 openssl-4.0.2 libxml2-2.15.4 libiconv-1.19 curl-8.22.0 include
 
 .PHONY: distclean
 distclean:
 	rm -rf *.gz *.o *.rc *.res obj libs zlib expat newflasher.exe newflasher.x64 newflasher.i386
 	rm -rf newflasher.arm32 newflasher.arm64 newflasher.arm64_pie newflasher
-	rm -rf zlib-1.3.2 expat-2.2.9 include
+	rm -rf zlib-1.3.2 expat-2.2.9 openssl-4.0.2 libxml2-2.15.4 libiconv-1.19 curl-8.22.0 include
