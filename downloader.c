@@ -15,11 +15,13 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <string.h>
+#ifdef unix
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <netinet/in.h>
 #include <net/if.h>
 #include <arpa/inet.h>
+#endif
 #include <signal.h>
 #include <curl/curl.h>
 #include <libxml/parser.h>
